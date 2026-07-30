@@ -1,0 +1,264 @@
+/**
+ * P-Code — shared clinical detection stepper (provider + user detect pages)
+ * Connectors are per-step segments (::after) so lines never pass through step dots.
+ */
+
+.pcode-detect-stepper {
+  --step-dot-size: 2.25rem;
+  --step-connector-h: 4px;
+  position: relative;
+  width: 100%;
+  padding: 0.75rem 0.25rem 0.85rem;
+  min-width: 0;
+  /* Absorb active-dot scale so the card chrome does not jump */
+  overflow: hidden;
+}
+
+.pcode-detect-stepper-track {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.pcode-detect-stepper-steps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+/* Legacy absolute rail — replaced by per-item segment connectors */
+.pcode-detect-stepper-rail {
+  display: none !important;
+}
+
+.pcode-detect-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+}
+
+/* Segment connector: only the gap between dot edges */
+.pcode-detect-step-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--step-dot-size) / 2);
+  left: calc(50% + var(--step-dot-size) / 2);
+  width: calc(100% - var(--step-dot-size));
+  height: var(--step-connector-h);
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.38);
+  z-index: 0;
+  pointer-events: none;
+}
+
+html.pcode-app-bento-root.dark .pcode-detect-step-item:not(:last-child)::after {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pcode-detect-step-item.is-segment-complete:not(:last-child)::after {
+  background: linear-gradient(90deg, #7c3aed 0%, #c4b5fd 55%, #c084fc 100%);
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.4);
+}
+
+.pcode-detect-step-dot {
+  position: relative;
+  z-index: 2;
+  width: var(--step-dot-size);
+  height: var(--step-dot-size);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.pcode-detect-step-dot__num,
+.pcode-detect-step-dot__check {
+  line-height: 1;
+}
+
+.pcode-detect-step-dot__check {
+  display: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.pcode-detect-step-dot.is-complete .pcode-detect-step-dot__num {
+  display: none;
+}
+
+.pcode-detect-step-dot.is-complete .pcode-detect-step-dot__check {
+  display: block;
+}
+
+.pcode-detect-step-dot.is-pending {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+  box-shadow: 0 0 0 3px rgba(13, 11, 20, 0.98);
+}
+
+html.pcode-app-bento-root.dark .pcode-detect-step-dot.is-pending {
+  background: #16141f;
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 3px rgba(13, 11, 20, 0.98);
+}
+
+.pcode-detect-step-dot.is-active {
+  background: linear-gradient(135deg, #c4b5fd 0%, #6d28d9 100%);
+  color: #ffffff;
+  border-color: rgba(196, 181, 253, 0.65);
+  box-shadow:
+    0 0 0 3px rgba(13, 11, 20, 0.98),
+    0 0 20px rgba(196, 181, 253, 0.45);
+  transform: scale(1.06);
+}
+
+.pcode-detect-step-dot.is-complete {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.25);
+}
+
+.pcode-detect-step-label {
+  position: relative;
+  z-index: 2;
+  margin-top: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+  max-width: 4.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Header ends at title row; stepper sits in its own band below the border */
+body.pcode-app-bento .detection-card .pcode-bento-card-header--stepper-split {
+  margin-bottom: 0;
+  padding-bottom: 0.35rem;
+}
+
+body.pcode-app-bento .detection-card .pcode-bento-card-header--stepper-split .pcode-bento-card-header__row {
+  margin-bottom: 0;
+}
+
+body.pcode-app-bento .detection-card .pcode-detect-stepper {
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  margin-top: 1rem;
+  margin-bottom: 0;
+  padding-top: 0.85rem;
+  padding-bottom: 0.35rem;
+}
+
+/* Form sits tight under the stepper — no phantom gap from a display:none banner */
+body.pcode-app-bento .detection-card #clinical-form {
+  padding-top: 0.35rem;
+}
+
+body.pcode-app-bento .detection-card #clinical-form > .clinical-validity-banner.is-hidden + *,
+body.pcode-app-bento .detection-card #clinical-form > .clinical-validity-banner.hidden + * {
+  margin-top: 0 !important;
+}
+
+body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-steps-host > .step-content,
+body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-panel {
+  padding-top: 0.35rem;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .detection-card .pcode-detect-stepper {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 640px) {
+  .pcode-detect-stepper {
+    --step-dot-size: 2.5rem;
+  }
+
+  .pcode-detect-step-label {
+    font-size: 0.6875rem;
+    max-width: 5.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-detect-stepper {
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+  }
+}
+
+/* Mobile — icon-only stepper (same approach as patients modal): hide labels, even spacing */
+@media (max-width: 767px) {
+  .pcode-detect-stepper {
+    --step-dot-size: 2rem;
+    padding: 0.85rem 0.15rem 0.45rem;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-detect-stepper {
+    margin-top: 1.1rem;
+    padding-top: 0.95rem;
+    padding-bottom: 0.25rem;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form {
+    padding-top: 0.25rem;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-steps-host > .step-content,
+  body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-panel {
+    padding-top: 0.25rem !important;
+  }
+
+  .pcode-detect-stepper-track {
+    overflow-x: visible;
+    -webkit-overflow-scrolling: auto;
+    scroll-snap-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pcode-detect-stepper-steps {
+    justify-content: space-between;
+    gap: 0.15rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pcode-detect-step-item {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    scroll-snap-align: unset;
+  }
+
+  .pcode-detect-step-label {
+    display: none !important;
+  }
+
+  .pcode-detect-step-dot {
+    font-size: 0.6875rem;
+  }
+}

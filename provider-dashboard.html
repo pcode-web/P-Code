@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P-Code - Provider Dashboard</title>
+
+  <!-- Local CSS Files (No CDN) -->
+  <link rel="stylesheet" href="css/tailwind.css">
+
+  <!-- Local Fonts (No CDN) -->
+  <link rel="stylesheet" href="fonts/fonts.css">
+
+  <!-- Local JavaScript Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+  <script src="js/libs/typed.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer crossorigin="anonymous"></script>
+  <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink" defer></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: "Inter", sans-serif;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+      max-width: 100vw;
+      margin: 0;
+      padding: 0;
+    }
+    footer { margin-top: auto; width: 100%; min-height: 64px; display: flex; align-items: center; padding: 0 !important; }
+    footer > div { width: 100%; }
+    footer.py-4 { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+    nav { width: 100%; flex-shrink: 0; height: auto; }
+    #mobile-menu.mobile-menu,
+    #menu-overlay.mobile-menu-overlay {
+      position: fixed !important;
+      flex: none !important;
+      margin: 0 !important;
+    }
+    #mobile-menu.mobile-menu {
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: auto;
+      width: min(320px, 85vw);
+      max-width: 90vw;
+      height: auto;
+      max-height: 100dvh;
+      background: linear-gradient(135deg, rgba(88, 28, 135, 1) 0%, rgba(109, 40, 217, 1) 100%);
+      color: white;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+      transform: translate3d(100%, 0, 0);
+      transition: transform 0.3s ease-out, visibility 0.3s ease-out;
+      z-index: 50;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    #mobile-menu.mobile-menu.active {
+      transform: translate3d(0, 0, 0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .mobile-menu::-webkit-scrollbar { width: 6px; }
+    .mobile-menu::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+    .mobile-menu::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+    #menu-overlay.mobile-menu-overlay {
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-out;
+      z-index: 45;
+    }
+    .mobile-menu-overlay.active { opacity: 1; pointer-events: auto; }
+    #mobile-menu-close-btn { position: absolute; top: 12px; right: 12px; z-index: 60; }
+    #mobile-menu-btn { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+    nav .flex.justify-between { min-height: 64px; flex-wrap: nowrap; }
+    .max-w-7xl { max-width: 100% !important; width: 100% !important; }
+
+    .nav-desktop { display: flex; gap: 2rem; align-items: center; }
+    @media (max-width: 768px) { .nav-desktop { display: none !important; } }
+
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.7) 0%, rgba(109, 40, 217, 0.6) 100%),
+                  url("resources/hero-medical.jpg") center/cover no-repeat;
+      background-attachment: fixed;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      /* Avoid iOS Safari jank with fixed backgrounds */
+      .gradient-bg { background-attachment: scroll !important; }
+    }
+
+    @media (max-width: 768px) {
+      button { min-height: 44px !important; }
+    }
+
+    /* Mobile card sizing: reduce padding + stack actions */
+    @media (max-width: 640px) {
+      .mobile-card {
+        padding: 1rem !important;
+        border-radius: 0.875rem !important;
+      }
+      .mobile-card h2 {
+        font-size: 1.125rem !important;
+        line-height: 1.5rem !important;
+      }
+      .mobile-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+      }
+      .mobile-actions > button,
+      .mobile-actions > a {
+        width: 100% !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+  <style id="pcode-dashboard-light-readability">
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell > .pcode-bento-card {
+      border: 1px solid #000000 !important;
+      border-color: #000000 !important;
+      border-radius: 1rem !important;
+      background: #ffffff !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-label,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-value,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-figure,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section h2,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .pcode-bento-card h2,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .pcode-bento-card p,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell [class*='text-gray-'] {
+      color: #000000 !important;
+      -webkit-text-fill-color: #000000 !important;
+      opacity: 1 !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section .btn-purple-glass,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section .btn-teal-glass,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section .btn-blue-glass {
+      border: none !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile--accent-purple .pcode-metric-tile__icon {
+      background: #6d28d9 !important;
+      border-color: #5b21b6 !important;
+      color: #ffffff !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile--accent-red .pcode-metric-tile__icon {
+      background: #dc2626 !important;
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__svg,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__icon svg {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__svg[fill='currentColor'],
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__svg[fill='currentColor'] path {
+      fill: #ffffff !important;
+      stroke: none !important;
+    }
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__svg[fill='none'],
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .pcode-metric-tile__svg[fill='none'] path {
+      fill: none !important;
+      stroke: #ffffff !important;
+      stroke-width: 2.25;
+    }
+  </style>
+</head>
+
+<body class="pcode-app-bento min-h-screen flex flex-col antialiased">
+  <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Navigation -->
+  <nav class="pcode-topnav bg-white shadow-lg border-b-2 border-purple-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-2 sm:space-x-6">
+          <div class="flex-shrink-0">
+            <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+          </div>
+          <div class="block">
+            <h1 class="text-xl sm:text-2xl font-bold text-purple-800 dark:text-purple-200">P-Code</h1>
+          </div>
+        </div>
+        <div class="nav-desktop">
+          <a href="provider-dashboard.html" class="text-purple-800 dark:text-purple-300 font-semibold border-b-2 border-purple-800 dark:border-purple-400 pb-1 text-sm">Dashboard</a>
+          <a href="patients.html" class="text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Patients</a>
+          <a href="detect-provider.html" class="text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Detect</a>
+          <a href="xai-provider.html" class="text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">XAI Insights</a>
+          <a href="model-performance.html" class="text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Model Performance</a>
+          <a href="about.html" class="text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">About</a>
+        </div>
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-lg transition-colors text-gray-600 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-white/10" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hamburger Menu - Right Sidebar -->
+  <div id="mobile-menu" class="mobile-menu">
+    <button id="mobile-menu-close-btn" type="button" onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="px-4 sm:px-6 py-4 space-y-2 md:py-6 md:space-y-4">
+      <div id="mobile-profile" class="hidden pb-4 border-b border-white border-opacity-20">
+        <div class="flex items-center space-x-3 mb-4">
+          <img id="mobile-profile-avatar" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+          <div class="flex-1">
+            <p id="mobile-profile-name" class="text-sm font-semibold text-white"></p>
+            <p id="mobile-profile-role" class="text-xs text-white text-opacity-80"></p>
+          </div>
+        </div>
+        <button type="button" id="mobile-logout-btn" onclick="auth.logout()" class="w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors">Sign out</button>
+      </div>
+      <div class="mobile-nav-links pt-2">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Menu</p>
+        <div class="space-y-1">
+          <a href="provider-dashboard.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 transition-colors font-medium">Dashboard</a>
+          <a href="patients.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Patients</a>
+          <a href="detect-provider.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Detect</a>
+          <a href="xai-provider.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">XAI Insights</a>
+          <a href="model-performance.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Model Performance</a>
+          <a href="about.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">About</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="pcode-dashboard-welcome gradient-bg relative py-6 sm:py-8 md:py-12">
+    <div class="relative max-w-7xl mx-auto px-4 md:px-8 w-full">
+      <div class="text-center">
+        <h1 class="pcode-dashboard-greeting hero-title text-xl sm:text-2xl md:text-4xl font-extrabold text-black dark:text-white mb-3 sm:mb-4 md:mb-6">
+          <span id="typed-text"></span>
+        </h1>
+        <p class="pcode-dashboard-lead hero-lead text-xs sm:text-sm md:text-base font-normal text-slate-800 dark:text-slate-400 leading-relaxed max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-8">
+          A clinical decision support system that combines clinical indicators and ultrasound imaging to support PMOS screening, summarize risk with confidence, and provide explainable insights you can use alongside clinical judgment.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="pcode-page-shell">
+    <!-- Metrics Grid (Provider Only) -->
+    <div id="metrics-grid" class="pcode-metrics-grid pcode-bento-metrics-grid pcode-bento-metrics-grid--two mb-6 sm:mb-8 md:mb-12">
+      <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--accent-purple">
+        <div class="pcode-metric-tile__copy">
+          <p class="pcode-metric-label">Total Patients</p>
+          <p class="pcode-metric-value pcode-metric-figure" id="total-patients">0</p>
+        </div>
+        <div class="pcode-metric-tile__icon" aria-hidden="true">
+          <svg class="pcode-metric-tile__svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--accent-red">
+        <div class="pcode-metric-tile__copy">
+          <p class="pcode-metric-label">PMOS Diagnoses</p>
+          <p class="pcode-metric-value pcode-metric-figure" id="PMOS-cases">0</p>
+        </div>
+        <div class="pcode-metric-tile__icon" aria-hidden="true">
+          <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div id="quick-actions-section" class="pcode-card-static pcode-bento-card shadow-lg p-3 sm:p-6 mb-8 sm:mb-12">
+      <h2 class="text-2xl font-bold tracking-tight mb-6">Quick Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+        <button type="button" onclick="window.location.href=`patients.html`" class="btn-purple-glass w-full py-4">
+          <span class="text-lg font-semibold">Add New Patient</span>
+        </button>
+        <button type="button" onclick="window.location.href=`detect-provider.html`" class="btn-teal-glass w-full py-4">
+          <span class="text-lg font-semibold">Run Detection</span>
+        </button>
+        <button type="button" onclick="window.location.href=`xai-provider.html`" class="btn-blue-glass w-full py-4">
+          <span class="text-lg font-semibold">View XAI Insights</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Patient diagnosis summary -->
+    <div class="pcode-card-static pcode-bento-card shadow-lg p-3 sm:p-6 mb-8 sm:mb-12">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-3 sm:mb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Patient Diagnosis Overview</h2>
+          <p class="text-sm text-gray-600 mt-1">Final diagnosis status across your patient panel</p>
+        </div>
+        <p class="text-sm font-medium text-gray-600" id="diagnosis-summary-total">— patients</p>
+      </div>
+      <div id="diagnosis-summary-chips" class="pcode-diagnosis-chips-grid" aria-label="Diagnosis counts"></div>
+      <div class="pcode-chart-panel w-full min-w-0">
+        <div id="dashboard-diagnosis-summary-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0"></div>
+      </div>
+    </div>
+
+    <!-- System Features: see about.html -->
+
+    <!-- Recent Patients & Comparative chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-12 items-stretch">
+      <div class="pcode-card-static pcode-bento-card shadow-lg p-3 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Recent Patients</h2>
+        <div id="recent-patients-container" class="space-y-4"></div>
+        <div class="mt-6 text-center">
+          <button onclick="window.location.href=`patients.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View All Patients →</button>
+        </div>
+      </div>
+      <div class="pcode-card-static pcode-bento-card shadow-lg p-3 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Comparative Model Performance</h2>
+        <div class="pcode-chart-stack w-full min-w-0">
+          <div class="pcode-chart-panel pcode-chart-panel--grouped-bar w-full min-w-0">
+            <div id="dashboard-comparative-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0" aria-describedby="dashboard-comparative-legend"></div>
+          </div>
+          <div id="dashboard-comparative-legend" class="pcode-chart-legend" aria-label="Comparative model performance legend"></div>
+        </div>
+        <div class="mt-4 text-center">
+          <button onclick="window.location.href=`model-performance.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View Full Analysis →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+  <!-- Auth Module -->
+  <script src="js/auth.js?v=20260725-guestchromehide"></script>
+  <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+  <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+  <script>
+    function pcodePct2Floor(n) {
+      const v = Number(n);
+      if (!Number.isFinite(v)) return '--';
+      return (Math.floor(v * 100) / 100).toFixed(2);
+    }
+
+    function checkAuthAndRedirect() {
+      if (typeof auth === "undefined" || !auth.whenAuthReady) {
+        return;
+      }
+      auth.whenAuthReady(function () {
+        if (!auth.enforcePageAccess("provider")) return;
+        const sync = typeof auth.syncServerSession === "function"
+          ? auth.syncServerSession()
+          : Promise.resolve(false);
+        sync.then(function (ok) {
+          if (!ok) {
+            console.warn("[Dashboard] Session sync failed — metrics may show 0 until you sign in again");
+          }
+          startDashboardMetricsPolling();
+        });
+      });
+    }
+
+    let pcodeMetricsPollId = null;
+
+    function startDashboardMetricsPolling() {
+      updateMetrics();
+      if (pcodeMetricsPollId == null) {
+        pcodeMetricsPollId = setInterval(updateMetrics, 30000);
+      }
+    }
+
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById("mobile-menu");
+      const overlay = document.getElementById("menu-overlay");
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      if (!mobileMenu) return;
+      const willOpen = !mobileMenu.classList.contains("active");
+      if (willOpen) {
+        mobileMenu.classList.add("active");
+        if (overlay) overlay.classList.add("active");
+        document.body.classList.add("pcode-mobile-nav-open");
+        document.body.style.overflow = "hidden";
+      } else {
+        closeMobileMenu();
+      }
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    }
+    function closeMobileMenu() {
+      const mobileMenu = document.getElementById("mobile-menu");
+      const overlay = document.getElementById("menu-overlay");
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      if (mobileMenu) mobileMenu.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
+      document.body.classList.remove("pcode-mobile-nav-open");
+      document.body.style.overflow = "";
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+    }
+
+    // Note: in “desktop site” mode we keep hamburger + profile actions,
+    // but hide the sidebar navigation link list via CSS.
+
+    let diagnosisSummaryChart = null;
+
+    function normalizeDiagnosisStatus(raw) {
+      const d = String(raw ?? "").trim().toLowerCase();
+      if (d === "positive" || d === "1") return "positive";
+      if (d === "negative" || d === "0") return "negative";
+      if (d === "borderline" || d === "2") return "borderline";
+      return "pending";
+    }
+
+    function countDiagnosisByStatus(patients) {
+      const counts = { pending: 0, positive: 0, negative: 0, borderline: 0 };
+      (patients || []).forEach((p) => {
+        const key = normalizeDiagnosisStatus(p.overall_diagnosis);
+        counts[key]++;
+      });
+      return counts;
+    }
+
+    function renderDiagnosisSummaryChart(patients) {
+      const dom = document.getElementById("dashboard-diagnosis-summary-chart");
+      if (!dom || typeof echarts === "undefined") return;
+
+      const counts = countDiagnosisByStatus(patients);
+      const total = patients.length;
+      const totalEl = document.getElementById("diagnosis-summary-total");
+      if (totalEl) {
+        totalEl.textContent = total === 1 ? "1 patient" : total + " patients";
+      }
+
+      const chipsEl = document.getElementById("diagnosis-summary-chips");
+      if (chipsEl) {
+        const chipDefs = [
+          { key: "pending", label: "Pending", cls: "pcode-diagnosis-chip--pending" },
+          { key: "positive", label: "Positive", cls: "pcode-diagnosis-chip--positive" },
+          { key: "negative", label: "Negative", cls: "pcode-diagnosis-chip--negative" },
+          { key: "borderline", label: "Borderline", cls: "pcode-diagnosis-chip--borderline" }
+        ];
+        chipsEl.innerHTML = chipDefs
+          .map(
+            (c) =>
+              `<div class="pcode-diagnosis-chip ${c.cls}"><p class="pcode-diagnosis-chip__label">${c.label}</p><p class="pcode-diagnosis-chip__count">${counts[c.key]}</p></div>`
+          )
+          .join("");
+      }
+
+      if (!diagnosisSummaryChart) {
+        diagnosisSummaryChart = echarts.init(dom);
+      }
+
+      const neon = window.PcodeEchartNeon;
+      const th = neon ? neon.chartTheme() : null;
+      const isDark = th ? (th.dark !== undefined ? th.dark : th.d) : document.documentElement.classList.contains("dark");
+      const chartText = th ? th.text : "rgba(237,233,254,0.92)";
+      const chartMuted = th ? th.muted : "rgba(158,154,169,0.95)";
+      const chartLine = th ? th.line : "rgba(255,255,255,0.08)";
+
+      const categories = ["Pending", "Positive", "Negative", "Borderline"];
+      const values = [counts.pending, counts.positive, counts.negative, counts.borderline];
+      const lightColors = ["#6d28d9", "#b91c1c", "#047857", "#c2410c"];
+
+      const barData = values.map((val, i) => {
+        let style;
+        if (isDark && neon) {
+          if (i === 0) style = neon.verticalBar("muted");
+          else if (i === 1) style = neon.verticalBar("positive");
+          else if (i === 2) style = neon.verticalBar("negative");
+          else style = neon.verticalBarFromStops("#b45309", "#f59e0b");
+        } else {
+          style = {
+            color: lightColors[i],
+            borderRadius: [8, 8, 0, 0],
+            shadowBlur: 0,
+            shadowColor: "transparent",
+            opacity: 1
+          };
+        }
+        return {
+          value: val,
+          itemStyle: typeof style === "object" ? style : { color: style, borderRadius: [8, 8, 0, 0] }
+        };
+      });
+
+      const maxVal = Math.max.apply(null, values.concat([0]));
+      const yMax = maxVal < 1 ? 1 : Math.ceil(maxVal * 1.15);
+
+      diagnosisSummaryChart.setOption(
+        {
+          backgroundColor: "transparent",
+          tooltip: {
+            trigger: "axis",
+            axisPointer: { type: "shadow" },
+            backgroundColor: isDark ? "rgba(17,16,24,0.96)" : undefined,
+            borderColor: isDark ? "rgba(233,213,254,0.35)" : undefined,
+            textStyle: isDark ? { color: chartText } : undefined,
+            formatter: (params) => {
+              const p = params[0];
+              const pct = total ? ((p.value / total) * 100).toFixed(1) : "0.0";
+              return (
+                p.name +
+                "<br/>" +
+                p.marker +
+                " Patients: <b>" +
+                p.value +
+                "</b> (" +
+                pct +
+                "% of panel)"
+              );
+            }
+          },
+          grid: { left: "8%", right: "6%", top: "14%", bottom: "14%", containLabel: true },
+          xAxis: {
+            type: "category",
+            data: categories,
+            axisLabel: { color: isDark ? chartMuted : "#334155" },
+            axisLine: { lineStyle: { color: isDark ? chartLine : "#e2e8f0" } }
+          },
+          yAxis: {
+            type: "value",
+            name: "Patients",
+            min: 0,
+            max: yMax,
+            minInterval: 1,
+            nameTextStyle: { color: isDark ? chartMuted : "#334155" },
+            axisLabel: { color: isDark ? chartMuted : "#334155" },
+            splitLine: { lineStyle: { color: isDark ? chartLine : "#e2e8f0" } }
+          },
+          series: [
+            {
+              name: "Patients",
+              type: "bar",
+              barMaxWidth: 56,
+              data: barData,
+              label: {
+                show: true,
+                position: "top",
+                formatter: "{c}",
+                color: isDark ? chartText : "#334155",
+                fontWeight: 600
+              }
+            }
+          ]
+        },
+        true
+      );
+    }
+
+    function populateRecentPatients(patients) {
+      const container = document.getElementById("recent-patients-container");
+      if (!container) return;
+      container.innerHTML = "";
+      if (!patients || patients.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No patients found</p>';
+        return;
+      }
+      const colors = [
+        { bg: "bg-purple-200", text: "text-purple-800" },
+        { bg: "bg-green-200", text: "text-green-800" },
+        { bg: "bg-blue-200", text: "text-blue-800" }
+      ];
+      patients.forEach((patient, index) => {
+        const color = colors[index % colors.length];
+        const initials = String(patient.name || 'P')
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+        const clinical = patient.clinical_score_percentage !== null ? Number(patient.clinical_score_percentage).toFixed(2) : "N/A";
+        const imaging = patient.imaging_score_percentage !== null ? Number(patient.imaging_score_percentage).toFixed(2) : "N/A";
+        container.innerHTML += `
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div class="flex items-center">
+              <div class="w-10 h-10 ${color.bg} rounded-full flex items-center justify-center mr-4">
+                <span class="font-semibold ${color.text}">${initials}</span>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-800">${patient.name || 'Patient'}</p>
+                <p class="text-sm text-gray-600">Age ${patient.age ?? '—'} • Clinical: ${clinical}% • Imaging: ${imaging}%</p>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    let pcodeDashboardPatientsCache = [];
+
+    function updateMetrics() {
+      if (typeof auth === "undefined" || !auth.isAuthenticated()) {
+        return;
+      }
+      const headers = typeof auth.getAuthHeaders === "function"
+        ? auth.getAuthHeaders()
+        : { "Content-Type": "application/json" };
+      if (!headers.Authorization || !String(headers.Authorization).replace(/^Bearer\s+/i, "").trim()) {
+        const token = sessionStorage.getItem("PMOS_auth_token") || localStorage.getItem("PMOS_auth_token") || "";
+        if (token) headers.Authorization = "Bearer " + token;
+      }
+      if (!headers.Authorization) {
+        return;
+      }
+      const fetchFn = typeof auth.authenticatedFetch === "function"
+        ? auth.authenticatedFetch.bind(auth)
+        : function (url, opts) { return fetch(url, Object.assign({ credentials: "include" }, opts)); };
+      fetchFn("api/get_patients.php?t=" + Date.now(), { headers })
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          const patients = data?.data || [];
+          pcodeDashboardPatientsCache = patients;
+          const totalEl = document.getElementById("total-patients");
+          const PMOSEl = document.getElementById("PMOS-cases");
+          if (totalEl) totalEl.textContent = patients.length;
+          if (PMOSEl) PMOSEl.textContent = patients.filter(function (p) {
+            return p.overall_diagnosis && p.overall_diagnosis !== "pending";
+          }).length;
+          populateRecentPatients(patients.slice(0, 3));
+          renderDiagnosisSummaryChart(patients);
+        })
+        .catch(function (err) {
+          console.warn("[Dashboard] Failed to load patients:", err);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      setTimeout(checkAuthAndRedirect, 100);
+
+      // Typed welcome: first name only (same rules as index — first word of name; email → local part)
+      const firstNameFromUser = (raw, fallback = "Provider") => {
+        const s = String(raw || "").trim();
+        if (!s) return fallback;
+        if (s.includes("@")) {
+          const local = (s.split("@")[0] || "").split(/[._]/)[0] || "";
+          return local.trim() || fallback;
+        }
+        return s.split(/\s+/)[0] || fallback;
+      };
+      let displayName = "Provider";
+      const userDataStr = sessionStorage.getItem("PMOS_user");
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          const fullName = userData.full_name || userData.name || userData.email || "Provider";
+          displayName = firstNameFromUser(fullName, "Provider");
+        } catch (_) {}
+      }
+      const welcomeMessage = `Hello there, ${displayName}`;
+
+      new Typed("#typed-text", {
+        strings: [welcomeMessage],
+        typeSpeed: 40,
+        backSpeed: 0,
+        backDelay: 0,
+        smartBackspace: false,
+        loop: false,
+        showCursor: true
+      });
+
+      // Comparative chart
+      const dom = document.getElementById("dashboard-comparative-chart");
+      if (dom) {
+        const chart = echarts.init(dom);
+        Promise.all([
+          fetch("XGBoost Model/model_performance_report.json?t=" + new Date().getTime()).then(r => r.json()).catch(() => null),
+          fetch("CNN Model/model_performance.json?t=" + new Date().getTime()).then(r => r.json()).catch(() => null),
+        ]).then(([xgb, cnn]) => {
+          const xgbM = xgb?.test_set_results?.metrics || null;
+          const cnnEval = cnn?.final_evaluation || null;
+          const cnnPMOS = cnn?.PMOS_specific || null;
+          const cnnNormal = cnn?.normal_specific || null;
+          const toPct = (v) => { const n = Number(v); return Number.isFinite(n) ? Number(pcodePct2Floor(n)) : null; };
+          const toPctFromUnit = (v) => { const n = Number(v); return Number.isFinite(n) ? Number(pcodePct2Floor(n * 100)) : null; };
+
+          const neon = window.PcodeEchartNeon;
+          const th = neon ? neon.chartTheme() : null;
+          const isDark = th ? (th.dark !== undefined ? th.dark : th.d) : document.documentElement.classList.contains('dark');
+          const chartText = th ? th.text : 'rgba(237,233,254,0.92)';
+          const chartMuted = th ? th.muted : 'rgba(158,154,169,0.95)';
+          const chartLine = th ? th.line : 'rgba(255,255,255,0.08)';
+          const barXgb = isDark && neon ? neon.verticalBar('clinical') : '#9333EA';
+          const barPos = isDark && neon ? neon.verticalBar('imaging') : '#1E40AF';
+          const barNeg =
+            isDark && neon ? neon.verticalBarFromStops('#22d3ee', '#818cf8') : '#93C5FD';
+
+          const legendNames = ['Clinical & Lab Metrics', 'Ultrasound PMOS Positive', 'Ultrasound Normal Negative'];
+          const legendSwatches = isDark && neon
+            ? {
+                'Clinical & Lab Metrics': neon.legendColor('clinical', '#a855f7'),
+                'Ultrasound PMOS Positive': neon.legendColor('imaging', '#6366f1'),
+                'Ultrasound Normal Negative': '#818cf8'
+              }
+            : {
+                'Clinical & Lab Metrics': '#9333EA',
+                'Ultrasound PMOS Positive': '#1E40AF',
+                'Ultrasound Normal Negative': '#93C5FD'
+              };
+
+          if (neon && typeof neon.renderHtmlLegend === 'function') {
+            neon.renderHtmlLegend(
+              'dashboard-comparative-legend',
+              legendNames.map(function (name) {
+                return { label: name, color: legendSwatches[name] };
+              })
+            );
+          }
+
+          const gridInsets =
+            neon && typeof neon.comparativeGridInsets === 'function'
+              ? neon.comparativeGridInsets()
+              : { left: '10%', right: '10%', top: '15%', bottom: '12%', containLabel: true };
+
+          const option = {
+            backgroundColor: 'transparent',
+            tooltip: {
+              trigger: 'axis',
+              backgroundColor: isDark ? 'rgba(17,16,24,0.96)' : undefined,
+              borderColor: isDark ? 'rgba(233,213,254,0.35)' : undefined,
+              textStyle: isDark ? { color: chartText } : undefined,
+              formatter: (params) => {
+                let result = params[0].name + '<br/>';
+                params.forEach(p => { result += p.marker + ' ' + p.seriesName + ': ' + pcodePct2Floor(p.value) + '%<br/>'; });
+                return result;
+              }
+            },
+            legend: { show: false },
+            grid: gridInsets,
+            xAxis: {
+              type: 'category',
+              data: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+              boundaryGap: true,
+              axisLabel: isDark ? { color: chartMuted } : undefined,
+              axisLine: isDark ? { lineStyle: { color: chartLine } } : undefined
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Score (%)',
+              min: 50,
+              max: 100,
+              nameTextStyle: isDark ? { color: chartMuted } : undefined,
+              axisLabel: isDark
+                ? { color: chartMuted, formatter: (v) => pcodePct2Floor(v) + '%' }
+                : { formatter: (v) => pcodePct2Floor(v) + '%' },
+              splitLine: isDark ? { lineStyle: { color: chartLine } } : undefined
+            },
+            series: [
+              { name: 'Clinical & Lab Metrics', type: 'bar', data: [toPct(xgbM?.accuracy), toPct(xgbM?.precision), toPct(xgbM?.recall), toPct(xgbM?.f1_score)], itemStyle: typeof barXgb === 'object' ? barXgb : { color: barXgb, borderRadius: [8, 8, 0, 0] } },
+              { name: 'Ultrasound PMOS Positive', type: 'bar', data: [toPctFromUnit(cnnEval?.test_accuracy), toPctFromUnit(cnnPMOS?.precision), toPctFromUnit(cnnPMOS?.recall), toPctFromUnit(cnnPMOS?.f1_score)], itemStyle: typeof barPos === 'object' ? barPos : { color: barPos, borderRadius: [8, 8, 0, 0] } },
+              { name: 'Ultrasound Normal Negative', type: 'bar', data: [toPctFromUnit(cnnEval?.test_accuracy), toPctFromUnit(cnnNormal?.precision), toPctFromUnit(cnnNormal?.recall), toPctFromUnit(cnnNormal?.f1_score)], itemStyle: typeof barNeg === 'object' ? barNeg : { color: barNeg, borderRadius: [8, 8, 0, 0] } }
+            ]
+          };
+          chart.setOption(option);
+
+          function refreshComparativeLayout() {
+            if (typeof echarts === 'undefined') return;
+            var inst = echarts.getInstanceByDom(dom);
+            if (!inst) return;
+            var g =
+              neon && typeof neon.comparativeGridInsets === 'function'
+                ? neon.comparativeGridInsets()
+                : gridInsets;
+            inst.setOption({ grid: g }, false);
+            inst.resize();
+          }
+
+          refreshComparativeLayout();
+          window.addEventListener('resize', refreshComparativeLayout);
+        }).catch(() => {});
+      }
+
+      const diagnosisDom = document.getElementById("dashboard-diagnosis-summary-chart");
+      function resizeDiagnosisChart() {
+        if (typeof echarts === "undefined" || !diagnosisDom) return;
+        const inst = echarts.getInstanceByDom(diagnosisDom);
+        if (inst) inst.resize();
+      }
+      window.addEventListener("resize", resizeDiagnosisChart);
+      window.addEventListener("pcode-theme-change", function () {
+        if (window.PcodeEchartNeon && typeof window.PcodeEchartNeon.refreshAllChartsOnThemeChange === "function") {
+          window.PcodeEchartNeon.refreshAllChartsOnThemeChange();
+        }
+        if (pcodeDashboardPatientsCache.length) {
+          renderDiagnosisSummaryChart(pcodeDashboardPatientsCache);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,150 @@
+/**
+ * P-Code — Provider dashboard: persistent left sidebar + scrollable main canvas
+ */
+
+body.pcode-provider-dashboard-page {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.pcode-provider-app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Desktop left pillar */
+.pcode-provider-sidebar {
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .pcode-provider-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+}
+
+.pcode-provider-sidebar .pcode-provider-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pcode-provider-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pcode-provider-nav-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  color: #000000;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark .pcode-provider-nav-link {
+  color: #ffffff;
+}
+
+.pcode-provider-nav-link:hover {
+  background-color: rgba(168, 85, 247, 0.1);
+}
+
+html.dark .pcode-provider-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.pcode-provider-nav-link--active {
+  background-color: rgba(168, 85, 247, 0.12);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+html.dark .pcode-provider-nav-link--active {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.pcode-provider-main-column {
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .pcode-provider-main-scroll {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.pcode-provider-mobile-bar {
+  flex-shrink: 0;
+}
+
+/* Theme toggle in provider sidebar footer */
+.pcode-provider-sidebar .pcode-sidebar-theme-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  #provider-app-sidebar,
+  #provider-app-sidebar.pcode-sidebar-layout {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  #provider-app-sidebar.pcode-sidebar-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  #provider-app-sidebar.pcode-sidebar-layout .pcode-sidebar-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  #provider-app-sidebar .pcode-sidebar-theme-footer,
+  #provider-app-sidebar .pcode-theme-toggle-mount--sidebar {
+    display: flex !important;
+  }
+}
+
+/* Suppress legacy top nav on provider dashboard */
+body.pcode-provider-dashboard-page > nav.pcode-topnav.pcode-provider-topnav {
+  display: none !important;
+}
+
+/* Mobile + tablet drawer: full nav visible */
+@media (max-width: 1023px) {
+  body.pcode-provider-dashboard-page #mobile-menu .mobile-nav-links {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+}

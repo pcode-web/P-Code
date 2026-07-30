@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" class="login-bento-page pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-signin-client_id" content="953442697406-1nisk0lf775augnlkbbftpk19g4fkgl3.apps.googleusercontent.com">
+  <title>P-Code — Provider Sign in</title>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+  <link rel="stylesheet" href="css/pcode-theme.css?v=20260725-nolightglow">
+  <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260707e">
+  <link rel="stylesheet" href="css/pcode-oauth-login.css?v=20260723-oauth-light">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260725-nolightglow">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="login-bento-page">
+  <main class="oauth-login-card auth-main-card" aria-labelledby="provider-login-title">
+    <img src="resources/PCODE_LOGO.png" alt="" class="oauth-login-logo" width="72" height="72" decoding="async">
+    <h1 id="provider-login-title"
+        class="oauth-login-title"
+        data-auth-title
+        data-title-signin="Healthcare Provider Portal"
+        data-title-register="Create provider account">Healthcare Provider Portal</h1>
+    <p class="oauth-login-subtitle"
+       data-auth-subtitle
+       data-subtitle-signin="OB-GYN and clinical staff — sign in with Google or your institutional credentials."
+       data-subtitle-register="Register as a clinical provider to manage your own patient records and screenings.">OB-GYN and clinical staff — sign in with Google or your institutional credentials.</p>
+
+    <div class="oauth-action-stack">
+      <p id="oauth-bootstrap-error" class="oauth-error hidden" role="alert"></p>
+      <p id="oauth-bootstrap-success" class="oauth-success hidden" role="status"></p>
+
+      <form class="oauth-credentials-form"
+            id="provider-credentials-form"
+            method="post"
+            action="api/auth/login_handler.php"
+            data-auth-mode="signin"
+            novalidate>
+        <input type="hidden" name="portal" value="provider">
+        <div class="form-group">
+          <label for="provider-email">Email</label>
+          <input type="email"
+                 id="provider-email"
+                 name="email"
+                 class="form-control"
+                 placeholder="Enter your email"
+                 autocomplete="email"
+                 required>
+        </div>
+        <div class="form-group">
+          <label for="provider-password">Password</label>
+          <div class="oauth-password-field">
+            <input type="password"
+                   id="provider-password"
+                   name="password"
+                   class="form-control"
+                   placeholder="Enter your password"
+                   autocomplete="current-password"
+                   required>
+            <button type="button"
+                    class="oauth-password-toggle"
+                    id="provider-password-toggle"
+                    aria-label="Show password"
+                    aria-pressed="false"
+                    title="Show password">
+              <svg class="oauth-password-icon oauth-password-icon--hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <path stroke="currentColor" stroke-width="2" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"></circle>
+              </svg>
+              <svg class="oauth-password-icon oauth-password-icon--visible hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <path stroke="currentColor" stroke-width="2" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-10-8-10-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 10 8 10 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Sign in</button>
+        <button type="button" class="oauth-auth-switch" data-auth-switch="register">New provider? Create an account</button>
+      </form>
+
+      <form class="oauth-credentials-form hidden"
+            id="provider-register-form"
+            data-auth-mode="register"
+            novalidate>
+        <div class="form-group">
+          <label for="provider-register-email">Email</label>
+          <input type="email"
+                 id="provider-register-email"
+                 name="email"
+                 class="form-control"
+                 placeholder="Enter your email"
+                 autocomplete="email"
+                 required>
+        </div>
+        <div class="form-group">
+          <label for="provider-register-password">Password</label>
+          <div class="oauth-password-field">
+            <input type="password"
+                   id="provider-register-password"
+                   name="password"
+                   class="form-control"
+                   placeholder="Create a password"
+                   autocomplete="new-password"
+                   required>
+            <button type="button"
+                    class="oauth-password-toggle"
+                    aria-label="Show password"
+                    aria-pressed="false"
+                    title="Show password">
+              <svg class="oauth-password-icon oauth-password-icon--hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <path stroke="currentColor" stroke-width="2" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"></circle>
+              </svg>
+              <svg class="oauth-password-icon oauth-password-icon--visible hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <path stroke="currentColor" stroke-width="2" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-10-8-10-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 10 8 10 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Create account</button>
+        <button type="button" class="oauth-auth-switch" data-auth-switch="signin">Already have an account? Sign in</button>
+      </form>
+
+      <div class="oauth-google-block" data-auth-mode="signin">
+        <div class="oauth-divider" aria-hidden="true">or continue with Google</div>
+
+        <div class="google-btn-wrapper" id="google-btn-wrapper">
+          <div id="g_id_onload"
+               data-client_id="953442697406-1nisk0lf775augnlkbbftpk19g4fkgl3.apps.googleusercontent.com"
+               data-context="signin"
+               data-ux_mode="redirect"
+               data-login_uri="http://localhost/pcode/api/auth/google_callback.php"
+               data-state="provider"
+               data-auto_prompt="false">
+          </div>
+          <div class="google-signin-stack" id="google-signin-stack">
+            <div class="btn-google-custom" aria-hidden="true">
+              <svg class="btn-google-custom__icon" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+              <span class="btn-google-custom__label">Sign in with Google</span>
+            </div>
+            <div id="google-signin-mount"
+                 class="google-signin-mount google-signin-mount--overlay"
+                 aria-label="Sign in with Google"
+                 role="button"
+                 tabindex="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a class="oauth-alt-link" href="login-new.html">← Choose a different access type</a>
+    <a class="oauth-alt-link" href="login.html">Patient portal sign-in</a>
+  </main>
+
+  <script src="js/pcode-password.js?v=20260720n"></script>
+  <script src="js/pcode-auth-register.js?v=20260725-signupmin"></script>
+  <script src="js/auth.js?v=20260725-guestchromehide"></script>
+  <script src="js/pcode-oauth-bootstrap.js?v=20260707d"></script>
+  <script src="js/pcode-login-google.js?v=20260707l"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.PcodePassword) {
+        PcodePassword.bindForm(document.getElementById('provider-credentials-form'));
+        PcodePassword.bindPasswordToggles(document.querySelector('.auth-main-card'));
+        PcodePassword.clearStaleDigestsIn(document.querySelector('.auth-main-card'));
+      }
+      if (window.PcodeAuthRegister) {
+        PcodeAuthRegister.init({
+          portal: 'provider',
+          root: document.querySelector('.auth-main-card'),
+          signinFormId: 'provider-credentials-form',
+          registerFormId: 'provider-register-form'
+        });
+      }
+    });
+  </script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var err = params.get('error');
+      if (!err) return;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('oauth-bootstrap-error');
+        if (!el) return;
+        var map = {
+          invalid_token: 'Google sign-in could not be verified. Please try again.',
+          invalid_credentials: 'Invalid email or password. Please try again.',
+          unauthorized_provider:
+            'This Google account could not be registered as a provider. Please try again or create an account with email.'
+        };
+        el.textContent = map[err] || 'Sign-in failed. Please try again.';
+        el.classList.remove('hidden');
+        var pwd = document.getElementById('provider-password');
+        if (pwd) pwd.value = '';
+      });
+    })();
+  </script>
+</body>
+</html>

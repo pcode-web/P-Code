@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID_HERE">
+  <title>P-Code - Screening History</title>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260725-backleft">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: white; display: flex; flex-direction: column; min-height: 100vh; width: 100%; max-width: 100vw; margin: 0; padding: 0; }
+    footer { margin-top: auto; width: 100%; min-height: 64px; display: flex; align-items: center; padding: 0 !important; }
+    footer > div { width: 100%; }
+    #profile-navbar, #mobile-profile { transition: opacity 0.3s ease-in-out; }
+    #profile-navbar.hidden, #mobile-profile.hidden { display: none !important; }
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.7) 0%, rgba(109, 40, 217, 0.6) 100%), url('resources/hero-medical.jpg') center/cover no-repeat;
+      background-attachment: fixed;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .nav-desktop { display: flex; gap: 2rem; align-items: center; }
+    nav { width: 100%; flex-shrink: 0; }
+    .max-w-7xl { max-width: 100% !important; width: 100% !important; }
+    @media (max-width: 768px) {
+      .nav-desktop { display: none !important; }
+      .gradient-bg { background-attachment: scroll !important; }
+    }
+    @media (max-width: 1023px) {
+      .nav-desktop { display: none !important; }
+    }
+    .mobile-menu {
+      position: fixed; right: 0; top: 0; width: min(320px, 85vw); max-width: 90vw; height: 100vh;
+      background: linear-gradient(135deg, rgba(88, 28, 135, 1) 0%, rgba(109, 40, 217, 1) 100%);
+      color: white; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+      transform: translateX(100%); transition: transform 0.3s ease-out; z-index: 50; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mobile-menu.active { transform: translateX(0); }
+    .mobile-menu-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease-out; z-index: 45;
+    }
+    .mobile-menu-overlay.active { opacity: 1; pointer-events: auto; }
+    #mobile-menu-close-btn { position: absolute; top: 12px; right: 12px; z-index: 60; }
+    #mobile-menu-btn { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+    nav .flex.justify-between { min-height: 64px; flex-wrap: nowrap; }
+    .auth-modal-overlay {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+  <link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+  <link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260726-usercare">
+  <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260726-lightmetrics">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+</head>
+<body class="pcode-app-bento min-h-screen h-auto flex flex-col text-zinc-50 antialiased">
+  <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <nav class="pcode-topnav sticky top-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-2 sm:space-x-6">
+          <div class="flex-shrink-0">
+            <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+          </div>
+          <div class="block">
+            <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+          </div>
+        </div>
+        <div class="nav-desktop">
+          <a href="index.html" class="pcode-nav-link">Dashboard</a>
+          <a href="detect-user.html" class="pcode-nav-link">Detect</a>
+          <a href="history-user.html" class="pcode-nav-link is-active" aria-current="page">History</a>
+          <a href="xai-user.html" class="pcode-nav-link">XAI Insights</a>
+          <a href="about.html" class="pcode-nav-link">About</a>
+        </div>
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-xl transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="mobile-menu" class="mobile-menu pcode-sidebar-layout">
+    <button id="mobile-menu-close-btn" type="button" onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="h-full px-4 sm:px-6 py-4 space-y-2 md:py-6 md:space-y-4">
+      <div id="mobile-profile" class="hidden pb-4 border-b border-white border-opacity-20">
+        <div class="flex items-center space-x-3 mb-4">
+          <img id="mobile-profile-avatar" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+          <div class="flex-1">
+            <p id="mobile-profile-name" class="text-sm font-semibold text-white"></p>
+            <p id="mobile-profile-role" class="text-xs text-white text-opacity-80"></p>
+          </div>
+        </div>
+        <button id="mobile-logout-btn" onclick="auth.logout()" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm active:bg-red-800">
+          Sign out
+        </button>
+      </div>
+            <!-- Sign in (logged-out / guest only) -->
+      <div id="mobile-auth-panel" class="hidden pb-4 border-b border-white border-opacity-20">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Account</p>
+        <button id="mobile-auth-button" type="button" class="pcode-sidebar-signin-btn">
+          Sign in
+        </button>
+      </div>
+<div class="mobile-nav-links pt-2">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Menu</p>
+        <div class="space-y-1" data-pcode-mobile-nav>
+          <a href="index.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Dashboard</a>
+          <a href="detect-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Detect</a>
+          <a href="history-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 transition-colors font-medium">History</a>
+          <a href="xai-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">XAI Insights</a>
+          <a href="about.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">About</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
+    <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" class="pcode-auth-float-close" onclick="auth.closeAuthModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
+        <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+          <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
+        </div>
+        <div class="pcode-auth-float-hint">
+          <h3 id="auth-modal-title">Choose How to Continue</h3>
+          <p>Select your access type before logging in or registering.</p>
+        </div>
+        <div class="pcode-auth-float-grid">
+          <button type="button" id="auth-entry-community" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+                <circle cx="32" cy="24" r="7" stroke="currentColor" stroke-width="3"/>
+                <path d="M19 45C21.5 38.5 27 35 32 35C37 35 42.5 38.5 45 45" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as <span class="pcode-regular-user-label">Regular User</span></p>
+            <p class="pcode-auth-float-option-desc">For personal early detection, promoting timely clinical intervention and awareness.</p>
+          </button>
+          <button type="button" id="auth-entry-provider" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="11" y="10" width="42" height="44" rx="8" stroke="currentColor" stroke-width="3"/>
+                <path d="M32 20V40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 30H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 50H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as<br>OB-GYN</p>
+            <p class="pcode-auth-float-option-desc">For OB-GYN specialists using decision support tools with patient management, improving clinical efficiency and patient care.</p>
+          </button>
+        </div>
+      </div>
+      <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
+        <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
+        <div id="login-form-container" class="pcode-auth-float-signin-body">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+          <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
+          <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
+          <div class="pcode-google-oauth-panel">
+            <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
+            <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
+            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+            <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gradient-bg py-6 sm:py-8 md:py-10">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="pcode-hero-title text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">Screening history</h1>
+        <p class="text-base sm:text-lg text-purple-100 max-w-2xl mx-auto px-2">
+          Review every Detect run you have saved — scores, band labels, and the inputs recorded each time.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 w-full">
+    <div id="my-screening-history-card" class="pcode-card-static mobile-card pcode-bento-card shadow-lg mb-12 w-full p-3 sm:p-6">
+      <section id="user-screening-history-panel" class="pcode-history-panel pcode-history-panel--user" aria-labelledby="user-screening-history-title">
+        <div class="pcode-history-panel__header">
+          <div>
+            <h2 id="user-screening-history-title" class="pcode-history-panel__title">Your screening timeline</h2>
+            <p class="pcode-history-panel__subtitle">Saved Detect runs in order (0–54% Negative · 55–74% Borderline · ≥75% Positive). Expand a run to review the inputs you recorded.</p>
+          </div>
+          <span id="user-screening-history-count" class="pcode-history-panel__count" aria-live="polite"></span>
+        </div>
+        <div id="user-history-compare" class="pcode-care-card pcode-history-compare mb-5" hidden></div>
+        <div id="user-screening-history-root" class="pcode-history-panel__body"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+      <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+        &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="js/auth.js?v=20260730-authrace"></script>
+  <script src="js/pcode-google-auth.js?v=20260707a"></script>
+  <script src="js/pcode-diagnosis-history.js?v=20260730-snapfix"></script>
+  <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
+  <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+  <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+  <script>
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const overlay = document.getElementById('menu-overlay');
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      if (!mobileMenu) return;
+      const willOpen = !mobileMenu.classList.contains('active');
+      if (willOpen) {
+        mobileMenu.classList.add('active');
+        if (overlay) overlay.classList.add('active');
+        document.body.classList.add('pcode-mobile-nav-open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        closeMobileMenu();
+      }
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    }
+
+    function closeMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const overlay = document.getElementById('menu-overlay');
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      if (mobileMenu) mobileMenu.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+      document.body.classList.remove('pcode-mobile-nav-open');
+      document.body.style.overflow = '';
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function loadHistoryPage() {
+      if (!auth || !auth.isAuthenticated()) {
+        window.location.href = 'login-new.html';
+        return;
+      }
+      if (window.PcodeDiagnosisHistory && typeof PcodeDiagnosisHistory.loadUserHistory === 'function') {
+        PcodeDiagnosisHistory.loadUserHistory();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (auth && typeof auth.whenAuthReady === 'function') {
+        auth.whenAuthReady(loadHistoryPage);
+      } else {
+        setTimeout(loadHistoryPage, 200);
+      }
+    });
+  </script>
+</body>
+</html>

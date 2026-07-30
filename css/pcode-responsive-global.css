@@ -1,0 +1,724 @@
+/**
+ * P-Code — Global mobile / narrow-viewport UX (fluid type, grids, touch targets)
+ * Load after pcode-app-bento-dark.css + pcode-theme.css
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Unified viewport shell + footer baseline                                      */
+/* -------------------------------------------------------------------------- */
+
+.pcode-app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+body.pcode-app-bento > .pcode-app-shell,
+body.xai-bento-page > .pcode-app-shell {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+body.pcode-app-bento > footer,
+body.xai-bento-page > footer,
+body.pcode-app-bento .pcode-app-shell > footer,
+body.xai-bento-page .pcode-app-shell > footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Drawer sidebar: nav link list on phone + tablet (desktop uses .nav-desktop) */
+@media (min-width: 1024px) {
+  body.pcode-app-bento #mobile-menu .mobile-nav-links,
+  body.xai-bento-page #mobile-menu .mobile-nav-links {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.pcode-app-bento #mobile-menu.active .mobile-nav-links,
+  body.xai-bento-page #mobile-menu.active .mobile-nav-links,
+  body.pcode-app-bento #mobile-menu .pcode-sidebar-scroll .mobile-nav-links,
+  body.xai-bento-page #mobile-menu .pcode-sidebar-scroll .mobile-nav-links {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Anti-bleed: medical labels & long strings                                     */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento,
+body.xai-bento-page,
+body.login-bento-page {
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+body.pcode-app-bento .max-w-7xl,
+body.pcode-app-bento main,
+body.pcode-app-bento .modal-content,
+body.pcode-app-bento .bento-card,
+body.pcode-app-bento .detection-card,
+body.pcode-app-bento .metric-card,
+body.pcode-app-bento .pcode-patient-card,
+body.xai-bento-page .bento-card,
+body.xai-bento-page .page-shell {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+body.pcode-app-bento label,
+body.pcode-app-bento th,
+body.pcode-app-bento td,
+body.pcode-app-bento .pcode-step-label,
+body.pcode-app-bento h1,
+body.pcode-app-bento h2,
+body.pcode-app-bento h3,
+body.pcode-app-bento h4,
+body.xai-bento-page label,
+body.xai-bento-page h1,
+body.xai-bento-page h2,
+body.xai-bento-page h3 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ≤767px — layout, cards, grids, touch targets                                  */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  /* Fluid hero hierarchy */
+  body.pcode-app-bento .gradient-bg h1,
+  body.xai-bento-page .gradient-bg h1,
+  body.pcode-app-bento .hero-title,
+  body.xai-bento-page .hero-title,
+  body.pcode-app-bento h1.text-3xl,
+  body.pcode-app-bento h1.text-4xl,
+  body.pcode-app-bento h1.text-5xl,
+  body.pcode-app-bento h1.text-6xl,
+  body.xai-bento-page h1.text-4xl,
+  body.xai-bento-page h1.text-5xl,
+  body.xai-bento-page h1.text-6xl {
+    font-size: clamp(1.375rem, 6.5vw, 1.875rem) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.02em;
+  }
+
+  body.pcode-app-bento .gradient-bg p,
+  body.pcode-app-bento .gradient-bg .text-base,
+  body.pcode-app-bento .gradient-bg .text-lg,
+  body.pcode-app-bento .gradient-bg .text-xl,
+  body.xai-bento-page .gradient-bg p,
+  body.xai-bento-page .hero-sub {
+    font-size: clamp(0.875rem, 3.8vw, 1rem) !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Clinical / stats — min 14px, medium labels */
+  body.pcode-app-bento .text-xs:not(nav *):not(.pcode-theme-toggle-mount *) {
+    font-size: max(0.8125rem, 12px) !important;
+  }
+
+  body.pcode-app-bento label,
+  body.pcode-app-bento .metric-card .text-sm,
+  body.pcode-app-bento .detection-card label,
+  body.pcode-app-bento #clinical-results,
+  body.pcode-app-bento #image-results,
+  body.pcode-app-bento .gauge-label,
+  body.pcode-app-bento .stat-label,
+  body.xai-bento-page label,
+  body.xai-bento-page .bento-card .text-sm {
+    font-size: max(0.875rem, 14px) !important;
+    font-weight: 500 !important;
+    line-height: 1.4;
+  }
+
+  /* Metric labels only — do not shrink headline figures (.pcode-metric-figure) */
+  body.pcode-app-bento .metric-card p.text-sm,
+  body.pcode-app-bento .metric-card > div > div > p:first-child,
+  body.pcode-app-bento [class*='Test Set'],
+  body.xai-bento-page .text-sm {
+    font-size: max(0.875rem, 14px) !important;
+  }
+
+  /* Single-column grids (exclude responsive bento utility grids + patient actions + confusion matrix) */
+  body.pcode-app-bento .grid.grid-cols-2:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions):not(.pcb-cm-grid):not(.pcb-cm-labels),
+  body.pcode-app-bento .grid.grid-cols-3:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions),
+  body.pcode-app-bento .grid.grid-cols-4:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions),
+  body.pcode-app-bento .grid.md\:grid-cols-2:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions):not(.pcb-cm-grid):not(.pcb-cm-labels),
+  body.pcode-app-bento .grid.md\:grid-cols-3:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions),
+  body.pcode-app-bento .grid.md\:grid-cols-4:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.pcode-patient-selection-actions),
+  body.pcode-app-bento .grid.lg\:grid-cols-2:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid):not(.detection-grid):not(.pcode-diagnostic-grid),
+  body.pcode-app-bento .grid.lg\:grid-cols-3:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid),
+  body.pcode-app-bento .grid.lg\:grid-cols-4:not(.pcode-bento-metrics-grid):not(.pcode-diagnosis-chips-grid):not(.pcode-screening-metrics-grid),
+  body.xai-bento-page .grid.grid-cols-2:not(.pcb-cm-grid):not(.pcb-cm-labels),
+  body.xai-bento-page .grid.grid-cols-3,
+  body.xai-bento-page .grid.grid-cols-4,
+  body.xai-bento-page .grid.md\:grid-cols-2:not(.pcb-cm-grid):not(.pcb-cm-labels),
+  body.xai-bento-page .grid.md\:grid-cols-3,
+  body.xai-bento-page .grid.md\:grid-cols-4,
+  body.xai-bento-page .grid.lg\:grid-cols-2,
+  body.xai-bento-page .grid.lg\:grid-cols-3,
+  body.xai-bento-page .grid.lg\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  body.pcode-app-bento .max-w-7xl .grid,
+  body.xai-bento-page .max-w-7xl .grid,
+  body.pcode-app-bento .detection-grid {
+    gap: 1rem !important;
+  }
+
+  /* Bento card geometry — full width, softer padding */
+  body.pcode-app-bento .max-w-7xl.mx-auto {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  body.pcode-app-bento .bg-white.rounded-xl,
+  body.pcode-app-bento .bg-white.rounded-xl.shadow-lg,
+  body.pcode-app-bento .metric-card:not(.pcode-metric-tile),
+  body.pcode-app-bento .detection-card,
+  body.pcode-app-bento .mobile-card,
+  body.pcode-app-bento .pcode-patient-card,
+  body.xai-bento-page .bento-card,
+  body.xai-bento-page .bg-white.rounded-xl {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 1rem !important;
+    padding: 0.75rem !important;
+    box-sizing: border-box;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile,
+  body.pcode-app-bento .pcode-bento-card.pcode-metric-tile {
+    padding: 0.75rem !important;
+    border-radius: 1rem !important;
+  }
+
+  body.pcode-app-bento .p-8,
+  body.pcode-app-bento .sm\:p-8,
+  body.pcode-app-bento .md\:p-8,
+  body.xai-bento-page .p-8 {
+    padding: 1.25rem !important;
+  }
+
+  body.pcode-app-bento .p-6:not(nav *),
+  body.xai-bento-page .p-6:not(nav *) {
+    padding: 1.125rem !important;
+  }
+
+  /* Finger-friendly controls (exclude nav hamburger + compact unit pills) */
+  body.pcode-app-bento button:not(.pcode-theme-toggle):not(#mobile-menu-btn):not(#mobile-menu-close-btn):not(.pcode-unit-pill__btn):not(.pcode-unit-toggle__btn):not(.pcode-action-btn),
+  body.pcode-app-bento a.btn,
+  body.pcode-app-bento input[type='submit'],
+  body.pcode-app-bento input[type='button'],
+  body.pcode-app-bento select,
+  body.xai-bento-page button:not(.pcode-theme-toggle):not(#mobile-menu-btn):not(#mobile-menu-close-btn):not(.pcode-unit-pill__btn):not(.pcode-unit-toggle__btn),
+  body.login-bento-page button.entry-card,
+  body.login-bento-page .auth-main-card button {
+    min-height: 40px;
+  }
+
+  body.pcode-app-bento nav button#mobile-menu-btn,
+  body.xai-bento-page nav button#mobile-menu-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    max-width: 2.75rem;
+    max-height: 2.75rem;
+    padding: 0;
+  }
+
+  body.pcode-app-bento #patients-main-content .flex.gap-2 button,
+  body.pcode-app-bento .clinical-stepper-footer button,
+  body.pcode-app-bento #patient-modal button:not(.pcode-action-btn):not(.pcode-unit-pill__btn):not(.pcode-unit-toggle__btn) {
+    min-height: 40px;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  /* Patient table scroll fallback (desktop table on tablet) */
+  body.pcode-app-bento .pcode-patients-table-wrap,
+  body.pcode-app-bento .pcb-scroll-x,
+  body.pcode-app-bento .overflow-x-auto {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Gauges — centered, contained */
+  body.pcode-app-bento .gauge-results-section,
+  body.pcode-app-bento .gauge-card,
+  body.pcode-app-bento .final-gauge-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  body.pcode-app-bento .gauge-container,
+  body.pcode-app-bento .final-gauge-container {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: min(100%, 280px) !important;
+    max-width: 100% !important;
+    min-height: 200px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.pcode-app-bento .gauge-label {
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Add Patient modal — capped height, scrollable body */
+  body.pcode-app-bento #patient-modal .modal-content,
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-shell {
+    width: 95% !important;
+    max-width: 95vw !important;
+    max-height: 90dvh !important;
+    height: auto !important;
+    margin: 2.5dvh auto !important;
+    border-radius: 20px !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-stepper {
+    margin-bottom: 0 !important;
+    --patient-step-dot-size: 38px;
+    padding: 0.45rem 0.15rem 0.3rem;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-stepper-track {
+    overflow-x: visible;
+    margin: 0;
+    padding: 0;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-stepper-steps {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: visible !important;
+    gap: 0.15rem;
+    padding-bottom: 0;
+    justify-content: space-between !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-stepper-steps > .pcode-step-item,
+  body.pcode-app-bento #patient-modal .pcode-patient-stepper-steps > .flex-col {
+    flex: 1 1 0 !important;
+    min-width: 0;
+    max-width: 20%; /* 5 equal steps */
+  }
+
+  /* Icon-only stepper on mobile — labels overlap at narrow widths */
+  body.pcode-app-bento #patient-modal .pcode-step-label {
+    display: none !important;
+  }
+
+  /* Detect pages — match patients modal: hide step labels, even circle spacing */
+  body.pcode-app-bento .pcode-detect-stepper {
+    --step-dot-size: 2rem;
+    padding: 0.85rem 0.15rem 0.45rem;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-detect-stepper {
+    margin-top: 1.1rem !important;
+    padding-top: 0.95rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form {
+    padding-top: 0.25rem !important;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form > .clinical-validity-banner.is-hidden + *,
+  body.pcode-app-bento .detection-card #clinical-form > .clinical-validity-banner.hidden + * {
+    margin-top: 0 !important;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-steps-host > .step-content,
+  body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-panel,
+  body.pcode-app-bento .detection-card #step-6-content {
+    padding-top: 0.25rem !important;
+  }
+
+  body.pcode-app-bento .pcode-detect-stepper-track {
+    overflow-x: visible !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  body.pcode-app-bento .pcode-detect-stepper-steps {
+    justify-content: space-between !important;
+    gap: 0.15rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.pcode-app-bento .pcode-detect-step-item {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  body.pcode-app-bento .pcode-detect-step-label {
+    display: none !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-step-glass {
+    width: var(--patient-step-dot-size) !important;
+    height: var(--patient-step-dot-size) !important;
+  }
+
+  body.pcode-app-bento #patient-modal #footer-step-info,
+  body.pcode-app-bento #patient-modal .pcode-patient-footer-step {
+    display: block !important;
+    width: 100%;
+    text-align: center;
+    font-size: 0.8125rem !important;
+    font-weight: 600;
+    margin: 0 0 0.25rem !important;
+    color: rgba(237, 233, 254, 0.95);
+    flex: 0 0 auto !important;
+  }
+
+  body.pcode-app-bento #patient-modal #add-patient-form .grid.grid-cols-2,
+  body.pcode-app-bento #patient-modal .grid.md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Generic modals */
+  body.pcode-app-bento .modal:not(#patient-modal) .modal-content {
+    width: min(95vw, calc(100vw - 1rem)) !important;
+    max-width: min(95vw, calc(100vw - 1rem)) !important;
+    max-height: 92dvh !important;
+  }
+
+  /* Provider metrics — 2×2 square tiles on mobile (dashboard only) */
+  body.pcode-app-bento #metrics-grid.pcode-metrics-grid:not(.pcode-bento-metrics-grid--fluid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid:not(.pcode-bento-metrics-grid--fluid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid--fluid {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid:not(.pcode-bento-metrics-grid--fluid) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  body.pcode-app-bento #metrics-grid .metric-card,
+  body.pcode-app-bento .pcode-bento-metrics-grid .metric-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) {
+    padding: 0.625rem 0.7rem !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    display: grid !important;
+  }
+
+  body.pcode-app-bento .pcode-metric-tile__icon {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  body.pcode-app-bento .pcode-metric-tile__svg {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-value,
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-figure {
+    font-size: clamp(1.65rem, 8.5vw, 2.15rem) !important;
+    line-height: 1.05 !important;
+    margin-top: 0 !important;
+    max-width: 100%;
+    text-align: center !important;
+    justify-self: center !important;
+    align-self: center !important;
+    width: 100% !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-label {
+    font-size: 0.625rem !important;
+    letter-spacing: 0.06em !important;
+    text-align: left !important;
+    align-self: center !important;
+    justify-self: start !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-tile__icon {
+    align-self: start !important;
+    justify-self: end !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chips-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chip {
+    aspect-ratio: 1 / 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chip__count {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 0 !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metric-card {
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-panel:not(.pcode-chart-panel--grouped-bar) {
+    height: 12rem !important;
+    min-height: 12rem !important;
+    max-height: 12rem !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-panel--grouped-bar {
+    height: 14rem !important;
+    min-height: 14rem !important;
+    max-height: 14rem !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-panel .pcb-echart-host,
+  body.pcode-app-bento .pcode-chart-panel .pcode-chart-host {
+    min-width: 100% !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-legend {
+    justify-content: center !important;
+    gap: 0.5rem 1rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Charts — horizontal swipe on narrow viewports */
+  body.pcode-app-bento .pcode-chart-scroll,
+  body.xai-bento-page .pcode-chart-scroll,
+  body.pcode-app-bento .pcb-scroll-x.pcode-chart-scroll,
+  body.xai-bento-page .pcb-scroll-x.pcode-chart-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  body.pcode-app-bento .pcode-chart-scroll:not(:has(.pcode-chart-panel)) .pcb-echart-host,
+  body.xai-bento-page .pcode-chart-scroll:not(:has(.pcode-chart-panel)) .pcb-echart-host,
+  body.pcode-app-bento .pcb-scroll-x.pcode-chart-scroll:not(:has(.pcode-chart-panel)) .pcb-echart-host,
+  body.xai-bento-page .pcb-scroll-x.pcode-chart-scroll:not(:has(.pcode-chart-panel)) .pcb-echart-host {
+    min-width: min(520px, 140vw) !important;
+    flex-shrink: 0;
+  }
+
+  body.pcode-app-bento .pcb-echart-host,
+  body.xai-bento-page .pcb-echart-host,
+  body.pcode-app-bento .chart-well,
+  body.xai-bento-page .chart-well {
+    min-height: 220px !important;
+    max-height: min(360px, 55dvh) !important;
+    width: 100% !important;
+  }
+
+  /* Detection step strips — legacy header rows only (shared stepper uses pcode-detect-stepper.css) */
+
+  body.pcode-app-bento .flex.flex-col.md\:flex-row {
+    flex-direction: column !important;
+  }
+
+  body.pcode-app-bento .flex.md\:flex-row > * {
+    width: 100% !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ≥640px — bento metric / diagnosis grids (between global 767px collapse)    */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  body.pcode-app-bento .pcode-bento-metrics-grid:not(.pcode-bento-metrics-grid--fluid),
+  body.pcode-app-bento .pcode-bento-metrics-grid--fluid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) {
+    display: grid !important;
+    grid-template-areas: 'label icon' 'value value' !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto 1fr !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-value,
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-figure {
+    text-align: center !important;
+    justify-self: center !important;
+    align-self: center !important;
+    width: 100% !important;
+    font-size: clamp(1.75rem, 2.8vw, 2.35rem) !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-tile__icon {
+    align-self: start !important;
+    justify-self: end !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chips-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-panel:not(.pcode-chart-panel--grouped-bar) {
+    height: 16rem !important;
+    min-height: 16rem !important;
+    max-height: 16rem !important;
+  }
+
+  body.pcode-app-bento .pcode-chart-panel--grouped-bar {
+    height: 16rem !important;
+    min-height: 16rem !important;
+    max-height: 16rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  body.pcode-app-bento .pcode-bento-metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chips-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ≤639px — extra-tight phones (Tailwind sub-sm)                               */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 639px) {
+  body.pcode-app-bento .gradient-bg,
+  body.xai-bento-page .gradient-bg {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+
+  body.pcode-app-bento .max-w-7xl.mx-auto.py-6,
+  body.pcode-app-bento .max-w-7xl.mx-auto.py-12,
+  body.pcode-app-bento #patients-main-content {
+    padding-top: 1rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  body.pcode-app-bento .pcode-patient-card__actions button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tablet: 768–1023 — 2-col only where explicitly lg; keep readable type         */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.pcode-app-bento .gradient-bg h1,
+  body.xai-bento-page .gradient-bg h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  body.pcode-app-bento .grid.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .grid.lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}

@@ -1,0 +1,7 @@
+# Deny web access to secrets and connection helpers in this folder.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Deny from all
+</IfModule>

@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /config/
+Disallow: /logs/
+Disallow: /scripts/
+Disallow: /tools/
+Allow: /
+
+Sitemap:

@@ -1,0 +1,1705 @@
+/**
+ * P-Code — System theme (prefers-color-scheme) + optional override
+ * html.dark synced by js/pcode-theme.js — pairs with Tailwind darkMode: 'class'
+ * Dark: OLED #030205 · Light: Lavender #F8F7FF ("Professional Paper")
+ */
+
+html.pcode-app-bento-root.dark,
+html.login-bento-page.dark {
+  color-scheme: dark;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light mode design tokens                                                    */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark),
+html.login-bento-page:not(.dark) {
+  color-scheme: light;
+  --pcb-bg-deep: #f8f9fa;
+  --pcb-text-muted: #1e293b;
+  --pcb-text-title: #0f172a;
+  --pcb-card-glass: #ffffff;
+  --pcb-card-border: #e2e8f0;
+  --pcb-focus-border: #6d28d9;
+  --pcb-focus-glow: transparent;
+  --pcb-chart-from: #6d28d9;
+  --pcb-chart-to: #5b21b6;
+  --pcb-ambient-purple: transparent;
+  --pcb-ambient-indigo: transparent;
+  --pcb-gauge-track: #e2e8f0;
+  --pcb-accent: #6d28d9;
+  --pcode-purple: #6d28d9;
+  --pcb-card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --pcb-card-shadow-hover: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-label: #1e293b;
+  --pcb-chart-grid: #f1f5f9;
+  --pcb-chart-axis: #0f172a;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light — canvas + soft purple noise / ambient (mirrors dark atmosphere)      */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page,
+html.pcode-app-bento-root:not(.dark) body.pcode-admin-shell,
+html.login-bento-page:not(.dark) body.login-bento-page {
+  background-color: #f5f3fa !important;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 8% -5%, rgba(139, 92, 246, 0.11), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 96% 12%, rgba(99, 102, 241, 0.09), transparent 50%),
+    radial-gradient(ellipse 80% 45% at 50% 110%, rgba(167, 139, 250, 0.08), transparent 55%) !important;
+  background-attachment: fixed !important;
+  color: #0f172a !important;
+}
+
+/* Film grain — same noise tile as dark, softer multiply for light paper */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento::before,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page::before,
+html.login-bento-page:not(.dark) body.login-bento-page::before {
+  content: '' !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  opacity: 0.085 !important;
+  mix-blend-mode: multiply !important;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") !important;
+  background-repeat: repeat !important;
+  background-size: 180px 180px !important;
+}
+
+/* Soft purple ambient wash (light counterpart to dark ::after) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page::after,
+html.login-bento-page:not(.dark) body.login-bento-page::after {
+  content: '' !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(167, 139, 250, 0.16), transparent 38%),
+    radial-gradient(circle at 82% 28%, rgba(129, 140, 248, 0.12), transparent 42%),
+    radial-gradient(circle at 50% -8%, rgba(196, 181, 253, 0.14), transparent 48%) !important;
+}
+
+/* Primary copy — charcoal on light surfaces (WCAG AA) */
+html.pcode-app-bento-root:not(.dark) .text-white,
+html.pcode-app-bento-root:not(.dark) .hero-title,
+html.pcode-app-bento-root:not(.dark) h1,
+html.pcode-app-bento-root:not(.dark) h2,
+html.pcode-app-bento-root:not(.dark) h3,
+html.pcode-app-bento-root:not(.dark) h4,
+html.pcode-app-bento-root:not(.dark) .pcode-card-title,
+html.pcode-app-bento-root:not(.dark) .pcode-section-header__title,
+html.pcode-app-bento-root:not(.dark) .pcode-stat-value,
+html.pcode-app-bento-root:not(.dark) .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) .pcode-kv-value:not(.pcode-xai-summary-value),
+html.pcode-app-bento-root:not(.dark) .gauge-label,
+html.pcode-app-bento-root:not(.dark) #patient-table-body .text-gray-900,
+html.pcode-app-bento-root:not(.dark) .text-gray-800,
+html.pcode-app-bento-root:not(.dark) .text-gray-700,
+html.login-bento-page:not(.dark) .auth-main-card h1,
+html.login-bento-page:not(.dark) .auth-main-card h2 {
+  color: #0f172a !important;
+}
+
+/* Muted copy — slate on light */
+html.pcode-app-bento-root:not(.dark) .text-gray-200,
+html.pcode-app-bento-root:not(.dark) .text-gray-300,
+html.pcode-app-bento-root:not(.dark) .text-gray-400,
+html.pcode-app-bento-root:not(.dark) .text-gray-500,
+html.pcode-app-bento-root:not(.dark) .text-gray-600,
+html.pcode-app-bento-root:not(.dark) .text-\[\#D1D1D6\] {
+  color: #1e293b !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light — cards: frosted paper, no blur, soft shadow (anti-glow)             */
+/* -------------------------------------------------------------------------- */
+
+/* Surfaces — solid white, crisp border, natural elevation (no neon) */
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) .metric-card,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card,
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .pcode-obsidian-data-shell,
+html.pcode-app-bento-root:not(.dark) .pcode-obsidian-data-card,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) .max-w-7xl .bg-white.rounded-xl,
+html.pcode-app-bento-root:not(.dark) #patient-modal .modal-content,
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form .step-content {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) #patient-selection-card {
+  border: 1px solid #000000 !important;
+  border-color: #000000 !important;
+}
+
+/* Login shell — white frame + soft depth for translucent gateway tiles */
+html.login-bento-page:not(.dark) .auth-main-card {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 2.5rem !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 8px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-card:hover,
+html[data-pcode-theme="light"] .metric-card:hover {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-modal-header,
+html.pcode-app-bento-root:not(.dark) #patient-modal #modal-footer-section {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  backdrop-filter: none !important;
+}
+
+/* Patient modal — force light chrome over unscoped dark bento rules */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #modal-footer-section,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #modal-footer-section.clinical-stepper-footer,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-footer,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal #modal-footer-section,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-patient-modal-footer {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #modal-title,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label--active,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label--inactive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #footer-step-info,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-footer-step,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal #footer-step-info {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.inactive-step {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 0 3px #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .input-medical,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal input:not([type='checkbox']):not([type='radio']):not([type='file']),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal select,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal textarea {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Hero — readable on light lavender */
+html.pcode-app-bento-root:not(.dark) .gradient-bg {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 45%, #f8f7ff 100%) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .gradient-bg h1,
+html.pcode-app-bento-root:not(.dark) .gradient-bg .hero-title {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .gradient-bg p,
+html.pcode-app-bento-root:not(.dark) .gradient-bg .text-purple-100 {
+  color: #334155 !important;
+}
+
+/* Remove neon artifacts globally in light */
+html.pcode-app-bento-root:not(.dark) [class*='shadow-\[0_0'],
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-track {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--clinical,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--imaging,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--final,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--final-positive,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--final-negative,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--final-borderline,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--final-pending,
+html[data-pcode-theme="light"] .pcode-patient-score-fill {
+  background: #6d28d9 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--clinical {
+  background: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill--imaging {
+  background: #5b21b6 !important;
+}
+
+/* Clean inputs — gray-50 fill, gray-300 border, purple focus ring only */
+html.pcode-app-bento-root:not(.dark) input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+html.pcode-app-bento-root:not(.dark) select,
+html.pcode-app-bento-root:not(.dark) textarea,
+html.login-bento-page:not(.dark) input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+html.login-bento-page:not(.dark) select,
+html.login-bento-page:not(.dark) textarea {
+  background: #f9fafb !important;
+  color: #000000 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) input:focus,
+html.pcode-app-bento-root:not(.dark) select:focus,
+html.pcode-app-bento-root:not(.dark) textarea:focus,
+html.login-bento-page:not(.dark) input:focus,
+html.login-bento-page:not(.dark) select:focus,
+html.login-bento-page:not(.dark) textarea:focus {
+  border-color: #6d28d9 !important;
+  outline: 2px solid transparent !important;
+  box-shadow: 0 0 0 1px #6d28d9 !important;
+}
+
+/* Primary CTAs — solid fills, white text, no glass glow */
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) #save-patient-btn.btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) #next-add-btn.btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) #next-btn.btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) button[onclick*='handleAddPatientClick'] {
+  background: #6d28d9 !important;
+  border: 1px solid #5b21b6 !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass:hover,
+html.pcode-app-bento-root:not(.dark) #next-btn.btn-purple-glass:hover {
+  background: #5b21b6 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) #analyze-btn.btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) #save-record-btn.btn-teal-glass {
+  background: #0d9488 !important;
+  border: 1px solid #0f766e !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass:hover,
+html.pcode-app-bento-root:not(.dark) #analyze-btn.btn-teal-glass:hover {
+  background: #0f766e !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-blue-glass {
+  background: #2563eb !important;
+  border: 1px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass {
+  background: #e11d48 !important;
+  border: 1px solid #be123c !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass:hover:not(:disabled) {
+  background: #be123c !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) #prev-add-btn,
+html.pcode-app-bento-root:not(.dark) #cancel-add-btn,
+html.pcode-app-bento-root:not(.dark) #prev-btn {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #000000 !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+html.login-bento-page:not(.dark) #login-btn.pcode-sign-in-btn,
+html.login-bento-page:not(.dark) #register-btn.btn-primary {
+  background: #6d28d9 !important;
+  border: 1px solid #5b21b6 !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  text-shadow: none !important;
+}
+
+html.login-bento-page:not(.dark) #login-btn.pcode-sign-in-btn:hover:not(:disabled) {
+  background: #5b21b6 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  transform: none !important;
+}
+
+/* Top navigation — underline only (no square box outline) */
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a {
+  color: #000000 !important;
+  backdrop-filter: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a:hover {
+  color: #000000 !important;
+  background: transparent !important;
+  border-bottom-color: rgba(0, 0, 0, 0.35) !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a.text-purple-800,
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a.font-semibold.border-b-2,
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav .nav-desktop a.text-purple-800,
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav .nav-desktop a.font-semibold.border-b-2 {
+  color: #000000 !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #000000 !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a:focus,
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav a:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav #mobile-menu-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  visibility: visible !important;
+  opacity: 1 !important;
+  box-sizing: border-box !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-width: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-width: 2.75rem !important;
+  max-height: 2.75rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #0f172a !important;
+  border-radius: 12px !important;
+  line-height: 0;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav #mobile-menu-btn svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav #mobile-menu-btn:focus,
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav #mobile-menu-btn:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Mobile drawer — light mode: black copy on white panel */
+html.pcode-app-bento-root:not(.dark) #mobile-menu,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links a,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links p,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn svg {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links a:hover {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Provider dashboard (light/dark html.dark) — top bar, welcome hero, metrics   */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento > nav.pcode-topnav {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .pcode-nav-brand {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .pcode-topnav__brand-title,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page nav.pcode-topnav .pcode-topnav__brand-title {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .pcode-nav-brand {
+  color: #fafafa !important;
+  font-weight: 800 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .nav-desktop a {
+  border-bottom-color: transparent !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .pcode-nav-link--current {
+  color: #fafafa !important;
+  border-bottom-color: rgba(196, 181, 253, 0.92) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .nav-desktop a {
+  color: #000000 !important;
+  font-weight: 500 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .nav-desktop a:hover {
+  color: #000000 !important;
+  border-bottom-color: rgba(0, 0, 0, 0.35) !important;
+  background: transparent !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .nav-desktop a.pcode-nav-link--current,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento nav.pcode-topnav .nav-desktop a.text-purple-800.font-semibold {
+  color: #000000 !important;
+  border: none !important;
+  border-bottom: 2px solid #000000 !important;
+  background: transparent !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dashboard-welcome.gradient-bg {
+  background:
+    radial-gradient(ellipse 140% 70% at 50% -20%, rgba(196, 181, 253, 0.06) 0%, transparent 55%),
+    linear-gradient(to bottom, rgba(250, 245, 255, 0.5) 0%, #ffffff 40%, #ffffff 100%) !important;
+  background-attachment: scroll !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dashboard-greeting.hero-title {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #typed-text {
+  color: inherit !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dashboard-lead.hero-lead {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dashboard-welcome.gradient-bg {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(196, 181, 253, 0.07), transparent 65%),
+    linear-gradient(to bottom, #0d0b14 0%, #13111c 55%, #13111c 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dashboard-greeting.hero-title {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dashboard-lead.hero-lead {
+  color: #94a3b8 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card .text-gray-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card p.text-3xl,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card .pcode-metric-figure,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card .pcode-metric-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card .pcode-metric-value {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu.mobile-menu {
+  background: #ffffff !important;
+  border-left: 1px solid #000000 !important;
+  color: #000000 !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links a,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn svg,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links p {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links a.bg-white\/10 {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #f3f4f6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-toggle-row {
+  border-bottom-color: #000000 !important;
+}
+
+/* Patient modal stepper — matte rail, solid purple steps (no neon filament) */
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-stepper-rail__track {
+  background: #e2e8f0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-stepper-rail__glow {
+  display: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-stepper-rail__fill {
+  background: #6d28d9 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass,
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-dot {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 0 0 3px #ffffff;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass.active-step {
+  background: linear-gradient(135deg, #a855f7 0%, #6d28d9 100%) !important;
+  border: 2px solid #7c3aed !important;
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 12px rgba(109, 40, 217, 0.25) !important;
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass.completed-step {
+  background: #6d28d9 !important;
+  border: none !important;
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass.inactive-step {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 0 0 3px #ffffff !important;
+  color: #64748b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-label--active {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-label--inactive {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form {
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form .step-content {
+  background: #f9fafb !important;
+  backdrop-filter: none !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal #footer-step-info {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal h3.text-lg,
+html.pcode-app-bento-root:not(.dark) #patient-modal #modal-title {
+  color: #000000 !important;
+}
+
+/* Adaptive bento cards — light: paper + slate border; dark: glass + neon (see pcode-app-bento-dark.css) */
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card.pcode-bento-card--adaptive,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card.pcode-bento-card--adaptive,
+html.pcode-app-bento-root:not(.dark) .metric-card.pcode-bento-card--adaptive {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root.dark .pcode-bento-card.pcode-bento-card--adaptive,
+html.pcode-app-bento-root.dark .bento-glass-card.pcode-bento-card--adaptive,
+html.pcode-app-bento-root.dark .metric-card.pcode-bento-card--adaptive {
+  background: rgba(13, 11, 20, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 15px rgba(196, 181, 253, 0.2) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+html.login-bento-page:not(.dark) .auth-page-container {
+  background: #f8f7ff !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Login gateway tiles — crisp glass cards (Professional Paper shell)       */
+/* -------------------------------------------------------------------------- */
+
+html.login-bento-page:not(.dark) button.entry-card {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid #000000 !important;
+  border-radius: 2rem !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  transform: none !important;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease !important;
+}
+
+html.login-bento-page:not(.dark) button.entry-card:hover,
+html.login-bento-page:not(.dark) button.entry-card:focus-visible {
+  border-color: #000000 !important;
+  background-color: rgba(250, 245, 255, 0.72) !important;
+  transform: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.login-bento-page:not(.dark) .entry-card-title {
+  display: block;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.875rem !important;
+  line-height: 1.35 !important;
+  min-height: 2.25rem;
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 768px) {
+  html.login-bento-page:not(.dark) .entry-card-title {
+    text-align: center !important;
+    font-size: 1rem !important;
+    min-height: 0 !important;
+    padding: 0 0.15rem !important;
+  }
+
+  html.login-bento-page:not(.dark) .entry-card-desc {
+    text-align: center !important;
+    font-size: 0.8125rem !important;
+  }
+
+  html.login-bento-page:not(.dark) .entry-icon-slot {
+    width: 100% !important;
+    height: 3rem !important;
+  }
+
+  html.login-bento-page:not(.dark) button.entry-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+}
+
+html.login-bento-page:not(.dark) button.entry-card:hover .entry-card-title {
+  color: #000000 !important;
+}
+
+html.login-bento-page:not(.dark) .entry-card-desc {
+  display: block;
+  text-align: center;
+  text-wrap: pretty;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  color: #000000 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.625 !important;
+}
+
+html.login-bento-page:not(.dark) .entry-icon-slot {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.75rem;
+  margin: 0 auto 1rem !important;
+  border-radius: 1rem;
+  background-color: #f3f4f6 !important;
+  color: #000000 !important;
+}
+
+html.login-bento-page:not(.dark) .entry-icon-slot .entry-icon {
+  color: inherit !important;
+}
+
+html.login-bento-page:not(.dark) .entry-selection-card .right-entry-hint h3 {
+  color: #000000 !important;
+}
+
+html.login-bento-page:not(.dark) .entry-selection-card .right-entry-hint p {
+  color: #000000 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sidebar layout — sticky footer theme toggle                                  */
+/* -------------------------------------------------------------------------- */
+
+#mobile-menu.pcode-sidebar-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* After pcode-theme.js builds .pcode-sidebar-scroll, scroll lives in the child */
+#mobile-menu.pcode-sidebar-layout:has(.pcode-sidebar-scroll) {
+  overflow: hidden !important;
+}
+
+.admin-sidebar.pcode-sidebar-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+.pcode-sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#mobile-menu.pcode-sidebar-layout .pcode-sidebar-scroll,
+.admin-sidebar.pcode-sidebar-layout .pcode-sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Drawer nav links — phone + tablet (desktop uses top .nav-desktop from 1024px) */
+@media (max-width: 1023px) {
+  #mobile-menu.pcode-sidebar-layout.active .mobile-nav-links,
+  #mobile-menu.pcode-sidebar-layout .pcode-sidebar-scroll .mobile-nav-links {
+    display: block !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  #mobile-menu .mobile-nav-links,
+  #mobile-menu.pcode-sidebar-layout .mobile-nav-links,
+  #mobile-menu.pcode-sidebar-layout .pcode-sidebar-scroll .mobile-nav-links {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+.pcode-sidebar-theme-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem 1rem 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-sidebar-theme-footer,
+html.login-bento-page:not(.dark) .pcode-sidebar-theme-footer {
+  border-top-color: #000000;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Glass switch — sidebar appearance (Obsidian Glass / Professional Paper)     */
+/* -------------------------------------------------------------------------- */
+
+.pcode-theme-toggle-mount--sidebar {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.pcode-theme-pill__status {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.3s ease, opacity 0.25s ease;
+}
+
+html.dark .pcode-theme-pill__status {
+  color: #ffffff;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-pill__status,
+html.login-bento-page:not(.dark) .pcode-theme-pill__status {
+  color: #000000;
+}
+
+/* Outer glass track — fixed-width pill centered in sidebar footer */
+.pcode-theme-glass-switch.pcode-theme-pill {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.375rem;
+  border-radius: 9999px;
+  box-sizing: border-box;
+}
+
+/* Dark UI (default Obsidian): frosted violet-tint glass */
+html.dark .pcode-theme-glass-switch.pcode-theme-pill {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Light UI (“Professional Paper”): black outline on paper */
+html.pcode-app-bento-root:not(.dark) .pcode-theme-glass-switch.pcode-theme-pill,
+html.login-bento-page:not(.dark) .pcode-theme-glass-switch.pcode-theme-pill {
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* Sliding glow / matte capsule */
+.pcode-theme-glass-switch__capsule.pcode-theme-pill__slider,
+.pcode-theme-pill__slider {
+  position: absolute;
+  top: 7.5%;
+  left: 0.375rem;
+  width: 45%;
+  height: 85%;
+  border-radius: 9999px;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition:
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 480ms ease,
+    border-color 480ms ease,
+    box-shadow 480ms ease;
+}
+
+/* Light mode selected → capsule left, matte white + black border */
+.pcode-theme-pill:not(.is-dark) .pcode-theme-pill__slider {
+  transform: translateX(0);
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode selected → capsule right, soft lavender glass */
+.pcode-theme-pill.is-dark .pcode-theme-pill__slider {
+  transform: translateX(110%);
+  background-color: rgba(196, 181, 253, 0.16);
+  border: 1px solid rgba(221, 214, 254, 0.35);
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.22);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-pill.is-dark .pcode-theme-pill__slider,
+html.login-bento-page:not(.dark) .pcode-theme-pill.is-dark .pcode-theme-pill__slider {
+  background-color: rgba(196, 181, 253, 0.18);
+}
+
+/* Segments — two tap zones above capsule */
+.pcode-theme-glass-switch__segment.pcode-theme-pill__segment {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 50%;
+  min-width: 0;
+  padding: 0.2rem 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 9999px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.3s ease, transform 0.25s ease;
+}
+
+.pcode-theme-glass-switch__segment.pcode-theme-pill__segment:active {
+  transform: scale(0.96);
+}
+
+.pcode-theme-glass-switch__segment-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 2.75rem;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-glass-switch__segment-inner {
+  transform: scale(1.04);
+}
+
+.pcode-theme-glass-switch__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.pcode-theme-pill__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: color 0.3s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-pill__icon {
+  transform: rotate(12deg) scale(1.08);
+}
+
+/* Icon + label color — dark UI: active white, idle readable silver */
+html.dark .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-glass-switch__label,
+html.dark .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-pill__icon {
+  color: #ffffff;
+}
+
+html.dark .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-glass-switch__label,
+html.dark .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-pill__icon {
+  color: #d4d4d8;
+}
+
+/* Light UI: black active + idle (readable on white panel) */
+html.pcode-app-bento-root:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-glass-switch__label,
+html.pcode-app-bento-root:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-pill__icon,
+html.login-bento-page:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-glass-switch__label,
+html.login-bento-page:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-pill__icon {
+  color: #000000;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-glass-switch__label,
+html.pcode-app-bento-root:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-pill__icon,
+html.login-bento-page:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-glass-switch__label,
+html.login-bento-page:not(.dark) .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-pill__icon {
+  color: #000000;
+  opacity: 0.7;
+}
+
+.pcode-theme-glass-switch__segment.pcode-theme-pill__segment:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.pcode-theme-pill__reset {
+  margin-top: 0.35rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html.dark .pcode-theme-pill__reset {
+  color: #d8b4fe;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-pill__reset,
+html.login-bento-page:not(.dark) .pcode-theme-pill__reset {
+  color: #000000;
+}
+
+.pcode-theme-toggle-row {
+  display: none !important;
+}
+
+/* Compact sun/moon control — removed from navbar; keep hidden if leftover markup exists */
+.pcode-theme-toggle-mount--nav {
+  display: none !important;
+}
+
+.pcode-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem !important;
+  max-height: 2.75rem;
+  padding: 0 !important;
+  margin: 0;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-toggle,
+html.login-bento-page:not(.dark) .pcode-theme-toggle {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.pcode-theme-toggle:hover {
+  background: rgba(196, 181, 253, 0.18);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-theme-toggle:hover {
+  background: #f1f5f9;
+}
+
+.pcode-theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.pcode-theme-toggle:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+
+.pcode-theme-toggle.is-theme-pulse,
+.pcode-theme-pill.is-theme-pulse {
+  animation: pcode-theme-pulse 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes pcode-theme-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pcode-theme-toggle__icon {
+  display: inline-flex;
+  line-height: 0;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(-40deg) scale(0.7);
+  transition:
+    opacity 0.32s ease,
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pcode-theme-toggle__icon .pcode-theme-pill__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Dark active → show sun (click to go light). Light active → show moon. */
+html.dark .pcode-theme-toggle .pcode-theme-toggle__icon--sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html.dark .pcode-theme-toggle .pcode-theme-toggle__icon--moon {
+  opacity: 0;
+  transform: rotate(40deg) scale(0.7);
+}
+
+html:not(.dark) .pcode-theme-toggle .pcode-theme-toggle__icon--moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html:not(.dark) .pcode-theme-toggle .pcode-theme-toggle__icon--sun {
+  opacity: 0;
+  transform: rotate(40deg) scale(0.7);
+}
+
+@media (min-width: 769px) {
+  #mobile-menu.pcode-sidebar-layout .pcode-sidebar-theme-footer,
+  #mobile-menu.pcode-sidebar-layout .pcode-theme-toggle-mount--sidebar {
+    display: flex !important;
+  }
+}
+
+/* Smooth theme color transitions — colors only, no layout shifts */
+html.pcode-app-bento-root,
+html.login-bento-page,
+html.pcode-app-bento-root body,
+html.login-bento-page body {
+  transition:
+    background-color 0.85s cubic-bezier(0.33, 1, 0.68, 1),
+    color 0.75s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.75s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+html.pcode-app-bento-root.pcode-theme-animating,
+html.login-bento-page.pcode-theme-animating,
+html.pcode-app-bento-root.pcode-theme-animating body,
+html.login-bento-page.pcode-theme-animating body {
+  transition:
+    background-color 0.95s cubic-bezier(0.33, 1, 0.68, 1),
+    color 0.85s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.85s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+html.pcode-app-bento-root.pcode-theme-animating .pcode-bento-card,
+html.pcode-app-bento-root.pcode-theme-animating .metric-card,
+html.pcode-app-bento-root.pcode-theme-animating .bento-glass-card,
+html.pcode-app-bento-root.pcode-theme-animating .detection-card,
+html.pcode-app-bento-root.pcode-theme-animating .pcode-obsidian-data-shell,
+html.pcode-app-bento-root.pcode-theme-animating .pcode-obsidian-data-card,
+html.pcode-app-bento-root.pcode-theme-animating .pcode-bento-inner-card,
+html.pcode-app-bento-root.pcode-theme-animating nav,
+html.pcode-app-bento-root.pcode-theme-animating #mobile-menu,
+html.pcode-app-bento-root.pcode-theme-animating .admin-sidebar,
+html.pcode-app-bento-root.pcode-theme-animating .gradient-bg,
+html.login-bento-page.pcode-theme-animating .auth-main-card {
+  transition:
+    background-color 0.95s cubic-bezier(0.33, 1, 0.68, 1),
+    color 0.85s cubic-bezier(0.33, 1, 0.68, 1),
+    border-color 0.85s cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 0.95s cubic-bezier(0.33, 1, 0.68, 1),
+    backdrop-filter 0.95s ease !important;
+}
+
+/* Theme change — circular spread from the toggle (View Transitions + fallback) */
+.pcode-theme-ripple {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0.92;
+  transition:
+    transform 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.35s;
+  will-change: transform, opacity;
+  box-shadow:
+    0 0 60px rgba(109, 40, 217, 0.18),
+    0 0 120px rgba(99, 102, 241, 0.12);
+}
+
+.pcode-theme-ripple[data-theme='dark'] {
+  background: radial-gradient(circle at center, #1a1028 0%, #0a0614 70%);
+}
+
+.pcode-theme-ripple[data-theme='light'] {
+  background: radial-gradient(circle at center, #ffffff 0%, #f8f9fa 70%);
+}
+
+.pcode-theme-ripple.is-expanding {
+  transform: scale(1);
+  opacity: 0;
+}
+
+/* Chromium View Transitions — soft circular wipe + gentle crossfade */
+@supports (view-transition-name: none) {
+  ::view-transition-group(root) {
+    animation-duration: 0.95s;
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  html.pcode-theme-animating::view-transition-old(root),
+  html.pcode-theme-animating::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  html.pcode-theme-animating::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  /* Going to dark: new theme expands from the toggle */
+  html.pcode-theme-vt-to-dark.pcode-theme-animating::view-transition-new(root) {
+    z-index: 9999;
+    animation:
+      pcode-theme-circle-spread 0.95s cubic-bezier(0.22, 1, 0.36, 1) both,
+      pcode-theme-fade-in 0.55s cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+
+  html.pcode-theme-vt-to-dark.pcode-theme-animating::view-transition-old(root) {
+    z-index: 1;
+    animation: pcode-theme-fade-out 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  /* Going to light: also expand outwards (new light spreads from toggle) */
+  html.pcode-theme-vt-to-light.pcode-theme-animating::view-transition-new(root) {
+    z-index: 9999;
+    animation:
+      pcode-theme-circle-spread 0.95s cubic-bezier(0.22, 1, 0.36, 1) both,
+      pcode-theme-fade-in 0.55s cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+
+  html.pcode-theme-vt-to-light.pcode-theme-animating::view-transition-old(root) {
+    z-index: 1;
+    animation: pcode-theme-fade-out 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes pcode-theme-circle-spread {
+    from {
+      clip-path: circle(0px at var(--pcode-theme-x, 50%) var(--pcode-theme-y, 50%));
+    }
+    to {
+      clip-path: circle(var(--pcode-theme-r, 100vmax) at var(--pcode-theme-x, 50%) var(--pcode-theme-y, 50%));
+    }
+  }
+
+  @keyframes pcode-theme-circle-retract {
+    from {
+      clip-path: circle(var(--pcode-theme-r, 100vmax) at var(--pcode-theme-x, 50%) var(--pcode-theme-y, 50%));
+    }
+    to {
+      clip-path: circle(0px at var(--pcode-theme-x, 50%) var(--pcode-theme-y, 50%));
+    }
+  }
+
+  @keyframes pcode-theme-fade-in {
+    from {
+      opacity: 0.55;
+      filter: blur(1.5px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes pcode-theme-fade-out {
+    from {
+      opacity: 1;
+      filter: blur(0);
+    }
+    to {
+      opacity: 0.35;
+      filter: blur(1px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcode-theme-pill__slider,
+  .pcode-theme-glass-switch__capsule.pcode-theme-pill__slider,
+  .pcode-theme-toggle,
+  .pcode-theme-toggle__icon,
+  .pcode-theme-glass-switch__segment.pcode-theme-pill__segment,
+  .pcode-theme-glass-switch__segment-inner,
+  .pcode-theme-pill__icon,
+  .pcode-theme-ripple,
+  html.pcode-app-bento-root,
+  html.login-bento-page,
+  html.pcode-app-bento-root body,
+  html.login-bento-page body {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .pcode-theme-ripple {
+    display: none !important;
+  }
+
+  html.pcode-theme-animating::view-transition-old(root),
+  html.pcode-theme-animating::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Glass aura — dark-mode spreading purple / indigo energy fields              */
+/* Injected by js/pcode-theme.js (#pcode-glass-aura)                           */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root.dark,
+html.login-bento-page.dark {
+  background-color: #030205;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento,
+html.pcode-app-bento-root.dark body.xai-bento-page,
+html.login-bento-page.dark body.login-bento-page {
+  background-color: transparent !important;
+}
+
+.pcode-glass-aura {
+  z-index: -50;
+  transition: opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.pcode-glass-aura.is-fading-out {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.pcode-glass-aura__blob--purple {
+  background: radial-gradient(circle at top left, rgba(196, 181, 253, 0.08), transparent 50%);
+}
+
+.pcode-glass-aura__blob--indigo {
+  background: radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.1), transparent 60%);
+}
+
+html.pcode-app-bento-root:not(.dark) #pcode-glass-aura,
+html.login-bento-page:not(.dark) #pcode-glass-aura {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1;
+  z-index: -50;
+}
+
+html.pcode-app-bento-root:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob,
+html.login-bento-page:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob {
+  opacity: 0.9 !important;
+  transform: scale(1) !important;
+  animation: none !important;
+  filter: blur(90px);
+}
+
+html.pcode-app-bento-root:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob--purple,
+html.login-bento-page:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob--purple {
+  background: radial-gradient(circle at top left, rgba(139, 92, 246, 0.18), transparent 55%) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob--indigo,
+html.login-bento-page:not(.dark) #pcode-glass-aura .pcode-glass-aura__blob--indigo {
+  background: radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.14), transparent 58%) !important;
+}
+
+html.pcode-app-bento-root.dark #pcode-glass-aura .pcode-glass-aura__blob,
+html.login-bento-page.dark #pcode-glass-aura .pcode-glass-aura__blob {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(70px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out, filter 0.7s ease-out;
+}
+
+html.pcode-app-bento-root.dark #pcode-glass-aura .pcode-glass-aura__blob.is-aura-spreading,
+html.login-bento-page.dark #pcode-glass-aura .pcode-glass-aura__blob.is-aura-spreading {
+  animation: aura-expand 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+html.pcode-app-bento-root.dark #pcode-glass-aura .pcode-glass-aura__blob--indigo.is-aura-spreading,
+html.login-bento-page.dark #pcode-glass-aura .pcode-glass-aura__blob--indigo.is-aura-spreading {
+  animation-delay: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.pcode-app-bento-root.dark #pcode-glass-aura .pcode-glass-aura__blob,
+  html.login-bento-page.dark #pcode-glass-aura .pcode-glass-aura__blob {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    filter: blur(70px);
+  }
+}
+
+/* Supersede faint ::after wash when layered aura is active */
+html.pcode-app-bento-root.dark body.pcode-app-bento::after,
+html.pcode-app-bento-root.dark body.xai-bento-page::after,
+html.pcode-app-bento-root.dark body.login-bento-page::after {
+  opacity: 0 !important;
+}
+
+/* Component glow — cards awaken as aura finishes spreading */
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.pcode-app-bento .pcode-bento-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.pcode-app-bento .metric-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.pcode-app-bento .bento-glass-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.pcode-app-bento .detection-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.xai-bento-page .pcode-bento-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.xai-bento-page .bento-card,
+html.pcode-app-bento-root.dark.pcode-theme-aura-active body.xai-bento-page .metric-card,
+html.login-bento-page.dark.pcode-theme-aura-active .auth-main-card {
+  border-color: rgba(196, 181, 253, 0.2) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 15px rgba(196, 181, 253, 0.06),
+    0 0 20px rgba(196, 181, 253, 0.08) !important;
+  transition:
+    box-shadow 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.45s ease,
+    transform 0.35s ease !important;
+}
+
+html.login-bento-page.dark.pcode-theme-aura-active button.entry-card {
+  border-color: rgba(196, 181, 253, 0.2) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 15px rgba(196, 181, 253, 0.06),
+    0 8px 28px rgba(0, 0, 0, 0.35) !important;
+  transform: none !important;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease !important;
+}
+
+html.login-bento-page.dark.pcode-theme-aura-active button.entry-card:hover,
+html.login-bento-page.dark.pcode-theme-aura-active button.entry-card:focus-visible {
+  border-color: rgba(196, 181, 253, 0.4) !important;
+  background: rgba(22, 19, 32, 0.72) !important;
+  transform: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 15px rgba(196, 181, 253, 0.06),
+    0 8px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .metric-card {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light mode — black typography on Tailwind dark-first utilities               */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page,
+html.pcode-app-bento-root:not(.dark) body.pcode-admin-shell:not(.pcode-admin-nav-open),
+html.login-bento-page:not(.dark) body.login-bento-page,
+html.pcode-app-bento-root:not(.dark) .pcode-app-shell {
+  color: #000000 !important;
+}
+
+/* White / near-white utilities → black (filled CTAs & drawer excluded below) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-white'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-white'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-zinc-50'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-zinc-100'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-slate-50'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-slate-100'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-white,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .text-white,
+html.login-bento-page:not(.dark) body.login-bento-page [class*='text-white'] {
+  color: #000000 !important;
+}
+
+/* Grey / slate utilities → black (form scope reverted in pcode-light-clinical.css) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-zinc-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-slate-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-neutral-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-zinc-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-slate-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) .pcode-app-shell [class*='text-slate-'],
+html.pcode-app-bento-root:not(.dark) .pcode-app-shell [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) footer [class*='text-slate-'],
+html.pcode-app-bento-root:not(.dark) footer [class*='text-gray-'] {
+  color: #000000 !important;
+}
+
+/* Purple / violet text utilities → black */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-violet-'],
+html.login-bento-page:not(.dark) body.login-bento-page [class*='text-purple-'],
+html.login-bento-page:not(.dark) body.login-bento-page [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) .pcode-action-bar__meta,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-footer-step {
+  color: #000000 !important;
+}
+
+/* Semantic status hues stay recognizable */
+html.pcode-app-bento-root:not(.dark) .text-blue-600 {
+  color: #2563eb !important;
+}
+html.pcode-app-bento-root:not(.dark) .text-orange-600 {
+  color: #ea580c !important;
+}
+html.pcode-app-bento-root:not(.dark) .text-red-600 {
+  color: #dc2626 !important;
+}
+html.pcode-app-bento-root:not(.dark) .text-green-600 {
+  color: #16a34a !important;
+}
+html.pcode-app-bento-root:not(.dark) .text-teal-600 {
+  color: #0d9488 !important;
+}
+
+/* Admin sidebar — purple rail keeps white copy */
+html.pcode-app-bento-root:not(.dark) body.pcode-admin-shell .admin-sidebar,
+html.pcode-app-bento-root:not(.dark) body.pcode-admin-shell .admin-sidebar * {
+  color: #ffffff !important;
+}
+
+/* Filled CTAs — white labels on colored buttons */
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass:not(#mobile-logout-btn),
+html.pcode-app-bento-root:not(.dark) button.bg-red-600:not(#mobile-logout-btn),
+html.login-bento-page:not(.dark) #login-btn,
+html.login-bento-page:not(.dark) #register-btn,
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass.completed-step,
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-step-glass.completed-step * {
+  color: #ffffff !important;
+}
+
+/* Model Performance — light tiles use dark clinical copy (see pcode-light-clinical.css) */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Comparative summary inset is light lavender — black copy */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset *,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset li,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset strong {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.login-bento-page:not(.dark) .auth-main-card label,
+html.login-bento-page:not(.dark) .auth-main-card p,
+html.login-bento-page:not(.dark) .auth-main-card span,
+html.login-bento-page:not(.dark) .auth-main-card h1,
+html.login-bento-page:not(.dark) .auth-main-card h2,
+html.login-bento-page:not(.dark) .auth-main-card a:not(#login-btn):not(#register-btn) {
+  color: #000000 !important;
+}
+
+/* OAuth primary CTAs must keep white labels on purple fill */
+html.login-bento-page:not(.dark) .oauth-credentials-form .btn-submit,
+html.login-bento-page:not(.dark) .oauth-credentials-form .btn-primary,
+html.login-bento-page:not(.dark) .oauth-login-card .btn-submit {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  border: 1.5px solid #5b21b6 !important;
+}
+
+html.login-bento-page:not(.dark) .oauth-auth-switch {
+  color: #4c1d95 !important;
+  -webkit-text-fill-color: #4c1d95 !important;
+}
+
+html.login-bento-page:not(.dark) .oauth-login-subtitle {
+  color: #334155 !important;
+}
+
+html.login-bento-page:not(.dark) .oauth-credentials-form input::placeholder {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+  opacity: 1 !important;
+}
+

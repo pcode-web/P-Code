@@ -1,0 +1,59 @@
+# P-Code — Apache (Hostinger KVM 2 / production)
+# Place document root at this folder (or point vhost DocumentRoot here).
+
+Options -Indexes
+ServerSignature Off
+
+# Pass Authorization header to PHP (JWT Bearer)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Force HTTPS when behind public hosting (disable locally if needed)
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteCond %{HTTP_HOST} !^localhost [NC]
+  RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+<IfModule mod_setenvif.c>
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(self), microphone=(), camera=()"
+  # HSTS — enable only after SSL is confirmed working
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
+
+# Block sensitive / non-public paths
+<IfModule mod_rewrite.c>
+  RewriteRule ^(config|logs|scripts|tools|\.venv|node_modules|\.git|\.github|\.cursor)/ - [F,L]
+  RewriteRule ^(\.env|composer\.(json|lock)|package(-lock)?\.json|HOSTINGER.*\.md)$ - [F,L]
+  RewriteRule \.(sql|bak|env|key|pem|py|ipynb)$ - [F,L]
+</IfModule>
+
+# Deny direct access to common secret filenames in web root
+<FilesMatch "(?i)^(\.env|.*\.key|.*\.pem|jwt_secret\.key)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# PHP upload / memory hints (KVM2 has headroom; tune as needed)
+<IfModule mod_php.c>
+  php_value upload_max_filesize 32M
+  php_value post_max_size 36M
+  php_value max_execution_time 120
+  php_value memory_limit 256M
+</IfModule>

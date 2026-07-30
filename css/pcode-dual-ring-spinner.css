@@ -1,0 +1,148 @@
+/**
+ * P-Code dual broken-ring loaders (violet outer CW + lavender inner CCW).
+ * Load this stylesheet after page-local <style> blocks so these rules win.
+ */
+@keyframes pcode-dual-ring-spin-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pcode-dual-ring-spin-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.pcode-dual-ring-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex-shrink: 0;
+  animation: none;
+}
+
+.pcode-dual-ring-spinner img,
+.pcode-dual-ring-spinner svg {
+  display: block;
+  width: var(--pcode-drs, 48px);
+  height: var(--pcode-drs, 48px);
+  pointer-events: none;
+}
+
+/* Per-ring motion (inline SVG in host document) */
+.pcode-dual-ring-spinner svg circle.pcode-drs-outer,
+.gauge-analyzing-overlay .overlay-spinner.pcode-dual-ring-spinner svg circle.pcode-drs-outer,
+.spinner-circle svg circle.pcode-drs-outer {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pcode-dual-ring-spin-cw 0.95s linear infinite;
+  will-change: transform;
+}
+
+.pcode-dual-ring-spinner svg circle.pcode-drs-inner,
+.gauge-analyzing-overlay .overlay-spinner.pcode-dual-ring-spinner svg circle.pcode-drs-inner,
+.spinner-circle svg circle.pcode-drs-inner {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pcode-dual-ring-spin-ccw 0.95s linear infinite;
+  will-change: transform;
+}
+
+.pcode-dual-ring-spinner--xs {
+  --pcode-drs: 20px;
+}
+.pcode-dual-ring-spinner--sm {
+  --pcode-drs: 24px;
+}
+.pcode-dual-ring-spinner--md {
+  --pcode-drs: 40px;
+}
+.pcode-dual-ring-spinner--lg {
+  --pcode-drs: 48px;
+}
+.pcode-dual-ring-spinner--xl {
+  --pcode-drs: 56px;
+}
+
+/* Gauge overlays: flex box + default size (final gauge overrides width below) */
+.gauge-analyzing-overlay .overlay-spinner.pcode-dual-ring-spinner {
+  box-sizing: border-box !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+  animation: none !important;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.gauge-analyzing-overlay .overlay-spinner.pcode-dual-ring-spinner svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Inline dual-ring in buttons / cards (no background image) */
+.spinner-circle {
+  box-sizing: border-box !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+  animation: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.spinner-circle svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* XAI card spinners */
+body.xai-bento-page .spinner-circle,
+#original-loading-spinner .spinner-circle,
+#gradcam-loading-spinner .spinner-circle {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+/* Login modal: empty div — animated dual ring via self-contained SVG asset */
+#login-loading-modal .spinner {
+  box-sizing: border-box !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url("../resources/pcode-dual-ring-spinner.svg") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  animation: none !important;
+  width: 52px !important;
+  height: 52px !important;
+}
+
+#final-gauge .gauge-analyzing-overlay .overlay-spinner.pcode-dual-ring-spinner {
+  width: 62px !important;
+  height: 62px !important;
+}
+
+/* Small variant — asset-only */
+.spinner-small {
+  border: none !important;
+  border-radius: 0 !important;
+  background-image: url("../resources/pcode-dual-ring-spinner.svg") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  animation: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-block;
+  vertical-align: middle;
+}

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P-Code - Admin Management</title>
+    <!-- Local CSS Files (No CDN) -->
+    <link rel="stylesheet" href="css/tailwind.css">
+    <!-- Local Fonts (No CDN) -->
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <!-- Local JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html { width: 100%; max-width: 100%; overflow-x: hidden; }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        #profile-navbar, #mobile-profile {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #profile-navbar.hidden, #mobile-profile.hidden {
+            display: none !important;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(88, 28, 135, 0.7) 0%, rgba(109, 40, 217, 0.6) 100%),
+                        url('resources/unnamed.jpg') center/cover no-repeat;
+            background-attachment: fixed;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            /* Avoid iOS Safari jank with fixed backgrounds */
+            .gradient-bg { background-attachment: scroll !important; }
+        }
+        nav {
+            width: 100%;
+        }
+        
+        .mobile-menu {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: min(320px, 85vw);
+            max-width: 90vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(88, 28, 135, 0.95) 0%, rgba(109, 40, 217, 0.95) 100%);
+            color: white;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 50;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        .mobile-menu::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+            /* Above navbar, below sidebar */
+            z-index: 45;
+        }
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #mobile-menu-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 60;
+        }
+
+        #mobile-menu-btn {
+            min-width: 44px;
+            min-height: 44px;
+            flex-shrink: 0;
+        }
+
+        nav .flex.justify-between {
+            min-height: 64px;
+            flex-wrap: nowrap;
+        }
+
+        .table-row:hover {
+            background-color: #f9fafb;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-primary {
+            background-color: #7c3aed;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #6d28d9;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            color: #0c2d6b;
+            border: 1px solid #93c5fd;
+        }
+    </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+</head>
+<body class="pcode-app-bento min-h-screen h-auto flex flex-col text-zinc-50 antialiased">
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-purple-600">P-Code Admin</h1>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-6" id="profile-navbar">
+                    <a href="admin-dashboard.html" class="text-gray-700 hover:text-purple-600">Dashboard</a>
+                    <a href="patients.html" class="text-gray-700 hover:text-purple-600">Patients</a>
+                    <a href="admin-management.html" class="text-purple-600 font-semibold">Admin Management</a>
+                    <button onclick="handleLogout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Sign out</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <button id="mobile-menu-close-btn" type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <a href="admin-dashboard.html" class="block px-4 py-2 text-white hover:bg-white hover:bg-opacity-20">Dashboard</a>
+            <a href="patients.html" class="block px-4 py-2 text-white hover:bg-white hover:bg-opacity-20">Patients</a>
+            <a href="admin-management.html" class="block px-4 py-2 text-white font-semibold bg-white bg-opacity-20">Admin Management</a>
+            <button onclick="handleLogout()" class="w-full text-left px-4 py-2 bg-red-600 hover:bg-red-700 text-white">Sign out</button>
+        </div>
+        <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    </nav>
+
+    <!-- Header -->
+    <div class="gradient-bg py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-white mb-4">Admin Management System</h1>
+                <p class="text-xl text-purple-100">Manage system administrators and their roles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 h-auto">
+        <!-- Alerts -->
+        <div id="alert-container"></div>
+
+        <!-- Action Buttons -->
+        <div class="mb-6 flex justify-between items-center flex-wrap gap-4">
+            <h2 class="text-2xl font-bold text-gray-800">System Administrator</h2>
+            <button onclick="openEditAdminModal(1)" class="btn-primary">
+                <svg class="inline w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Edit Admin
+            </button>
+        </div>
+
+        <!-- Admin Table -->
+        <div class="pcode-card-static pcode-bento-card shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">ID</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Name</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Email</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Role</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Status</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Created Date</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-800">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body">
+                        <tr class="table-row border-b border-gray-200">
+                            <td class="px-6 py-4 text-sm text-gray-600">1</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 font-medium">Administrator System</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">admin@pcode.com</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">System Administrator</td>
+                            <td class="px-6 py-4"><span class="status-badge status-active">Active</span></td>
+                            <td class="px-6 py-4 text-sm text-gray-600">2024-01-10</td>
+                            <td class="px-6 py-4">
+                                <button onclick="openEditAdminModal(1)" class="btn-secondary" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="pcode-bento-metrics-grid pcode-bento-metrics-grid--three mt-8">
+            <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--accent-purple">
+              <div class="pcode-metric-tile__copy">
+                <p class="pcode-metric-label">System Administrator</p>
+                <p class="pcode-metric-value">1</p>
+              </div>
+              <div class="pcode-metric-tile__icon" aria-hidden="true">
+                <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--accent-green">
+              <div class="pcode-metric-tile__copy">
+                <p class="pcode-metric-label">Status</p>
+                <p class="pcode-metric-value text-emerald-400">Active</p>
+              </div>
+              <div class="pcode-metric-tile__icon" aria-hidden="true">
+                <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--accent-blue">
+              <div class="pcode-metric-tile__copy">
+                <p class="pcode-metric-label">Registered Users</p>
+                <p class="pcode-metric-value text-blue-300 truncate">Oversees All</p>
+              </div>
+              <div class="pcode-metric-tile__icon" aria-hidden="true">
+                <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM6 20H1v-2a6 6 0 016-6v0a6 6 0 016 6v0h5v-2a3 3 0 00-5.856-1.487M13 13H7"/>
+                </svg>
+              </div>
+            </div>
+        </div>
+
+        <!-- Role Description -->
+        <div class="pcode-card-static pcode-bento-card shadow-lg mt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Administrator Responsibilities</h3>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border-2 border-purple-200">
+                <h4 class="font-bold text-lg text-gray-800 mb-4">System Administrator</h4>
+                <ul class="text-sm text-gray-700 space-y-3">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Oversee and manage all registered users in the system</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Monitor system performance and user activities</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Manage system settings and configurations</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Access comprehensive system reports and analytics</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Ensure data integrity and system security</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Maintain complete audit trails and system logs</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Admin Modal -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold text-gray-800 mb-6">Edit Administrator</h2>
+            
+            <form id="admin-form" onsubmit="submitAdminForm(event)">
+                <div class="form-group">
+                    <label for="admin-name">Full Name *</label>
+                    <input type="text" id="admin-name" name="name" required placeholder="Enter full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="admin-email">Email Address *</label>
+                    <input type="email" id="admin-email" name="email" required placeholder="Enter email address">
+                </div>
+
+                <div class="form-group">
+                    <label for="admin-role">Role</label>
+                    <input type="text" id="admin-role" name="role" value="System Administrator" disabled class="bg-gray-100 cursor-not-allowed">
+                    <p class="text-xs text-gray-500 mt-1">Single administrator role overseeing all registered users</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="admin-password">Password (optional)</label>
+                    <input type="password" id="admin-password" name="password" placeholder="Leave empty to keep current password (min 8 characters)">
+                    <p class="text-xs text-gray-500 mt-1">Only change if you need to update the password</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="admin-status">Status *</label>
+                    <select id="admin-status" name="status" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 justify-end">
+                    <button type="button" onclick="closeAdminModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if (!menu) return;
+            const willOpen = !menu.classList.contains('active');
+            menu.classList.toggle('active', willOpen);
+            if (overlay) overlay.classList.toggle('active', willOpen);
+            document.body.classList.toggle('pcode-mobile-nav-open', willOpen);
+            document.body.style.overflow = willOpen ? 'hidden' : '';
+        }
+
+        // Note: in “desktop site” mode we keep hamburger + profile actions,
+        // but hide the sidebar navigation link list via CSS (when present).
+
+        // Modal Functions
+        function openEditAdminModal(adminId) {
+            document.getElementById('modal-title').textContent = 'Edit Administrator';
+            
+            // Only allow editing the single administrator
+            const adminData = {
+                1: { name: 'Administrator System', email: 'admin@pcode.com', role: 'System Administrator', status: 'Active' }
+            };
+            
+            if (adminData[adminId]) {
+                const data = adminData[adminId];
+                document.getElementById('admin-name').value = data.name;
+                document.getElementById('admin-email').value = data.email;
+                document.getElementById('admin-role').value = data.role;
+                document.getElementById('admin-status').value = data.status;
+            }
+            
+            document.getElementById('admin-modal').classList.add('active');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.remove('active');
+            document.getElementById('admin-form').reset();
+        }
+
+        // Form Submission
+        function submitAdminForm(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('admin-name').value,
+                email: document.getElementById('admin-email').value,
+                password: document.getElementById('admin-password').value,
+                status: document.getElementById('admin-status').value
+            };
+
+            // Validation
+            if (!formData.name || !formData.email || !formData.status) {
+                showAlert('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            if (formData.password && formData.password.length < 8) {
+                showAlert('Password must be at least 8 characters long.', 'error');
+                return;
+            }
+
+            // Send to API (sample)
+            console.log('Updating administrator:', formData);
+            showAlert(`Administrator ${formData.name} has been updated successfully!`, 'success');
+            closeAdminModal();
+        }
+
+        // Alert Function
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Logout Function
+        function handleLogout() {
+            // This should call the auth logout function
+            if (window.auth && window.auth.logout) {
+                window.auth.logout();
+            } else {
+                console.log('Logging out...');
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof anime !== 'undefined' && typeof anime.stagger !== 'undefined') {
+                anime({
+                    targets: '.bg-white, .pcode-card-static metric-card',
+                    translateY: [30, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(200),
+                    duration: 800,
+                    easing: 'easeOutExpo'
+                });
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('admin-modal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeAdminModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

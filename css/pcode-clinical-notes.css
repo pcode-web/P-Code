@@ -1,0 +1,365 @@
+/* P-Code — clinical validity notes on assessment forms */
+.clinical-note-badge {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  border: 1px solid transparent;
+  transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+
+.clinical-note-badge--info {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #bfdbfe;
+}
+
+.clinical-note-badge--warn {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #fde68a;
+}
+
+.clinical-note-badge--stale {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.clinical-note-badge.is-hidden,
+.clinical-validity-banner.is-hidden {
+  display: none !important;
+}
+
+.clinical-timing-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.clinical-timing-fields label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 0.35rem;
+}
+
+.clinical-timing-fields input,
+.clinical-timing-fields select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.clinical-validity-banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.clinical-validity-banner--blocked {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.clinical-note-badge--primary-modality {
+  background: rgba(124, 58, 237, 0.16);
+  border-color: rgba(167, 139, 250, 0.45);
+  color: #ddd6fe;
+  font-weight: 500;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-note-badge--primary-modality,
+html[data-pcode-theme="light"] .clinical-note-badge--primary-modality {
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+  color: #4c1d95;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-note-badge--info,
+html[data-pcode-theme="light"] .clinical-note-badge--info {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e3a8a;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-note-badge--warn,
+html[data-pcode-theme="light"] .clinical-note-badge--warn {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-note-badge--stale,
+html.pcode-app-bento-root:not(.dark) .clinical-validity-banner--blocked,
+html[data-pcode-theme="light"] .clinical-note-badge--stale {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.clinical-context-note {
+  margin-top: 0.75rem;
+}
+
+.clinical-context-note__main,
+.clinical-context-note__extra {
+  margin: 0;
+}
+
+.clinical-context-note__extra {
+  margin-top: 0.45rem;
+  opacity: 0.95;
+}
+
+.clinical-modality-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.clinical-follicle-label-hint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
+}
+
+.clinical-upload-instruction {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 0.5rem;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-upload-instruction,
+html[data-pcode-theme="light"] .clinical-upload-instruction {
+  color: #334155;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-modality-select,
+html[data-pcode-theme="light"] .clinical-modality-select {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #94a3b8;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-follicle-label-hint,
+html[data-pcode-theme="light"] .clinical-follicle-label-hint {
+  color: #475569;
+}
+
+.image-modality-context {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: #bfdbfe;
+}
+
+.image-modality-context--fallback {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+html.pcode-app-bento-root:not(.dark) .image-modality-context,
+html[data-pcode-theme="light"] .image-modality-context {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e3a8a;
+}
+
+html.pcode-app-bento-root:not(.dark) .image-modality-context--fallback,
+html[data-pcode-theme="light"] .image-modality-context--fallback {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+/* Ultrasound system review — prominent pass/fail callout in results */
+.pcode-system-review {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  line-height: 1.35;
+}
+
+.pcode-system-review__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pcode-system-review__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.pcode-system-review__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pcode-system-review__message {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.pcode-system-review--confirmed {
+  color: #dcfce7;
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.28), rgba(34, 197, 94, 0.12));
+  border: 1px solid rgba(74, 222, 128, 0.62);
+  box-shadow:
+    0 0 22px rgba(34, 197, 94, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.pcode-system-review--confirmed .pcode-system-review__icon {
+  color: #14532d;
+  background: #4ade80;
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.55);
+}
+
+.pcode-system-review--confirmed .pcode-system-review__label {
+  color: #86efac;
+}
+
+.pcode-system-review--confirmed .pcode-system-review__message {
+  color: #f0fdf4;
+  text-shadow: 0 0 18px rgba(74, 222, 128, 0.25);
+}
+
+/* Light mode — opaque, high-contrast system review (no white-on-pale) */
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--confirmed,
+html[data-pcode-theme="light"] .pcode-system-review--confirmed {
+  color: #14532d;
+  background: #86efac;
+  border: 1px solid #16a34a;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--confirmed .pcode-system-review__icon,
+html[data-pcode-theme="light"] .pcode-system-review--confirmed .pcode-system-review__icon {
+  color: #ffffff;
+  background: #15803d;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--confirmed .pcode-system-review__label,
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--confirmed .pcode-system-review__message,
+html[data-pcode-theme="light"] .pcode-system-review--confirmed .pcode-system-review__label,
+html[data-pcode-theme="light"] .pcode-system-review--confirmed .pcode-system-review__message {
+  color: #14532d !important;
+  -webkit-text-fill-color: #14532d !important;
+  text-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--failed,
+html[data-pcode-theme="light"] .pcode-system-review--failed {
+  color: #7f1d1d;
+  background: #fecaca;
+  border: 1px solid #ef4444;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--failed .pcode-system-review__icon,
+html[data-pcode-theme="light"] .pcode-system-review--failed .pcode-system-review__icon {
+  color: #ffffff;
+  background: #b91c1c;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--failed .pcode-system-review__label,
+html.pcode-app-bento-root:not(.dark) .pcode-system-review--failed .pcode-system-review__message,
+html[data-pcode-theme="light"] .pcode-system-review--failed .pcode-system-review__label,
+html[data-pcode-theme="light"] .pcode-system-review--failed .pcode-system-review__message {
+  color: #7f1d1d !important;
+  -webkit-text-fill-color: #7f1d1d !important;
+  text-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .clinical-note-badge--info,
+html.pcode-app-bento-root:not(.dark) .clinical-context-note.clinical-note-badge--info,
+html[data-pcode-theme="light"] .clinical-note-badge--info {
+  background: #bfdbfe !important;
+  border-color: #3b82f6 !important;
+  color: #1e3a8a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .image-modality-context,
+html[data-pcode-theme="light"] .image-modality-context {
+  background: #bfdbfe !important;
+  border-color: #3b82f6 !important;
+  color: #1e3a8a !important;
+}
+
+.pcode-system-review--failed {
+  color: #fee2e2;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.24), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  box-shadow:
+    0 0 18px rgba(239, 68, 68, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.pcode-system-review--failed .pcode-system-review__icon {
+  color: #7f1d1d;
+  background: #f87171;
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.45);
+}
+
+.pcode-system-review--failed .pcode-system-review__label {
+  color: #fecaca;
+}
+
+.pcode-system-review--failed .pcode-system-review__message {
+  color: #fff1f2;
+}
+
+@media (max-width: 640px) {
+  .clinical-timing-fields {
+    grid-template-columns: 1fr;
+  }
+}

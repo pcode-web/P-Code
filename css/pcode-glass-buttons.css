@@ -1,0 +1,839 @@
+/**
+ * P-Code — Glassmorphic neon pill buttons (global)
+ * Load after pcode-app-bento-dark.css + pcode-theme.css
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Base pill architecture                                                     */
+/* -------------------------------------------------------------------------- */
+
+.btn-glass-pill,
+.btn-purple-glass,
+.btn-teal-glass,
+.btn-rose-glass,
+.btn-blue-glass,
+.btn-ghost-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  border-width: 2px;
+  border-style: solid;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 0 rgba(168, 85, 247, 0);
+}
+
+.btn-glass-pill:disabled,
+.btn-purple-glass:disabled,
+.btn-teal-glass:disabled,
+.btn-rose-glass:disabled,
+.btn-blue-glass:disabled,
+.btn-ghost-glass:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Purple — primary / action (dashboard Quick Actions at rest) */
+.btn-purple-glass {
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #c084fc;
+}
+
+.btn-purple-glass:hover:not(:disabled) {
+  background-color: rgba(168, 85, 247, 0.2);
+  border-color: #c084fc;
+  color: #e9d5ff;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Teal — success / save / run detection */
+.btn-teal-glass {
+  border-color: rgba(20, 184, 166, 0.5);
+  color: #2dd4bf;
+  box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+}
+
+.btn-teal-glass:hover:not(:disabled) {
+  background-color: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #6ee7b7;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Rose — danger / cancel / logout */
+.btn-rose-glass {
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fb7185;
+}
+
+.btn-rose-glass:hover:not(:disabled) {
+  background-color: rgba(244, 63, 94, 0.18);
+  border-color: #fb7185;
+  color: #fecdd3;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+}
+
+/* Blue — secondary clinical / imaging actions */
+.btn-blue-glass {
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #60a5fa;
+}
+
+.btn-blue-glass:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.6);
+  color: #bfdbfe;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Ghost — cancel / outline on dark cards */
+.btn-ghost-glass {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(237, 233, 254, 0.88);
+}
+
+.btn-ghost-glass:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #f5f3ff;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+}
+
+/* Wide block CTAs */
+.btn-glass-pill.w-full,
+.btn-purple-glass.w-full,
+.btn-teal-glass.w-full {
+  width: 100%;
+}
+
+/* Legacy button aliases */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f4f4f5 !important;
+  box-shadow: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+  border-color: #c084fc !important;
+  color: #e9d5ff !important;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: rgba(237, 233, 254, 0.88) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(196, 181, 253, 0.45) !important;
+  color: #f5f3ff !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.2) !important;
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(20, 184, 166, 0.5);
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #2dd4bf !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: rgba(20, 184, 166, 0.2) !important;
+  border-color: #2dd4bf !important;
+  color: #99f6e4 !important;
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.4) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Bento shell — upgrade flat Tailwind action buttons                           */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento button.bg-purple-600,
+body.pcode-app-bento button.bg-gradient-to-r.from-purple-600,
+body.xai-bento-page button.bg-purple-600,
+body.pcode-app-bento #save-patient-btn,
+body.pcode-app-bento #next-add-btn,
+body.pcode-app-bento #next-btn,
+body.pcode-app-bento button[id='analyze-btn'].bg-green-600,
+body.pcode-app-bento #analyze-btn,
+body.pcode-app-bento #next-btn[data-step-mode="analyze"],
+body.pcode-app-bento #save-record-btn,
+body.pcode-app-bento button[onclick*='handleAddPatientClick'],
+body.pcode-app-bento button[onclick*='loadPatientData'],
+body.pcode-app-bento button[onclick*='loadXAIAnalysis'] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.625rem 1.5rem !important;
+  border-radius: 9999px !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  font-weight: 600 !important;
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento .btn-glass-pill,
+  body.pcode-app-bento .btn-purple-glass,
+  body.pcode-app-bento .btn-teal-glass,
+  body.pcode-app-bento .btn-rose-glass,
+  body.pcode-app-bento .btn-blue-glass,
+  body.pcode-app-bento .btn-ghost-glass,
+  body.xai-bento-page .btn-glass-pill {
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    min-height: 2.35rem !important;
+    height: auto !important;
+    gap: 0.35rem !important;
+    border-radius: 9999px !important;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer .btn-teal-glass,
+  body.pcode-app-bento .clinical-stepper-footer #analyze-btn.btn-teal-glass {
+    padding: 0.4rem 0.9rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+html.dark body.pcode-app-bento .btn-purple-glass,
+html.dark body.pcode-app-bento .clinical-stepper-footer #save-patient-btn.btn-purple-glass,
+html.dark body.pcode-app-bento .clinical-stepper-footer #next-add-btn.btn-purple-glass,
+html.dark body.pcode-app-bento .clinical-stepper-footer #next-btn.btn-purple-glass,
+html.dark body.pcode-app-bento button.bg-purple-600,
+html.dark body.pcode-app-bento #save-patient-btn.btn-purple-glass,
+html.dark body.pcode-app-bento #next-add-btn.btn-purple-glass,
+html.dark body.pcode-app-bento #next-btn.btn-purple-glass,
+html.dark body.xai-bento-page button.bg-purple-600,
+html.dark body.pcode-app-bento button[onclick*='handleAddPatientClick'],
+html.dark body.pcode-app-bento button[onclick*='loadPatientData'],
+html.dark body.pcode-app-bento button[onclick*='loadXAIAnalysis'] {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  color: #c084fc !important;
+}
+
+html.dark body.pcode-app-bento .btn-purple-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento button.bg-purple-600:hover:not(:disabled),
+html.dark body.pcode-app-bento #save-patient-btn.btn-purple-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento #next-add-btn.btn-purple-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento #next-btn.btn-purple-glass:hover:not(:disabled),
+html.dark body.xai-bento-page button.bg-purple-600:hover:not(:disabled),
+html.dark body.pcode-app-bento button[onclick*='handleAddPatientClick']:hover:not(:disabled),
+html.dark body.pcode-app-bento button[onclick*='loadPatientData']:hover:not(:disabled),
+html.dark body.pcode-app-bento button[onclick*='loadXAIAnalysis']:hover:not(:disabled) {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+  border-color: #c084fc !important;
+  color: #e9d5ff !important;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important;
+}
+
+body.pcode-app-bento .btn-teal-glass,
+body.pcode-app-bento .btn-blue-glass,
+body.pcode-app-bento .btn-ghost-glass,
+body.pcode-app-bento .btn-rose-glass {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+}
+
+body.pcode-app-bento button.bg-green-600,
+body.pcode-app-bento #analyze-btn,
+body.pcode-app-bento #next-btn[data-step-mode="analyze"],
+body.pcode-app-bento #save-record-btn {
+  border-color: rgba(20, 184, 166, 0.5) !important;
+  color: #2dd4bf !important;
+}
+
+body.pcode-app-bento button.bg-green-600:hover,
+body.pcode-app-bento #analyze-btn:hover,
+body.pcode-app-bento #save-record-btn:hover {
+  background-color: rgba(20, 184, 166, 0.2) !important;
+  border-color: #2dd4bf !important;
+  color: #99f6e4 !important;
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.4) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento button.bg-red-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento #mobile-logout-btn {
+  border-color: rgba(244, 63, 94, 0.45) !important;
+  color: #fb7185 !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+  border-radius: 0.5rem !important;
+  border-width: 2px !important;
+  backdrop-filter: blur(12px) !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento button.bg-red-600:hover,
+html.pcode-app-bento-root.dark body.pcode-app-bento #mobile-logout-btn:hover {
+  background-color: rgba(244, 63, 94, 0.18) !important;
+  border-color: #fb7185 !important;
+  color: #fecdd3 !important;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35) !important;
+}
+
+/* Sidebar profile actions — same rounded-lg shape (not pill) */
+body.pcode-app-bento #mobile-menu #mobile-edit-profile-btn,
+body.pcode-app-bento #mobile-menu #mobile-logout-btn,
+body.xai-bento-page #mobile-menu #mobile-edit-profile-btn,
+body.xai-bento-page #mobile-menu #mobile-logout-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 2.75rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Modal cancel / prev — ghost pill */
+body.pcode-app-bento #cancel-add-btn,
+body.pcode-app-bento #prev-add-btn,
+body.pcode-app-bento #patient-modal button.border:not(.bg-purple-600):not(.bg-green-600),
+body.pcode-app-bento .clinical-stepper-footer button.border {
+  border-radius: 9999px !important;
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(12px) !important;
+  color: rgba(237, 233, 254, 0.88) !important;
+  font-weight: 600 !important;
+}
+
+body.pcode-app-bento #cancel-add-btn:hover,
+body.pcode-app-bento #prev-add-btn:hover,
+body.pcode-app-bento .clinical-stepper-footer button.border:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(196, 181, 253, 0.45) !important;
+  color: #f5f3ff !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Quick Actions, detect steppers, results — dashboard glass pills */
+body.pcode-app-bento #quick-actions-section button,
+body.pcode-app-bento .pcode-action-bar .btn-purple-glass,
+body.pcode-app-bento .pcode-action-bar #next-btn,
+body.pcode-app-bento .pcode-action-bar #next-add-btn,
+body.pcode-app-bento .pcode-action-bar #save-patient-btn,
+body.pcode-app-bento .pcode-results-action-bar .btn-purple-glass,
+body.pcode-app-bento #patient-selection-card .btn-purple-glass,
+body.pcode-app-bento button.from-purple-600,
+body.pcode-app-bento button[class*='from-purple-600'] {
+  min-height: 3.25rem !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 9999px !important;
+  border: 2px solid rgba(168, 85, 247, 0.5) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+  color: #c084fc !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+body.pcode-app-bento #quick-actions-section button:hover,
+body.pcode-app-bento .pcode-action-bar .btn-purple-glass:hover:not(:disabled),
+body.pcode-app-bento .pcode-action-bar #next-btn:hover:not(:disabled),
+body.pcode-app-bento .pcode-action-bar #next-add-btn:hover:not(:disabled),
+body.pcode-app-bento .pcode-action-bar #save-patient-btn:hover:not(:disabled),
+body.pcode-app-bento .pcode-results-action-bar .btn-purple-glass:hover:not(:disabled),
+body.pcode-app-bento #patient-selection-card .btn-purple-glass:hover:not(:disabled),
+body.pcode-app-bento button[class*='from-purple-600']:hover {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+  border-color: #c084fc !important;
+  color: #e9d5ff !important;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important;
+}
+
+body.pcode-app-bento #quick-actions-section button:nth-child(2),
+body.pcode-app-bento .pcode-action-bar .btn-teal-glass,
+body.pcode-app-bento .pcode-action-bar #analyze-btn,
+body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass,
+body.pcode-app-bento .pcode-results-action-bar #save-record-btn,
+body.pcode-app-bento button[class*='from-green-500'] {
+  border: 2px solid rgba(20, 184, 166, 0.5) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+  color: #2dd4bf !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 0 14px rgba(20, 184, 166, 0.35) !important;
+}
+
+body.pcode-app-bento #quick-actions-section button:nth-child(2):hover,
+body.pcode-app-bento .pcode-action-bar .btn-teal-glass:hover:not(:disabled),
+body.pcode-app-bento .pcode-action-bar #analyze-btn:hover:not(:disabled),
+body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass:hover:not(:disabled),
+body.pcode-app-bento .pcode-results-action-bar #save-record-btn:hover:not(:disabled),
+body.pcode-app-bento button[class*='from-green-500']:hover {
+  background-color: rgba(20, 184, 166, 0.2) !important;
+  border-color: #2dd4bf !important;
+  color: #99f6e4 !important;
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.4) !important;
+}
+
+html.dark body.pcode-app-bento #quick-actions-section button:nth-child(3),
+html.dark body.pcode-app-bento .pcode-action-bar .btn-blue-glass,
+html.dark body.pcode-app-bento .pcode-action-bar #analyze-ultrasound-btn,
+html.dark body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+html.dark body.pcode-app-bento #patient-selection-card .btn-blue-glass,
+html.dark body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass,
+html.dark body.pcode-app-bento button[class*='from-blue-500'] {
+  border: 2px solid rgba(59, 130, 246, 0.45) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+  color: #60a5fa !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: none !important;
+}
+
+html.dark body.pcode-app-bento #quick-actions-section button:nth-child(3):hover,
+html.dark body.pcode-app-bento .pcode-action-bar .btn-blue-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento .pcode-action-bar #analyze-ultrasound-btn:hover:not(:disabled),
+html.dark body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento #patient-selection-card .btn-blue-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass:hover:not(:disabled),
+html.dark body.pcode-app-bento button[class*='from-blue-500']:hover {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  border-color: #60a5fa !important;
+  color: #bfdbfe !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.35) !important;
+}
+
+/* Ghost / secondary — Previous, New Analysis, dropzone camera (dark surfaces) */
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar .btn-ghost-glass,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar #prev-btn,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar #prev-add-btn,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar #cancel-add-btn,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-results-action-bar #new-analysis-btn,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass {
+  border: 2px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  background-image: none !important;
+  color: rgba(237, 233, 254, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar .btn-ghost-glass:hover:not(:disabled),
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-bar #prev-btn:hover:not(:disabled),
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass:hover:not(:disabled),
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(196, 181, 253, 0.45) !important;
+  color: #f5f3ff !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Rose — clear / danger toolbar */
+body.pcode-app-bento #patient-selection-card .btn-rose-glass {
+  border: 2px solid rgba(244, 63, 94, 0.45) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #fb7185 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.18) !important;
+}
+
+body.pcode-app-bento #patient-selection-card .btn-rose-glass:hover:not(:disabled) {
+  background-color: rgba(244, 63, 94, 0.18) !important;
+  border-color: #fb7185 !important;
+  color: #fecdd3 !important;
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.35) !important;
+}
+
+/* Patient selection — resting neon glow on detect toolbar buttons */
+body.pcode-app-bento #patient-selection-card .btn-blue-glass {
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.22) !important;
+}
+
+body.pcode-app-bento #patient-selection-card .btn-purple-glass {
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.22) !important;
+}
+
+/* Mobile drawer nav — pill links */
+body.pcode-app-bento .mobile-nav-links a,
+body.xai-bento-page .mobile-nav-links a {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1rem;
+  margin-bottom: 0.35rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  color: rgba(237, 233, 254, 0.9) !important;
+  transition: all 0.3s ease;
+}
+
+body.pcode-app-bento .mobile-nav-links a:hover,
+body.xai-bento-page .mobile-nav-links a:hover {
+  border-color: rgba(168, 85, 247, 0.45);
+  background: rgba(168, 85, 247, 0.12);
+  color: #e9d5ff !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+}
+
+/* Win over pcode-app-bento-dark.css footer white-text lock */
+body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass,
+body.pcode-app-bento .clinical-stepper-footer #save-patient-btn.btn-purple-glass,
+body.pcode-app-bento .clinical-stepper-footer #next-add-btn.btn-purple-glass,
+body.pcode-app-bento .clinical-stepper-footer #next-btn.btn-purple-glass {
+  color: #c084fc !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer .btn-teal-glass,
+body.pcode-app-bento .clinical-stepper-footer #analyze-btn.btn-teal-glass {
+  color: #2dd4bf !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass,
+body.pcode-app-bento .clinical-stepper-footer #prev-btn.btn-ghost-glass,
+body.pcode-app-bento .clinical-stepper-footer #cancel-add-btn.btn-ghost-glass,
+body.pcode-app-bento .clinical-stepper-footer #prev-add-btn.btn-ghost-glass {
+  color: rgba(237, 233, 254, 0.88) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light mode — solid CTAs, no glass blur (Professional Paper)               */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) .btn-glass-pill,
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass,
+html.pcode-app-bento-root:not(.dark) .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) .btn-primary,
+html.pcode-app-bento-root:not(.dark) .btn-secondary,
+html.pcode-app-bento-root:not(.dark) .btn-success {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-purple-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #save-patient-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-add-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[onclick*='handleAddPatientClick'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[onclick*='loadPatientData'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[onclick*='loadXAIAnalysis'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section button,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[class*='from-purple-600'] {
+  background-color: #6d28d9 !important;
+  background-image: none !important;
+  border-color: #5b21b6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-purple-600:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #save-patient-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-add-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section button:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[class*='from-purple-600']:hover {
+  background-color: #5b21b6 !important;
+  border-color: #4c1d95 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-green-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-btn,
+body.pcode-app-bento #next-btn[data-step-mode="analyze"],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #save-record-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section button:nth-child(2),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[class*='from-green-500'] {
+  background-color: #0d9488 !important;
+  border-color: #0f766e !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-green-600:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #save-record-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section button:nth-child(2):hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[class*='from-green-500']:hover {
+  background-color: #0f766e !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section button:nth-child(3),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button[class*='from-blue-500'] {
+  background-color: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #cancel-add-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #prev-add-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer button.border {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .mobile-nav-links a {
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .mobile-nav-links a:hover {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #121212 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .mobile-nav-links a.bg-white\/10 {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #save-patient-btn.btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #next-btn.btn-purple-glass {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #analyze-btn.btn-teal-glass {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #prev-btn.btn-ghost-glass {
+  color: #475569 !important;
+}
+
+/* Results action bar — solid CTAs (beats unscoped pale glass colors) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar #view-xai-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #action-buttons .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn.btn-blue-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn {
+  background: #2563eb !important;
+  background-color: #2563eb !important;
+  background-image: none !important;
+  border: 2px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass:hover:not(:disabled),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn.btn-blue-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  border-color: #1e40af !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.14) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn svg,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn span,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn svg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar #new-analysis-btn,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #new-analysis-btn {
+  background: #ffffff !important;
+  border: 2px solid #0f172a !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar #save-record-btn,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #save-record-btn {
+  background: #0d9488 !important;
+  border: 2px solid #0f766e !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+}
+
+/* Dark mode — softer lavender borders / glows (photosensitivity) */
+html.dark .btn-purple-glass,
+html.dark .btn-glass-pill.btn-purple-glass {
+  border-color: rgba(196, 181, 253, 0.42);
+  color: #ddd6fe;
+  box-shadow: 0 0 0 rgba(196, 181, 253, 0);
+}
+
+html.dark .btn-purple-glass:hover:not(:disabled),
+html.dark .btn-glass-pill.btn-purple-glass:hover:not(:disabled) {
+  background-color: rgba(196, 181, 253, 0.14);
+  border-color: #e9d5ff;
+  color: #f5f3ff;
+  box-shadow: 0 0 16px rgba(196, 181, 253, 0.22);
+}
+
+html.dark .btn-glass-pill,
+html.dark .btn-purple-glass,
+html.dark .btn-teal-glass,
+html.dark .btn-rose-glass,
+html.dark .btn-blue-glass,
+html.dark .btn-ghost-glass {
+  box-shadow: 0 0 0 rgba(196, 181, 253, 0);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile — compact CTAs (beats desktop min-height 3.25rem locks)             */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  body.pcode-app-bento .btn-glass-pill,
+  body.pcode-app-bento .btn-purple-glass,
+  body.pcode-app-bento .btn-teal-glass,
+  body.pcode-app-bento .btn-rose-glass,
+  body.pcode-app-bento .btn-blue-glass,
+  body.pcode-app-bento .btn-ghost-glass,
+  body.pcode-app-bento .clinical-stepper-btn,
+  body.pcode-app-bento .pcode-btn-primary,
+  body.pcode-app-bento .pcode-btn-secondary,
+  body.pcode-app-bento .pcode-btn-danger,
+  body.pcode-app-bento .pcode-pagination-btn,
+  body.pcode-app-bento #quick-actions-section button,
+  body.pcode-app-bento #quick-actions-section .grid > button,
+  body.pcode-app-bento .pcode-action-bar .btn-purple-glass,
+  body.pcode-app-bento .pcode-action-bar .btn-teal-glass,
+  body.pcode-app-bento .pcode-action-bar .btn-blue-glass,
+  body.pcode-app-bento .pcode-action-bar .btn-ghost-glass,
+  body.pcode-app-bento .pcode-action-bar #next-btn,
+  body.pcode-app-bento .pcode-action-bar #next-add-btn,
+  body.pcode-app-bento .pcode-action-bar #save-patient-btn,
+  body.pcode-app-bento .pcode-results-action-bar .btn-purple-glass,
+  body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass,
+  body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+  body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass,
+  body.pcode-app-bento #patient-selection-card .btn-purple-glass,
+  body.pcode-app-bento #patient-selection-card .btn-blue-glass,
+  body.pcode-app-bento #patient-selection-card .btn-rose-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-teal-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-blue-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass,
+  body.pcode-app-bento .clinical-stepper-footer #next-btn,
+  body.pcode-app-bento .clinical-stepper-footer #prev-btn,
+  body.pcode-app-bento .clinical-stepper-footer #analyze-btn,
+  body.pcode-app-bento .clinical-stepper-footer #analyze-ultrasound-btn,
+  body.pcode-app-bento .clinical-stepper-footer #save-patient-btn,
+  body.pcode-app-bento .clinical-stepper-footer #next-add-btn,
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn,
+  body.pcode-app-bento #patient-modal #modal-footer-section .clinical-stepper-btn,
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer .clinical-stepper-btn,
+  body.pcode-app-bento .pcode-patients-toolbar .btn-purple-glass,
+  body.pcode-app-bento .pcode-patients-toolbar__btn,
+  body.pcode-app-bento .oauth-credentials-form .btn-submit,
+  body.login-bento-page .oauth-credentials-form .btn-submit,
+  body.login-bento-page .btn-submit,
+  body.xai-bento-page .btn-purple-glass,
+  body.xai-bento-page .btn-glass-pill,
+  body.xai-bento-page button.bg-purple-600 {
+    min-height: 2.35rem !important;
+    height: auto !important;
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    gap: 0.35rem !important;
+  }
+
+  body.pcode-app-bento .pcode-btn-icon,
+  body.pcode-app-bento .clinical-stepper-footer .pcode-btn-icon,
+  body.pcode-app-bento .clinical-stepper-btn svg.pcode-btn-icon {
+    width: 1.05rem !important;
+    height: 1.05rem !important;
+    margin-left: 0 !important;
+  }
+
+  body.pcode-app-bento .pcode-patient-selection-actions > button {
+    min-height: 2.35rem !important;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+}

@@ -1,0 +1,337 @@
+/* P-Code — Form Guard: confirmation dialog + success badge (bento dark theme) */
+
+.pcode-guard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(6, 6, 12, 0.62);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.pcode-guard-overlay.is-visible {
+  opacity: 1;
+}
+
+.pcode-guard-card {
+  width: 100%;
+  max-width: 26rem;
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.5rem 1.25rem;
+  text-align: center;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(139, 92, 246, 0.14) 0%, rgba(24, 24, 32, 0) 55%),
+    linear-gradient(180deg, rgba(30, 30, 40, 0.96) 0%, rgba(17, 17, 24, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 30px 80px -20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  transform: translateY(14px) scale(0.97);
+  opacity: 0;
+  transition:
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease;
+}
+
+.pcode-guard-overlay.is-visible .pcode-guard-card {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.pcode-guard-card__icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.pcode-guard-card__icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.pcode-guard-card__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f4f4f5;
+}
+
+.pcode-guard-card__message {
+  margin: 0 0 1.4rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(212, 212, 216, 0.82);
+}
+
+.pcode-guard-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.pcode-guard-btn {
+  flex: 1 1 0;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 0.12s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.pcode-guard-btn:active {
+  transform: translateY(1px);
+}
+
+.pcode-guard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pcode-guard-btn--discard {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.pcode-guard-btn--discard:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.pcode-guard-btn--save {
+  color: #fff;
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 8px 20px -8px rgba(124, 58, 237, 0.8);
+}
+
+.pcode-guard-btn--save:hover:not(:disabled) {
+  background: linear-gradient(180deg, #9b6cff 0%, #8b45f0 100%);
+}
+
+.pcode-guard-btn--save.is-loading .pcode-guard-btn__label {
+  opacity: 0.55;
+}
+
+.pcode-guard-btn--save.is-loading::before {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: pcode-guard-spin 0.7s linear infinite;
+}
+
+.pcode-guard-card__cancel {
+  margin-top: 0.85rem;
+  background: none;
+  border: none;
+  color: rgba(161, 161, 170, 0.85);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.pcode-guard-card__cancel:hover:not(:disabled) {
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Temporary green success badge (top-right toast) */
+.pcode-guard-success-badge {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 12050;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d1fae5;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 78, 59, 0.9) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 16px 40px -14px rgba(16, 185, 129, 0.55);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transition:
+    opacity 0.26s ease,
+    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.pcode-guard-success-badge.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.pcode-guard-success-badge__icon {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #34d399;
+}
+
+.pcode-guard-success-badge__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes pcode-guard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .pcode-guard-card {
+    padding: 1.5rem 1.25rem 1rem;
+  }
+
+  .pcode-guard-card__actions {
+    flex-direction: column-reverse;
+  }
+
+  .pcode-guard-success-badge {
+    top: auto;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcode-guard-overlay,
+  .pcode-guard-card,
+  .pcode-guard-success-badge {
+    transition: none;
+  }
+  .pcode-guard-btn--save.is-loading::before {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light mode — white card, dark text, solid CTAs (no neon glass)             */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-overlay,
+html[data-pcode-theme="light"] .pcode-guard-overlay {
+  background: rgba(15, 23, 42, 0.4);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card,
+html[data-pcode-theme="light"] .pcode-guard-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card__icon,
+html[data-pcode-theme="light"] .pcode-guard-card__icon {
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+  border: 1px solid #f59e0b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card__title,
+html[data-pcode-theme="light"] .pcode-guard-card__title {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card__message,
+html[data-pcode-theme="light"] .pcode-guard-card__message {
+  color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-btn--discard,
+html[data-pcode-theme="light"] .pcode-guard-btn--discard {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-btn--discard:hover:not(:disabled),
+html[data-pcode-theme="light"] .pcode-guard-btn--discard:hover:not(:disabled) {
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-btn--save,
+html[data-pcode-theme="light"] .pcode-guard-btn--save {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  background-image: none !important;
+  border-color: #5b21b6 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-btn--save:hover:not(:disabled),
+html[data-pcode-theme="light"] .pcode-guard-btn--save:hover:not(:disabled) {
+  background: #5b21b6 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card__cancel,
+html[data-pcode-theme="light"] .pcode-guard-card__cancel {
+  color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-card__cancel:hover:not(:disabled),
+html[data-pcode-theme="light"] .pcode-guard-card__cancel:hover:not(:disabled) {
+  color: #0f172a !important;
+  background: #f1f5f9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-success-badge,
+html[data-pcode-theme="light"] .pcode-guard-success-badge {
+  color: #065f46 !important;
+  background: #d1fae5 !important;
+  border: 1px solid #34d399 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-guard-success-badge__icon,
+html[data-pcode-theme="light"] .pcode-guard-success-badge__icon {
+  color: #059669 !important;
+}

@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+  <html lang="en" class="pcode-app-bento-root dark">
+    <head>
+  <script src="js/pcode-theme-init.js"></script>
+
+      <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID_HERE">
+          <title>P-Code - Model Performance</title>
+        <!-- Local CSS Files (No CDN) -->
+          <link rel="stylesheet" href="css/tailwind.css">
+          <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260725-backleft">
+              <!-- Local Fonts (No CDN) -->
+                <link rel="stylesheet" href="fonts/fonts.css">
+                  <!-- ECharts + Anime.js: jsDelivr UMD builds (local fallbacks in js/libs/ for air-gapped installs) -->
+                    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer crossorigin="anonymous"></script>
+                    <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink" defer></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+                    <style>
+        * { box-sizing: border-box; }
+        html { width: 100%; max-width: 100%; overflow-x: hidden; }
+        body {
+          font-family: 'Inter', sans-serif;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          min-height: 100dvh;
+        }
+        /* Hide auth UI initially to prevent flashing */
+        #profile-navbar, #mobile-profile {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #profile-navbar.hidden, #mobile-profile.hidden {
+            display: none !important;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(88, 28, 135, 0.7) 0%, rgba(109, 40, 217, 0.6) 100%),
+                        url('resources/unnamed.jpg') center/cover no-repeat;
+            background-attachment: fixed;
+            width: 100%;
+        }
+        
+        nav {
+            width: 100%;
+        }
+        
+        /* Mobile Menu - Right Sidebar */
+        .mobile-menu {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: min(320px, 85vw);
+            max-width: 90vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(88, 28, 135, 1) 0%, rgba(109, 40, 217, 1) 100%);
+            color: white;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 50;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        .mobile-menu::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        /* Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
+            /* Above navbar (z-40), below sidebar (z-50) */
+            z-index: 45;
+        }
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #mobile-menu-close-btn { position: absolute; top: 12px; right: 12px; z-index: 60; }
+        /* Ensure navbar button never gets hidden */
+        #mobile-menu-btn {
+            min-width: 44px;
+            min-height: 44px;
+            flex-shrink: 0;
+        }
+        /* Responsive navbar */
+        nav .flex.justify-between {
+            min-height: 64px;
+            flex-wrap: nowrap;
+        }
+        /* Desktop Navigation */
+        .nav-desktop {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .nav-desktop {
+                display: none !important;
+            }
+            /* Avoid iOS Safari jank with fixed backgrounds */
+            .gradient-bg { background-attachment: scroll !important; }
+        }
+        footer {
+            margin-top: auto;
+            width: 100%;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+        }
+        footer > div { width: 100%; }
+
+        .modal-footer-section,
+        .border-t.border-gray-200.p-3.bg-gradient-to-r,
+        #action-buttons-section {
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Checkbox styling - make them purple when checked */
+        input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #a855f7;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #a855f7;
+            border-color: #a855f7;
+        }
+
+        /* Mobile responsive improvements */
+        @media (max-width: 1024px) {
+            .max-w-7xl { padding: 1.5rem !important; }
+            h1, h2 { font-size: 1.5rem !important; }
+        }
+
+        @media (max-width: 768px) {
+            .max-w-7xl { padding: 1rem !important; }
+            h1 { font-size: 1.25rem !important; }
+            h2 { font-size: 1.125rem !important; }
+            p { font-size: 0.9375rem !important; }
+            button { min-height: 44px !important; }
+            input, select { min-height: 44px !important; font-size: 1rem; }
+        }
+
+        @media (max-width: 640px) {
+            .max-w-7xl { padding: 0.75rem; }
+            h1 { font-size: 1.125rem !important; }
+            h2 { font-size: 1rem !important; }
+            p { font-size: 0.875rem !important; }
+            button { padding: 0.5rem 1rem !important; font-size: 0.875rem !important; min-height: 48px !important; }
+            input, select { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
+        }
+                    </style>
+                  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260724-cm2x2b">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-confusion-bento.css?v=20260724-cmcenter">
+<link rel="stylesheet" href="css/pcode-model-performance.css?v=20260723-fonts">
+                  </head>
+                  <body class="pcode-app-bento pcode-mp-page min-h-screen flex flex-col antialiased">
+                    <!-- Sidebar Overlay -->
+                      <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()">
+                      </div>
+                      <!-- Navigation -->
+                        <nav class="pcode-topnav sticky top-0 z-50 border-b border-transparent">
+                          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="pcode-topnav__inner">
+                              <div class="pcode-topnav__brand space-x-2 sm:space-x-4">
+                                <div class="flex-shrink-0">
+                                  <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+                                </div>
+                                <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+                              </div>
+                              <div class="nav-desktop">
+                                <a href="provider-dashboard.html" class="pcode-nav-link">Dashboard</a>
+                                <a href="patients.html" class="pcode-nav-link">Patients</a>
+                                <a href="detect-provider.html" class="pcode-nav-link">Detect</a>
+                                <a href="xai-provider.html" class="pcode-nav-link">XAI Insights</a>
+                                <a href="model-performance.html" class="pcode-nav-link is-active" aria-current="page">Model Performance</a>
+                                <a href="about.html" class="pcode-nav-link">About</a>
+                              </div>
+                              <div class="pcode-topnav__menu">
+                                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-xl transition-colors" aria-label="Open menu">
+                                  <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </nav>
+
+                            <!-- Hamburger Menu - Right Sidebar (kept outside nav for correct layering) -->
+                            <div id="mobile-menu" class="mobile-menu">
+                              <button id="mobile-menu-close-btn" type="button" onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                              </button>
+                              <div class="h-full px-4 sm:px-6 py-4 space-y-2 md:py-6 md:space-y-4">
+                                <div id="mobile-profile" class="hidden pb-4 border-b border-white border-opacity-20">
+                                  <div class="flex items-center space-x-3 mb-4">
+                                    <img id="mobile-profile-avatar" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+                                    <div class="flex-1">
+                                      <p id="mobile-profile-name" class="text-sm font-semibold text-white"></p>
+                                      <p id="mobile-profile-role" class="text-xs text-white text-opacity-80"></p>
+                                    </div>
+                                  </div>
+                                  <button id="mobile-logout-btn" onclick="auth.logout()" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm active:bg-red-800">
+                                    Sign out
+                                  </button>
+                                </div>
+                                <div class="mobile-nav-links pt-2">
+                                  <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Menu</p>
+                                  <div class="space-y-1" data-pcode-mobile-nav>
+                                    <a href="provider-dashboard.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Dashboard</a>
+                                    <a href="patients.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Patients</a>
+                                    <a href="detect-provider.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Detect</a>
+                                    <a href="xai-provider.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">XAI Insights</a>
+                                    <a href="model-performance.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 transition-colors font-medium">Model Performance</a>
+                                    <a href="about.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">About</a>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Auth Modal — floating portal chooser -->
+                              <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+                                <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
+                                <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+                                  <button type="button" class="pcode-auth-float-close" onclick="auth.closeAuthModal()" aria-label="Close">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                  </button>
+                                  <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
+                                    <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
+                                      <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+                                      <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
+                                    </div>
+                                    <div class="pcode-auth-float-hint">
+                                      <h3 id="auth-modal-title">Choose How to Continue</h3>
+                                      <p>Select your access type before logging in or registering.</p>
+                                    </div>
+                                    <div class="pcode-auth-float-grid">
+                                      <button type="button" id="auth-entry-community" class="pcode-auth-float-option">
+                                        <span class="pcode-auth-float-icon" aria-hidden="true">
+                                          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+                                            <circle cx="32" cy="24" r="7" stroke="currentColor" stroke-width="3"/>
+                                            <path d="M19 45C21.5 38.5 27 35 32 35C37 35 42.5 38.5 45 45" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                          </svg>
+                                        </span>
+                                        <p class="pcode-auth-float-option-title">Continue as <span class="pcode-regular-user-label">Regular User</span></p>
+                                        <p class="pcode-auth-float-option-desc">For personal early detection, promoting timely clinical intervention and awareness.</p>
+                                      </button>
+                                      <button type="button" id="auth-entry-provider" class="pcode-auth-float-option">
+                                        <span class="pcode-auth-float-icon" aria-hidden="true">
+                                          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="11" y="10" width="42" height="44" rx="8" stroke="currentColor" stroke-width="3"/>
+                                            <path d="M32 20V40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                            <path d="M22 30H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                            <path d="M22 50H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                          </svg>
+                                        </span>
+                                        <p class="pcode-auth-float-option-title">Continue as<br>OB-GYN</p>
+                                        <p class="pcode-auth-float-option-desc">For OB-GYN specialists using decision support tools with patient management, improving clinical efficiency and patient care.</p>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
+                                    <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
+                                    <div id="login-form-container" class="pcode-auth-float-signin-body">
+                                      <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+                                      <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
+                                      <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
+                                      <div class="pcode-google-oauth-panel">
+                                        <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
+                                        <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
+                                        <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+                                        <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+    <!-- Header -->
+    <div class="gradient-bg py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="pcode-hero-title">Model Performance</h1>
+                <p class="pcode-mp-hero-desc text-xl text-purple-100">Monitor AI model accuracy in PMOS detection through comprehensive analysis of patient medical data and ultrasound images with visualization of performance metrics</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Current Model Status -->
+              <div class="pcode-bento-metrics-grid pcode-bento-metrics-grid--fluid mb-8">
+                <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--stacked pcode-metric-tile--accent-purple w-full min-w-0">
+                  <div class="pcode-metric-tile__row">
+                    <div class="pcode-metric-tile__copy">
+                      <p class="pcode-metric-label">XGBoost Accuracy</p>
+                      <p class="pcode-metric-value text-purple-400" id="xgboost-accuracy">--</p>
+                    </div>
+                    <div class="pcode-metric-tile__icon" aria-hidden="true">
+                      <svg class="pcode-metric-tile__svg" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="3" r="1.5"></circle>
+                        <line x1="12" y1="4.5" x2="7" y2="9" stroke="currentColor" stroke-width="1"></line>
+                        <line x1="12" y1="4.5" x2="17" y2="9" stroke="currentColor" stroke-width="1"></line>
+                        <circle cx="7" cy="10" r="1.2"></circle>
+                        <line x1="7" y1="11.2" x2="4" y2="15" stroke="currentColor" stroke-width="1"></line>
+                        <line x1="7" y1="11.2" x2="10" y2="15" stroke="currentColor" stroke-width="1"></line>
+                        <circle cx="17" cy="10" r="1.2"></circle>
+                        <line x1="17" y1="11.2" x2="14" y2="15" stroke="currentColor" stroke-width="1"></line>
+                        <line x1="17" y1="11.2" x2="20" y2="15" stroke="currentColor" stroke-width="1"></line>
+                        <circle cx="4" cy="16" r="1"></circle>
+                        <circle cx="10" cy="16" r="1"></circle>
+                        <circle cx="14" cy="16" r="1"></circle>
+                        <circle cx="20" cy="16" r="1"></circle>
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="pcode-mp-footnote text-purple-400/90">eXtreme Gradient Boosting test set performance</p>
+                </div>
+                <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--stacked pcode-metric-tile--accent-purple w-full min-w-0">
+                  <div class="pcode-metric-tile__row">
+                    <div class="pcode-metric-tile__copy">
+                      <p class="pcode-metric-label">XGBoost Dataset</p>
+                      <p class="pcode-metric-value" id="xgboost-samples">--</p>
+                    </div>
+                    <div class="pcode-metric-tile__icon" aria-hidden="true">
+                      <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="pcode-mp-footnote text-slate-400">Rotterdam Criteria for PMOS diagnosis</p>
+                </div>
+                <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--stacked pcode-metric-tile--accent-blue w-full min-w-0">
+                  <div class="pcode-metric-tile__row">
+                    <div class="pcode-metric-tile__copy">
+                      <p class="pcode-metric-label">CNN Accuracy</p>
+                      <p class="pcode-metric-value text-blue-400" id="cnn-accuracy">--</p>
+                    </div>
+                    <div class="pcode-metric-tile__icon" aria-hidden="true">
+                      <svg class="pcode-metric-tile__svg" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="5" cy="7" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                        <circle cx="5" cy="17" r="1"></circle>
+                        <circle cx="12" cy="9" r="1"></circle>
+                        <circle cx="12" cy="15" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <line x1="6" y1="7" x2="11" y2="9" stroke="currentColor" stroke-width="1" opacity="0.7"></line>
+                        <line x1="6" y1="12" x2="11" y2="9" stroke="currentColor" stroke-width="1" opacity="0.7"></line>
+                        <line x1="13" y1="9" x2="18" y2="12" stroke="currentColor" stroke-width="1" opacity="0.7"></line>
+                        <line x1="13" y1="15" x2="18" y2="12" stroke="currentColor" stroke-width="1" opacity="0.7"></line>
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="pcode-mp-footnote text-blue-400/90">Convolutional Neural Network on transvaginal ultrasound — held-out test performance</p>
+                </div>
+                <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--stacked pcode-metric-tile--accent-blue w-full min-w-0">
+                  <div class="pcode-metric-tile__row">
+                    <div class="pcode-metric-tile__copy">
+                      <p class="pcode-metric-label">CNN Image Dataset</p>
+                      <p class="pcode-metric-value" id="cnn-image-count">--</p>
+                    </div>
+                    <div class="pcode-metric-tile__icon" aria-hidden="true">
+                      <svg class="pcode-metric-tile__svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="pcode-mp-footnote text-slate-400">Transvaginal ultrasound image dataset</p>
+                </div>
+              </div>
+<!-- Performance Metrics -->
+  <!-- XGBoost Data Split Chart -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost — Dataset Split</h2>
+    <div class="pcode-chart-panel w-full min-w-0"><div id="data-split-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0"></div></div>
+    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+        <li><strong>Total Dataset:</strong> 578 patients (214 positive PMOS cases, 364 negative cases)</li>
+        <li><strong>Training Set (70%):</strong> 404 patients (150 positive, 254 negative) — Used to train the XGBoost model</li>
+        <li><strong>Test Set (30%):</strong> 174 patients (64 positive, 110 negative) - Used to evaluate final model performance on unseen data</li>
+        <li><strong>Why this split:</strong> Stratified split ensures both datasets have the same proportion of positive/negative cases, preventing bias and providing reliable performance estimates</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Test Set Performance Metrics -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Test Set Performance Metrics</h2>
+    <div class="pcode-chart-panel w-full min-w-0"><div id="performance-metrics-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0"></div></div>
+    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+        <li><strong>AUC-PR Score (96.20%):</strong> Area Under the Precision-Recall Curve. Measures model performance for imbalanced datasets, balancing precision (false alarms) and recall (missed cases).</li>
+        <li><strong>Accuracy (95.40%):</strong> Overall correctness of the model. Percentage of all predictions (both positive and negative) that were correct.</li>
+        <li><strong>Precision (92.40%):</strong> Of all patients the model flagged as having PMOS, how many actually had it. High precision minimizes unnecessary testing.</li>
+        <li><strong>Recall (95.30%):</strong> Of all patients who actually have PMOS, how many did the model correctly identify. High recall minimizes missed diagnoses.</li>
+        <li><strong>F1 Score (93.85%):</strong> Harmonic mean of Precision and Recall. Balances both metrics, providing a single score for overall model performance.</li>
+        <li><strong>Clinical Interpretation:</strong> The model achieves 95.40% overall accuracy on the test set, correctly identifying 95.30% of actual PMOS cases while maintaining only 7.60% false positives (flagging 5 out of 110 healthy patients incorrectly). This balance makes it clinically reliable for detection.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Test Set Confusion Matrix -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">Test Set Confusion Matrix</h2>
+    <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none mb-3">
+      <div id="xgboost-confusion-test" class="pcb-confusion-bento-host pcb-cm-bento-host--purple" aria-label="Test set confusion matrix"></div>
+    </div>
+    <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+        <li><strong>What this shows:</strong> Performance on the held-out test set (30% of total 578 cases), representing real-world model performance on unseen data.</li>
+        <li><strong>True Positive (TP):</strong> Patients with the condition correctly identified by the model on the test set.</li>
+        <li><strong>False Positive (FP):</strong> Healthy patients incorrectly flagged as having the condition on the test set.</li>
+        <li><strong>False Negative (FN):</strong> Patients with the condition that the model missed on the test set.</li>
+        <li><strong>True Negative (TN):</strong> Healthy patients correctly identified as not having the condition on the test set.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-stretch mb-4 sm:mb-6 md:mb-8">
+    <!-- Training vs Validation Accuracy -->
+      <div class="pcode-card-static pcode-bento-card shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Stratified 10-Fold Cross-Validation</h2>
+      <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none">
+      <div id="training-chart" class="pcb-echart-host"></div>
+      </div>
+      <div class="mt-4 flex justify-between text-sm text-gray-600">
+        <span>Folds: 10</span>
+      <span>Validation Strategy: Stratified</span>
+    <span>Primary Metric: AUC-PR</span>
+</div>
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+            <li><strong>What this measures:</strong> This chart shows how consistently the AI model performs when tested on different patient groups.</li>
+            <li><strong>Stratified 10-Fold:</strong> The patient dataset was divided into 10 equal groups, ensuring each group has the same proportion of positive/negative cases (like a doctor ensuring diversity in clinical trials).</li>
+            <li><strong>The purple bars:</strong> Show the model's AUC-PR performance score on each test group (ranging 89.90% to 99.80%). Higher values mean better diagnostic accuracy.</li>
+            <li><strong>Why important:</strong> Consistent high performance across all folds indicates the model works reliably on diverse patient data, not just lucky on one group.</li>
+          </ul>
+        </div>
+</div>
+<!-- Confusion Matrix -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">Stratified 10-Fold CV: Confusion Matrix (Global) </h2>
+  <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none mb-3">
+      <div id="xgboost-confusion-cv" class="pcb-confusion-bento-host pcb-cm-bento-host--purple" aria-label="Cross-validation confusion matrix"></div>
+    </div>
+    <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+        <li><strong>What is a Confusion Matrix:</strong> A confusion matrix is a table that summarizes the performance of a diagnostic model by comparing predicted outcomes against actual outcomes. It reveals not just how many cases the model got right, but specifically which types of errors it makes helping clinicians understand the model's reliability for their specific use case.</li>
+        <li><strong>What this shows:</strong> Aggregated diagnostic results across all 10 patient groups from 578 total cases, showing how the model classified each outcome.</li>
+        <li><strong>True Positive (TP - 190):</strong> Patients who are PMOS Positive correctly identified by the model. High numbers indicate good disease detection.</li>
+        <li><strong>False Positive (FP - 33):</strong> PMOS Negative patients incorrectly flagged as having the condition (false alarms). These lead to unnecessary testing and patient anxiety.</li>
+        <li><strong>False Negative (FN - 24):</strong> Patients who are PMOS Positive that the model missed and has been classified as negative. This is clinically the most concerning error type as it delays treatment.</li>
+        <li><strong>True Negative (TN - 331):</strong> PMOS Negative patients correctly identified as not having the condition.</li>
+        <li><strong>Clinical interpretation:</strong> Overall accuracy is 90.10% with sensitivity of 88.80% and specificity of 91.00%. Priority should be reducing the 24 false negatives to prevent missed diagnoses.</li>
+      </ul>
+    </div>
+</div>
+</div>
+<!-- XGBoost Model Performance -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost — Model Performance</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-stretch mb-4 sm:mb-6 md:mb-8">
+      <!-- Test Set Metrics -->
+      <div class="mp-test-set-shell p-6">
+        <h3 class="font-bold text-gray-800 text-xl mb-4">Test Set Results</h3>
+        <div class="pcode-mp-stat-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="mp-test-set-tile p-4">
+            <p class="mp-test-set-label text-sm">AUC-PR Score</p>
+            <p class="mp-test-set-value pcode-stat-value text-white font-black">96.20%</p>
+            <p class="mp-test-set-desc mt-1">Excellent balance between precision and recall. This high score indicates the model rarely misses PMOS cases while maintaining low false alarms.</p>
+          </div>
+          <div class="mp-test-set-tile p-4">
+            <p class="mp-test-set-label text-sm">Accuracy</p>
+            <p class="mp-test-set-value pcode-stat-value text-white">95.40%</p>
+            <p class="mp-test-set-desc mt-1">The model correctly classified 95.4% of all test cases (both positive and negative), demonstrating strong overall performance on unseen data.</p>
+          </div>
+          <div class="mp-test-set-tile p-4">
+            <p class="mp-test-set-label text-sm">Precision</p>
+            <p class="mp-test-set-value pcode-stat-value text-white">92.40%</p>
+            <p class="mp-test-set-desc mt-1">Of the patients flagged as PMOS-positive, 92.4% actually have PMOS. This means only 7.6% are false alarms, minimizing unnecessary testing.</p>
+          </div>
+          <div class="mp-test-set-tile p-4">
+            <p class="mp-test-set-label text-sm">Recall</p>
+            <p class="mp-test-set-value pcode-stat-value text-white">95.30%</p>
+            <p class="mp-test-set-desc mt-1">The model detected 95.3% of actual PMOS cases. Only 4.7% of true cases were missed, which is critical for clinical diagnosis and early intervention.</p>
+          </div>
+          <div class="mp-test-set-tile p-4 col-span-2">
+            <p class="mp-test-set-label text-sm">F1-Score</p>
+            <p class="mp-test-set-value pcode-stat-value text-white">93.85%</p>
+            <p class="mp-test-set-desc mt-1">Harmonic mean of precision and recall, providing a single metric that balances both concerns. 93.8% indicates excellent overall model reliability for clinical use.</p>
+          </div>
+        </div>
+      </div>
+      <!-- Cross-Validation Results -->
+      <div class="bento-glass-card rounded-xl p-6">
+        <h3 class="font-bold text-gray-800 text-xl mb-4">Cross-Validation Results</h3>
+        <div class="pcode-mp-stat-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">Mean AUC-PR</p>
+            <p class="mp-metric-value pcode-stat-value">95.20%</p>
+            <p class="mp-metric-desc mt-1">Average performance across 10 folds. Consistently high value indicates the model performs reliably on different patient populations.</p>
+          </div>
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">Std Deviation</p>
+            <p class="mp-metric-value pcode-stat-value">3.08%</p>
+            <p class="mp-metric-desc mt-1">Low variability indicates stable performance across folds. The model won't produce drastically different results on similar patient groups.</p>
+          </div>
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">Global AUC-PR</p>
+            <p class="mp-metric-value pcode-stat-value">94.90%</p>
+            <p class="mp-metric-desc mt-1">Combined performance when all data is used. Close to mean AUC-PR confirms the model generalizes well without overfitting.</p>
+          </div>
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">CV Accuracy</p>
+            <p class="mp-metric-value pcode-stat-value">90.10%</p>
+            <p class="mp-metric-desc mt-1">Cross-validation accuracy of 90.1% shows the model's real-world performance on truly held-out data, providing realistic expectations for clinical deployment.</p>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 px-4 pb-4 mp-glass-inset">
+          <p class="text-xs leading-relaxed">The XGBoost model shows excellent diagnostic performance with 95.40% accuracy and 96.20% AUC-PR. Cross-validation confirms consistent reliability across patient populations with minimal variability (±3.08%), validating it as a clinically viable PMOS screening tool. With 95.30% recall and 92.40% precision, the model effectively balances sensitivity and specificity for workflow integration.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CNN Dataset Split Chart -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN — Dataset Split</h2>
+    <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-data-split-chart" class="pcb-echart-host"></div></div>
+    <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+        <li><strong>Total Dataset:</strong> 7,445 ultrasound images (3,619 PMOS Positive Cases, 3,826 Normal Negative cases)</li>
+        <li><strong>Training Set:</strong> 5,211 images (2,533 PMOS Positive, 2,678 Normal Negative) — Used to train the CNN model on diverse follicular patterns</li>
+        <li><strong>Validation Set:</strong> 1,117 images (543 PMOS Positive, 574 Normal Negative) - Used to tune model hyperparameters and monitor learning during training</li>
+        <li><strong>Test Set:</strong> 1,117 images (543 PMOS Positive, 574 Normal Negative) - Used to evaluate final model performance on completely unseen ultrasound images</li>
+        <li><strong>Why this split:</strong> The stratified split ensures both train, validation, and test sets maintain the same class proportions, preventing bias and providing reliable performance estimates on medical imaging data</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CNN Training History -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN — Training History</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+      <!-- Accuracy Chart -->
+      <div>
+        <h3 class="font-semibold text-gray-800 mb-4 text-center">Accuracy per Epoch</h3>
+        <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-accuracy-chart" class="pcb-echart-host"></div></div>
+      </div>
+      <!-- Loss Chart -->
+      <div>
+        <h3 class="font-semibold text-gray-800 mb-4 text-center">Loss per Epoch</h3>
+        <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-loss-chart" class="pcb-echart-host"></div></div>
+      </div>
+    </div>
+    
+    <!-- Summary Stats -->
+    <div class="pcode-bento-metrics-grid pcode-bento-metrics-grid--fluid mt-8">
+      <div class="mp-metric-tile pcode-metric-tile pcode-metric-tile--stacked flex flex-col !items-stretch !justify-start gap-2 p-3 sm:p-5">
+        <p class="pcode-metric-label">Best Training Accuracy</p>
+        <p class="pcode-metric-value">97.03%</p>
+        <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Epoch 8</p>
+      </div>
+      <div class="mp-metric-tile pcode-metric-tile pcode-metric-tile--stacked flex flex-col !items-stretch !justify-start gap-2 p-3 sm:p-5">
+        <p class="pcode-metric-label">Best Validation Accuracy</p>
+        <p class="pcode-metric-value">97.31%</p>
+        <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Epoch 1</p>
+      </div>
+      <div class="mp-metric-tile pcode-metric-tile pcode-metric-tile--stacked flex flex-col !items-stretch !justify-start gap-2 p-3 sm:p-5">
+        <p class="pcode-metric-label">Lowest Training Loss</p>
+        <p class="pcode-metric-value">0.0737</p>
+        <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Epoch 8</p>
+      </div>
+      <div class="mp-metric-tile pcode-metric-tile pcode-metric-tile--stacked flex flex-col !items-stretch !justify-start gap-2 p-3 sm:p-5">
+        <p class="pcode-metric-label">Lowest Validation Loss</p>
+        <p class="pcode-metric-value">0.0480</p>
+        <p class="text-[10px] sm:text-xs text-slate-400 mt-1">Epoch 10</p>
+      </div>
+    </div>
+
+    <div class="mt-4 pt-4 px-4 pb-4 bg-blue-50 rounded-lg border border-blue-200">
+      <p class="text-xs text-gray-700 leading-relaxed">The CNN model demonstrates stable learning progression across 10 training epochs. Training accuracy improves consistently from 94.6% to 97.0%, while validation accuracy remains high (96.9–97.3%), indicating excellent generalization without overfitting. The model achieves strong performance with minimal gap between training and validation metrics, suggesting robust feature learning for ovarian ultrasound interpretation.</p>
+    </div>
+
+    <!-- CNN Test Set Performance Metrics Bar Graph -->
+    <div class="mt-8">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">CNN — Test Set Performance</h3>
+      <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-performance-metrics-chart" class="pcb-echart-host"></div></div>
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+          <li><strong>Test Accuracy (96.33%):</strong> Overall correctness on unseen ultrasound images. The model correctly classified 96.33% of all test cases.</li>
+          <li><strong>AUC Score (99.90%):</strong> Exceptional discrimination ability between PMOS Positive and Normal Negative cases, showing the model is highly reliable for differentiation.</li>
+          <li><strong>PMOS Positive Precision (93.28%):</strong> Of all cases flagged as PMOS Positive, 93.28% are truly PMOS Positive - highly accurate positive detection.</li>
+          <li><strong>PMOS Positive Recall (99.63%):</strong> Detects 99.63% of true PMOS Positive Cases, minimizing missed diagnoses while maintaining high precision.</li>
+          <li><strong>PMOS Positive F1-Score (96.35%):</strong> Balanced precision-recall score for PMOS Positive Cases, indicating excellent overall performance for positive class detection.</li>
+          <li><strong>Normal Negative Precision (99.63%):</strong> Correctly identifies Normal Negative cases with 99.63% confidence.</li>
+          <li><strong>Normal Negative Recall (93.21%):</strong> Detects 93.21% of true Normal Negative cases, ensuring minimal false positives.</li>
+          <li><strong>Normal Negative F1-Score (96.31%):</strong> Balanced metric for Normal Negative cases showing strong discrimination ability.</li>
+          <li><strong>Clinical Interpretation:</strong> The CNN model achieves exceptional test set performance with 96.33% accuracy and 99.90% AUC. Excellent precision and recall for PMOS-positive cases supports reliable clinical deployment.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CNN Test Set Evaluation and Training Confusion Matrix Side by Side -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-stretch mb-4 sm:mb-6 md:mb-8">
+    <!-- CNN Test Set Evaluation -->
+    <div class="pcode-card-static pcode-bento-card shadow-lg">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN — Test Set Evaluation</h2>
+      <div class="bento-glass-card rounded-xl p-6">
+        <!-- Overall Metrics -->
+        <div class="pcode-mp-stat-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">Test Accuracy</p>
+            <p class="mp-metric-value pcode-stat-value">96.33%</p>
+            <p class="mp-metric-desc mt-1">Overall correctness on unseen ultrasound images</p>
+          </div>
+          <div class="mp-metric-tile p-4">
+            <p class="mp-metric-label">AUC Score</p>
+            <p class="mp-metric-value pcode-stat-value">99.90%</p>
+            <p class="mp-metric-desc mt-1">Exceptional discrimination ability</p>
+          </div>
+        </div>
+        
+        <!-- PMOS and Normal Specific Metrics -->
+        <div class="pcode-mp-split-cols grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- PMOS Positive Specific -->
+          <div>
+            <h3 class="font-bold text-gray-800 text-lg mb-4 pb-2 border-b border-white/10">PMOS Positive Cases</h3>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">Precision</p>
+                <p class="mp-metric-value text-2xl">93.28%</p>
+                <p class="mp-metric-desc mt-1">All flagged PMOS Positive Cases are truly positive</p>
+              </div>
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">Recall</p>
+                <p class="mp-metric-value text-2xl">99.63%</p>
+                <p class="mp-metric-desc mt-1">Detects 99.63% of true PMOS Positive Cases</p>
+              </div>
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">F1-Score</p>
+                <p class="mp-metric-value text-2xl">96.35%</p>
+                <p class="mp-metric-desc mt-1">Balanced precision-recall score</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Normal Negative Specific -->
+          <div>
+            <h3 class="font-bold text-gray-800 text-lg mb-4 pb-2 border-b border-white/10">Normal Negative Cases</h3>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">Precision</p>
+                <p class="mp-metric-value text-2xl">99.63%</p>
+                <p class="mp-metric-desc mt-1">Correctly identifies Normal Negative cases</p>
+              </div>
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">Recall</p>
+                <p class="mp-metric-value text-2xl">93.21%</p>
+                <p class="mp-metric-desc mt-1">Detects 93.21% of Normal Negative cases</p>
+              </div>
+              <div class="mp-metric-tile p-3">
+                <p class="mp-metric-label">F1-Score</p>
+                <p class="mp-metric-value text-2xl">96.31%</p>
+                <p class="mp-metric-desc mt-1">Balanced precision-recall score</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-4 px-4 pb-4 mp-glass-inset">
+          <p class="text-xs leading-relaxed">The CNN achieves exceptional test set performance with 96.33% accuracy and 99.90% AUC. Outstanding recall (99.63%) for PMOS Positive detection ensures minimal missed diagnoses with good precision (93.28%). For Normal Negative cases, the model achieves excellent precision (99.63%) with solid recall (93.21%), ensuring reliable classification. The model is highly reliable for clinical deployment.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training Test Set Confusion Matrix -->
+    <div class="pcode-card-static pcode-bento-card shadow-lg">
+      <h3 class="text-xl font-bold text-gray-800 mb-3">Training Test Set Confusion Matrix</h3>
+      <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none mb-3">
+        <div id="cnn-confusion-test" class="pcb-confusion-bento-host pcb-cm-bento-host--blue" aria-label="CNN test set confusion matrix"></div>
+      </div>
+      <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
+          <li><strong>What this shows:</strong> AI model performance on 1,117 unseen test ultrasound images (543 PMOS Positive, 574 Normal Negative cases).</li>
+          <li><strong>True Positive (TP - 541):</strong> PMOS Positive Cases correctly detected by the model, representing 99.63% sensitivity and excellent disease detection capability.</li>
+          <li><strong>False Positive (FP - 39):</strong> 39 false positives representing 6.8% of Normal Negative cases, with 93.28% precision ensuring good accuracy when flagging PMOS Positive Cases.</li>
+          <li><strong>False Negative (FN - 2):</strong> Only 2 missed PMOS Positive Cases (0.37% false negative rate), representing extremely low risk of missed diagnoses.</li>
+          <li><strong>True Negative (TN - 535):</strong> 535 Normal Negative cases correctly identified with 93.21% specificity.</li>
+          <li><strong>Clinical Impact:</strong> Exceptional sensitivity (99.63%) with minimal false negatives ensures almost no missed PMOS cases, making the model highly reliable for clinical deployment.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparative Performance Metrics -->
+  <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Comparative Model Performance Analysis</h2>
+    <div class="pcode-chart-stack w-full min-w-0">
+      <div class="pcode-chart-panel pcode-chart-panel--grouped-bar w-full min-w-0">
+        <div id="comparative-performance-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0" aria-describedby="comparative-performance-legend"></div>
+      </div>
+      <div id="comparative-performance-legend" class="pcode-chart-legend" aria-label="Comparative model performance legend"></div>
+    </div>
+    <div class="mt-6 p-4 mp-glass-inset">
+      <ul class="text-sm leading-relaxed space-y-2">
+        <li><strong>XGBoost:</strong> Achieved 95.4% accuracy with 92.42% precision and 95.31% recall on the Rotterdam criteria dataset PMOS, providing excellent balance between false positives and missed diagnoses.</li>
+        <li><strong>CNN PMOS-positive:</strong> 93.28% precision with 99.63% recall minimizes missed PMOS cases, prioritizing sensitivity for disease detection.</li>
+        <li><strong>CNN (normal):</strong> 99.63% precision limits false positives when classifying normal ovarian morphology, with 93.21% recall maintaining strong specificity.</li>
+        <li><strong>Integrated Clinical View:</strong> Both modalities demonstrate complementary strengths — XGBoost provides balanced overall accuracy on clinical &amp; lab metrics, while the CNN excels at follicular pattern classification with exceptional recall for PMOS-positive cases.</li>
+      </ul>
+    </div>
+  </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Auth Module -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/auth.js?v=20260725-guestchromehide" defer></script>
+    <script src="js/pcode-google-auth.js?v=20260707a" defer></script>
+    <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+    <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+    <script src="js/pcode-confusion-bento.js?v=20260724-cmcenter" defer></script>
+
+    <script defer>
+      // Utility function to safely use anime when ready
+      function whenAnimeReady(callback, maxAttempts = 50) {
+        let attempts = 0;
+        const checkAnime = () => {
+          if (typeof anime !== 'undefined' && typeof anime.stagger === 'function') {
+            callback();
+          } else if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(checkAnime, 100);
+          } else {
+            console.warn('Anime.js did not load after waiting');
+            callback(); // Call anyway to not block page
+          }
+        };
+        checkAnime();
+      }
+
+      // Immediately check authentication and redirect if not logged in
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof auth !== 'undefined' && !auth.isAuthenticated()) {
+          window.location.href = 'login-new.html';
+          return;
+        }
+
+        // Providers only: hide performance logs/redirect regular users & guests
+        try {
+          const roleRaw = String(auth?.currentUser?.role || '').trim().toLowerCase().replace(/\s+/g, ' ');
+          const isGuest = !!auth?.currentUser?.isGuest;
+          const isRegularUser = (roleRaw === 'regular user' || roleRaw === 'regular_user' || roleRaw === 'community user') && !isGuest;
+          const isProvider = !!roleRaw && !isRegularUser && !isGuest;
+
+          // If a regular user/guest somehow opens this page, send them back to the dashboard
+          if (isRegularUser || isGuest || !isProvider) {
+            window.location.replace('index.html');
+            return;
+          }
+
+        } catch (_) {
+          /* provider gate only */
+        }
+      });
+
+      // Toggle mobile menu
+      function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const overlay = document.getElementById('menu-overlay');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        if (!mobileMenu) return;
+        const willOpen = !mobileMenu.classList.contains('active');
+        if (willOpen) {
+          mobileMenu.classList.add('active');
+          if (overlay) overlay.classList.add('active');
+          document.body.classList.add('pcode-mobile-nav-open');
+          document.body.style.overflow = 'hidden';
+        } else {
+          closeMobileMenu();
+        }
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if (menuIcon) menuIcon.classList.remove('hidden');
+      }
+
+      // Close mobile menu
+      function closeMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const overlay = document.getElementById('menu-overlay');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.classList.remove('pcode-mobile-nav-open');
+        document.body.style.overflow = '';
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+        if (menuIcon) menuIcon.classList.remove('hidden');
+      }
+      // Note: in “desktop site” mode we keep hamburger + profile actions,
+      // but hide the sidebar navigation link list via CSS (when present).
+    </script>
+
+<script defer>
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    initializeCNNCharts();
+    loadXGBoostData();
+    loadMetricCardsData();
+
+    // Re-apply light-mode axis/legend ink after all charts exist (ECharts canvas).
+    setTimeout(function () {
+      if (window.PcodeEchartNeon && typeof window.PcodeEchartNeon.refreshAllChartsOnThemeChange === 'function') {
+        window.PcodeEchartNeon.refreshAllChartsOnThemeChange();
+      }
+      if (typeof echarts === 'undefined') return;
+      document.querySelectorAll('.pcb-echart-host, [id$="-chart"]').forEach(function (dom) {
+        var inst = echarts.getInstanceByDom(dom);
+        if (inst) pcbForceLightChartInk(inst);
+      });
+    }, 0);
+
+    window.addEventListener('pcode-theme-change', function () {
+      setTimeout(function () {
+        if (typeof echarts === 'undefined') return;
+        document.querySelectorAll('.pcb-echart-host, [id$="-chart"]').forEach(function (dom) {
+          var inst = echarts.getInstanceByDom(dom);
+          if (inst) pcbForceLightChartInk(inst);
+        });
+      }, 30);
+    });
+    
+    // Use whenAnimeReady to wait for anime before animating
+    if (typeof whenAnimeReady !== 'undefined') {
+      whenAnimeReady(function() {
+        if (typeof anime !== 'undefined' && typeof anime.stagger === 'function') {
+          anime({
+            targets: '.bg-white',
+            translateY: [30, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(200),
+            duration: 800,
+            easing: 'easeOutExpo'
+          });
+        }
+      });
+    }
+
+  });
+
+  let xgboostData = null;
+
+  function pcbIsBentoDark() {
+    var html = document.documentElement;
+    if (!html) return false;
+    // Match CSS `:not(.dark)` — class is source of truth for light mode.
+    if (!html.classList.contains('dark')) return false;
+    var attr = html.getAttribute('data-pcode-theme');
+    if (attr === 'light') return false;
+    return true;
+  }
+
+  /** Force black axis/legend ink when light mode (ECharts canvas ignores CSS). */
+  function pcbForceLightChartInk(chart) {
+    if (!chart || pcbIsBentoDark()) return;
+    var ink = '#0f172a';
+    chart.setOption(
+      {
+        textStyle: { color: ink },
+        legend: {
+          textStyle: { color: ink, fontWeight: 'bold' },
+          pageTextStyle: { color: ink }
+        },
+        xAxis: {
+          axisLabel: { color: ink },
+          nameTextStyle: { color: ink },
+          axisLine: { show: true, lineStyle: { color: '#94a3b8', width: 1.25 } },
+          axisTick: { show: true, lineStyle: { color: '#94a3b8' } }
+        },
+        yAxis: {
+          axisLabel: { color: ink },
+          nameTextStyle: { color: ink },
+          axisLine: { show: true, lineStyle: { color: '#94a3b8', width: 1.25 } },
+          axisTick: { show: true, lineStyle: { color: '#94a3b8' } },
+          splitLine: { show: true, lineStyle: { color: 'rgba(15, 23, 42, 0.2)', width: 1 } }
+        }
+      },
+      false
+    );
+  }
+
+  function pcbIsBentoPage() {
+    return document.body && document.body.classList.contains('pcode-app-bento');
+  }
+
+  function pcbBarFill(c0, c1) {
+    if (window.PcodeEchartNeon) return window.PcodeEchartNeon.barFillVertical(c0, c1);
+    if (typeof echarts === 'undefined' || !echarts.graphic || !echarts.graphic.LinearGradient) return c0;
+    return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 0, color: c0 },
+      { offset: 1, color: c1 }
+    ]);
+  }
+
+  function pcbNeonBarItemStyle(variant, stopsPair) {
+    if (window.PcodeEchartNeon) {
+      if (stopsPair) return window.PcodeEchartNeon.verticalBarFromStops(stopsPair[0], stopsPair[1]);
+      return window.PcodeEchartNeon.verticalBar(variant);
+    }
+    if (!pcbIsBentoDark()) {
+      return { color: '#6d28d9', borderRadius: [8, 8, 0, 0] };
+    }
+    return { color: pcbBarFill('#a855f7', '#4f46e5'), borderRadius: [8, 8, 0, 0] };
+  }
+
+  function pcbLegendColor(variant) {
+    if (window.PcodeEchartNeon && typeof window.PcodeEchartNeon.legendColor === 'function') {
+      return window.PcodeEchartNeon.legendColor(variant);
+    }
+    const fallbacks = {
+      positive: '#dc2626',
+      imaging: '#6366f1',
+      clinical: '#a855f7',
+      muted: '#c084fc'
+    };
+    return fallbacks[variant] || fallbacks.clinical;
+  }
+
+  function pcbLegendEntry(name, variant) {
+    return { name: name, itemStyle: { color: pcbLegendColor(variant) } };
+  }
+
+  function pcbChartTheme() {
+    if (window.PcodeEchartNeon && typeof window.PcodeEchartNeon.chartTheme === 'function') {
+      return window.PcodeEchartNeon.chartTheme();
+    }
+    const page = pcbIsBentoPage();
+    const dark = pcbIsBentoDark();
+    const label = dark ? 'rgba(158, 154, 169, 0.95)' : '#000000';
+    const line = dark ? 'rgba(255, 255, 255, 0.18)' : '#000000';
+    const text = dark ? 'rgba(237, 233, 254, 0.92)' : '#000000';
+    return {
+      d: page,
+      dark,
+      text,
+      muted: label,
+      line,
+      tooltip: page
+        ? dark
+          ? { backgroundColor: 'rgba(30, 41, 59, 0.96)', borderColor: 'rgba(148, 163, 184, 0.35)', textStyle: { color: '#ffffff' } }
+          : { backgroundColor: '#ffffff', borderColor: '#000000', textStyle: { color: '#000000' } }
+        : {},
+      legend: page
+        ? { textStyle: { color: label, fontWeight: 'bold' }, pageTextStyle: { color: label } }
+        : {},
+      axisCat: (base) => {
+        if (!page) return base;
+        return Object.assign({}, base, {
+          axisLabel: Object.assign({}, base.axisLabel, { color: label }),
+          nameTextStyle: Object.assign({}, base.nameTextStyle, { color: label }),
+          axisLine: { show: true, lineStyle: { color: line, width: 1.25 } },
+          axisTick: { show: true, lineStyle: { color: line } }
+        });
+      },
+      axisVal: (base) => {
+        if (!page) return base;
+        const split = base.splitLine !== false
+          ? Object.assign({}, base.splitLine || { show: true }, {
+              lineStyle: Object.assign({}, (base.splitLine && base.splitLine.lineStyle) || {}, {
+                color: dark ? line : 'rgba(0, 0, 0, 0.35)',
+                width: 1
+              })
+            })
+          : base.splitLine;
+        return Object.assign({}, base, {
+          axisLabel: Object.assign({}, base.axisLabel, { color: label }),
+          nameTextStyle: Object.assign({}, base.nameTextStyle, { color: label }),
+          axisLine: { show: true, lineStyle: { color: line, width: 1.25 } },
+          axisTick: { show: true, lineStyle: { color: line } },
+          splitLine: split
+        });
+      }
+    };
+  }
+
+  function pcbGetOrInitChart(dom) {
+    if (typeof echarts === 'undefined' || !dom) return null;
+    var chart = echarts.getInstanceByDom(dom);
+    if (!chart) chart = echarts.init(dom);
+    return chart;
+  }
+
+  var PCB_CNN_CM_LABELS = {
+    actualNegative: 'Normal Negative',
+    actualPositive: 'PMOS Positive',
+    predictedNegative: 'Pred. Normal',
+    predictedPositive: 'Pred. PMOS'
+  };
+
+  function renderConfusionBento(domId, cm, labelOpts, palette) {
+    if (!window.PcodeConfusionBento || typeof window.PcodeConfusionBento.render !== 'function') {
+      return false;
+    }
+    var opts = Object.assign({}, labelOpts || {});
+    if (palette) opts.palette = palette;
+    return window.PcodeConfusionBento.render(domId, cm, opts);
+  }
+
+  function loadXGBoostData() {
+    fetch('XGBoost Model/model_performance_report.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        xgboostData = data;
+        initializeXGBoostCharts();
+      })
+      .catch(error => {
+        console.error('Error loading XGBoost data:', error);
+      });
+  }
+
+  function loadMetricCardsData() {
+    // Load XGBoost model data
+    fetch('XGBoost Model/model_performance_report.json')
+      .then(response => response.json())
+      .then(xgboostData => {
+        // Extract XGBoost metrics
+        const xgboostAccuracy = (xgboostData.test_set_results.metrics.accuracy).toFixed(2);
+        const xgboostSamples = xgboostData.metadata.total_samples;
+        
+        // Update XGBoost metric cards
+        const xgboostAccuracyElement = document.getElementById('xgboost-accuracy');
+        const xgboostSamplesElement = document.getElementById('xgboost-samples');
+        
+        if (xgboostAccuracyElement) {
+          xgboostAccuracyElement.textContent = xgboostAccuracy + '%';
+        }
+        if (xgboostSamplesElement) {
+          xgboostSamplesElement.textContent = xgboostSamples + ' samples';
+        }
+      })
+      .catch(error => {
+        console.error('Error loading XGBoost metric data:', error);
+      });
+
+    // Load CNN model data
+    fetch('CNN Model/model_performance.json')
+      .then(response => response.json())
+      .then(cnnData => {
+        // Extract CNN metrics
+        const cnnAccuracy = (cnnData.final_evaluation.test_accuracy * 100).toFixed(2);
+        
+        // Total CNN dataset images
+        const testImages = 7445;
+        
+        // Update CNN metric cards
+        const cnnAccuracyElement = document.getElementById('cnn-accuracy');
+        const cnnImageCountElement = document.getElementById('cnn-image-count');
+        
+        if (cnnAccuracyElement) {
+          cnnAccuracyElement.textContent = cnnAccuracy + '%';
+        }
+        if (cnnImageCountElement) {
+          cnnImageCountElement.textContent = testImages.toLocaleString() + ' images';
+        }
+        if (cnnData.confusion_matrix) {
+          renderConfusionBento('cnn-confusion-test', cnnData.confusion_matrix, PCB_CNN_CM_LABELS, 'blue');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading CNN metric data:', error);
+      });
+  }
+
+  function initializeCharts() {
+    // Training chart will be initialized after loading XGBoost data
+  }
+
+  function initializeXGBoostCharts() {
+    if (!xgboostData) {
+      return;
+    }
+
+    try {
+      const th = pcbChartTheme();
+      const barPrimary = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#6d28d9';
+      const barMuted = th.dark ? pcbBarFill('#c084fc', '#5b21b6') : '#7c3aed';
+      const barCnnPos = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#4f46e5';
+      const barCnnNeg = th.dark ? pcbBarFill('#818cf8', '#4338ca') : '#6366f1';
+      /* Dark heatmap: keep max intensity in saturated violet — never near-white (was washing out labels + visualMap). */
+      const hmRamp = th.dark ? ['#05030c', '#1a0d36', '#4c1d95', '#6d28d9', '#a855f7'] : null;
+
+      // Data Split Chart
+      const dataSplitContainer = document.getElementById('data-split-chart');
+      if (dataSplitContainer) {
+        const dataSplitChart = echarts.init(dataSplitContainer);
+        
+        const dataSplitOption = {
+          backgroundColor: 'transparent',
+          tooltip: Object.assign(
+            {
+              trigger: 'axis',
+              formatter: function(params) {
+                let result = params[0].name + '<br/>';
+                params.forEach(param => {
+                  result += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(2) + '<br/>';
+                });
+                return result;
+              }
+            },
+            th.tooltip
+          ),
+          legend: Object.assign(
+            {
+              data: [
+                pcbLegendEntry('Positive PMOS', 'positive'),
+                pcbLegendEntry('Negative', 'imaging')
+              ],
+              bottom: 10
+            },
+            th.legend
+          ),
+          grid: {
+            left: '60px',
+            right: '40px',
+            top: '60px',
+            bottom: '50px',
+            containLabel: true
+          },
+          xAxis: th.axisCat({
+            type: 'category',
+            data: ['Total Dataset', 'Training Set (70%)', 'Test Set (30%)'],
+            axisLabel: { fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          yAxis: th.axisVal({
+            type: 'value',
+            name: 'Patient Count',
+            axisLabel: { formatter: '{value}', fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          series: [
+            {
+              name: 'Positive PMOS',
+              type: 'bar',
+              data: [214, 150, 64],
+              itemStyle: pcbNeonBarItemStyle('positive')
+            },
+            {
+              name: 'Negative',
+              type: 'bar',
+              data: [364, 254, 110],
+              itemStyle: pcbNeonBarItemStyle('imaging')
+            }
+          ]
+        };
+        dataSplitChart.setOption(dataSplitOption);
+        pcbForceLightChartInk(dataSplitChart);
+      }
+
+      // CNN Data Split Chart
+      const cnnDataSplitContainer = document.getElementById('cnn-data-split-chart');
+      if (cnnDataSplitContainer) {
+        const cnnDataSplitChart = echarts.init(cnnDataSplitContainer);
+        const cnnDataSplitOption = {
+          backgroundColor: 'transparent',
+          tooltip: Object.assign(
+            {
+              trigger: 'axis',
+              formatter: function(params) {
+                let result = params[0].name + '<br/>';
+                params.forEach(param => {
+                  result += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(2) + '<br/>';
+                });
+                return result;
+              }
+            },
+            th.tooltip
+          ),
+          legend: Object.assign(
+            {
+              data: [
+                pcbLegendEntry('PMOS Positive', 'positive'),
+                pcbLegendEntry('Normal Negative', 'imaging')
+              ],
+              bottom: 10
+            },
+            th.legend
+          ),
+          grid: {
+            left: '60px',
+            right: '40px',
+            top: '60px',
+            bottom: '50px',
+            containLabel: true
+          },
+          xAxis: th.axisCat({
+            type: 'category',
+            data: ['Total Dataset', 'Training Set', 'Validation Set', 'Test Set'],
+            axisLabel: { fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          yAxis: th.axisVal({
+            type: 'value',
+            name: 'Image Count',
+            axisLabel: { formatter: '{value}', fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          series: [
+            {
+              name: 'PMOS Positive',
+              type: 'bar',
+              data: [3619, 2533, 543, 543],
+              itemStyle: pcbNeonBarItemStyle('positive', ['#991b1b', '#fca5a5'])
+            },
+            {
+              name: 'Normal Negative',
+              type: 'bar',
+              data: [3826, 2678, 574, 574],
+              itemStyle: pcbNeonBarItemStyle('imaging', ['#4338ca', '#a5b4fc'])
+            }
+          ]
+        };
+        cnnDataSplitChart.setOption(cnnDataSplitOption);
+        pcbForceLightChartInk(cnnDataSplitChart);
+      }
+
+      // Performance Metrics Chart
+      const metricsContainer = document.getElementById('performance-metrics-chart');
+      if (metricsContainer) {
+        const metricsChart = echarts.init(metricsContainer);
+        
+        const metricsBar = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#6d28d9';
+        const metricsOption = {
+          backgroundColor: 'transparent',
+          tooltip: Object.assign(
+            {
+              trigger: 'axis',
+              formatter: function(params) {
+                if (params.length > 0) {
+                  return params[0].name + ': ' + params[0].value.toFixed(2) + '%';
+                }
+                return '';
+              }
+            },
+            th.tooltip
+          ),
+          legend: Object.assign(
+            {
+              data: ['Test Set Metrics'],
+              bottom: 10
+            },
+            th.legend
+          ),
+          grid: {
+            left: '60px',
+            right: '40px',
+            top: '60px',
+            bottom: '50px',
+            containLabel: true
+          },
+          xAxis: th.axisCat({
+            type: 'category',
+            data: ['AUC-PR Score', 'Accuracy', 'Precision', 'Recall', 'F1 Score'],
+            axisLabel: { fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          yAxis: th.axisVal({
+            type: 'value',
+            name: 'Score (%)',
+            min: 0,
+            max: 100,
+            interval: 20,
+            axisLabel: { formatter: function(value) { return value.toFixed(2) + '%'; }, fontSize: 12, fontWeight: 'bold' },
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+          }),
+          series: [
+            {
+              name: 'Test Set Metrics',
+              type: 'bar',
+              data: [96.20, 95.40, 92.42, 95.31, 93.85],
+              itemStyle: pcbNeonBarItemStyle('clinical'),
+              barWidth: '40%'
+            }
+          ]
+        };
+        metricsChart.setOption(metricsOption);
+        pcbForceLightChartInk(metricsChart);
+      }
+
+      // Stratified K-Fold Training Chart
+      const trainingChartContainer = document.getElementById('training-chart');
+      if (trainingChartContainer) {
+      const trainingChart = echarts.init(trainingChartContainer);
+      const kfoldFolds = xgboostData.stratified_10_fold_cv.map(fold => `Fold ${fold.fold}`);
+      const kfoldScores = xgboostData.stratified_10_fold_cv.map(fold => fold.metrics.auc_pr_score);
+      const meanScore = xgboostData.global_cv_results.metrics.mean_auc_pr;
+      const stdDev = xgboostData.global_cv_results.metrics.std_deviation;
+      
+      // Calculate confidence bands
+      const upperBand = kfoldScores.map(() => meanScore + stdDev);
+      const lowerBand = kfoldScores.map(() => meanScore - stdDev);
+
+      const trainingOption = {
+        backgroundColor: 'transparent',
+        tooltip: Object.assign(
+          {
+            trigger: 'axis',
+            formatter: function(params) {
+              let result = params[0].name + '<br/>';
+              params.forEach(param => {
+                result += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(2) + '%<br/>';
+              });
+              return result;
+            }
+          },
+          th.tooltip
+        ),
+        legend: Object.assign(
+          {
+            data: ['K-Fold Scores'],
+            top: 0
+          },
+          th.legend
+        ),
+        grid: { left: '10%', right: '10%', top: '15%', bottom: '10%', containLabel: true },
+        xAxis: th.axisCat({
+          type: 'category',
+          data: kfoldFolds,
+          boundaryGap: false,
+          axisLabel: {
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        yAxis: th.axisVal({
+          type: 'value',
+          name: 'AUC-PR Score (%)',
+          min: 50,
+          max: 100,
+          interval: 10,
+          axisLabel: { 
+            formatter: '{value}%',
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: th.d ? th.line : '#e5e7eb'
+            }
+          }
+        }),
+        series: [
+          {
+            name: 'K-Fold Scores',
+            type: 'line',
+            data: kfoldScores,
+            itemStyle: th.d
+              ? {
+                  color: '#e9d5ff',
+                  borderColor: '#c084fc',
+                  borderWidth: 2,
+                  shadowBlur: 14,
+                  shadowColor: 'rgba(168, 85, 247, 0.85)'
+                }
+              : { color: '#9333EA' },
+            lineStyle: th.d
+              ? {
+                  width: 2.5,
+                  color: '#c084fc',
+                  shadowBlur: 18,
+                  shadowColor: 'rgba(124, 58, 237, 0.55)'
+                }
+              : { width: 2, color: '#9333EA' },
+            smooth: true,
+            connectNulls: true,
+            symbol: 'circle',
+            symbolSize: th.d ? 9 : 6
+          }
+        ]
+      };
+      trainingChart.setOption(trainingOption);
+      pcbForceLightChartInk(trainingChart);
+      }
+
+      renderConfusionBento('xgboost-confusion-test', xgboostData.test_set_results.confusion_matrix, null, 'purple');
+      renderConfusionBento('xgboost-confusion-cv', xgboostData.global_cv_results.confusion_matrix, null, 'purple');
+    } catch (error) {
+      console.error('Error in initializeXGBoostCharts:', error);
+    }
+  }
+
+  function initializeCNNCharts() {
+    const th = pcbChartTheme();
+    const cnnMetricsBar = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#6d28d9';
+    const cmpXgb = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#6d28d9';
+    const cmpPos = th.dark ? pcbBarFill('#6366f1', '#4338ca') : '#4f46e5';
+    const cmpNeg = th.dark ? pcbBarFill('#c084fc', '#6d28d9') : '#6366f1';
+    const valLine = th.dark ? '#a78bfa' : '#4f46e5';
+
+    // CNN Training History Data
+    const epochs = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    
+    const cnnAccuracyData = {
+      accuracy: [0.9464594125747681, 0.9560545086860657, 0.9597006440162659, 0.9606601595878601, 0.9650738835334778, 0.9681442975997925, 0.968720018863678, 0.9702552556991577, 0.9689119458198547, 0.968720018863678],
+      val_accuracy: [0.9731423258781433, 0.9695613384246826, 0.970456600189209, 0.9713518619537354, 0.9686660766601562, 0.9713518619537354, 0.9731423258781433, 0.9686660766601562, 0.970456600189209, 0.9686660766601562]
+    };
+
+    const cnnLossData = {
+      loss: [0.12982161343097687, 0.10872617363929749, 0.0947338417172432, 0.09650532901287079, 0.08707298338413239, 0.08376821130514145, 0.080307736992836, 0.07366445660591125, 0.07677152007818222, 0.07356386631727219],
+      val_loss: [0.06455036252737045, 0.06898841261863708, 0.05760414898395538, 0.057184189558029175, 0.06131250411272049, 0.05720903351902962, 0.04968972131609917, 0.07856447994709015, 0.06831058114767075, 0.04800651594996452]
+    };
+
+    // Accuracy Chart
+    const accuracyChartContainer = document.getElementById('cnn-accuracy-chart');
+    if (accuracyChartContainer) {
+      const accuracyChart = echarts.init(accuracyChartContainer);
+      const accuracyOption = {
+        backgroundColor: 'transparent',
+        tooltip: Object.assign(
+          {
+            trigger: 'axis',
+            formatter: function(params) {
+              let result = params[0].name + '<br/>';
+              params.forEach(param => {
+                const value = (param.value * 100).toFixed(2);
+                result += param.marker + ' ' + param.seriesName + ': ' + value + '%<br/>';
+              });
+              return result;
+            }
+          },
+          th.tooltip
+        ),
+        legend: Object.assign(
+          {
+            data: ['Training Accuracy', 'Validation Accuracy'],
+            top: 0
+          },
+          th.legend
+        ),
+        grid: { left: '10%', right: '10%', top: '15%', bottom: '10%', containLabel: true },
+        xAxis: th.axisCat({
+          type: 'category',
+          data: epochs,
+          boundaryGap: false,
+          name: 'Epoch',
+          nameLocation: 'middle',
+          nameGap: 25,
+          axisLabel: { fontSize: 12, fontWeight: 'bold', interval: 0 },
+          nameTextStyle: { fontSize: 12, fontWeight: 'bold' }
+        }),
+        yAxis: th.axisVal({
+          type: 'value',
+          name: 'Accuracy',
+          min: 0.93,
+          max: 0.98,
+          axisLabel: {
+            formatter: function(value) {
+              return (value * 100).toFixed(2) + '%';
+            },
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        series: [
+          {
+            name: 'Training Accuracy',
+            type: 'line',
+            data: cnnAccuracyData.accuracy,
+            itemStyle: th.d
+              ? {
+                  color: '#6ee7b7',
+                  borderColor: '#34d399',
+                  borderWidth: 2,
+                  shadowBlur: 12,
+                  shadowColor: 'rgba(52, 211, 153, 0.65)'
+                }
+              : { color: '#10B981' },
+            lineStyle: th.d
+              ? {
+                  width: 2.5,
+                  color: '#34d399',
+                  shadowBlur: 16,
+                  shadowColor: 'rgba(16, 185, 129, 0.45)'
+                }
+              : { width: 2, color: '#10B981' },
+            smooth: true,
+            connectNulls: true,
+            symbol: 'circle',
+            symbolSize: th.d ? 8 : 5
+          },
+          {
+            name: 'Validation Accuracy',
+            type: 'line',
+            data: cnnAccuracyData.val_accuracy,
+            itemStyle: th.d
+              ? {
+                  color: '#ddd6fe',
+                  borderColor: valLine,
+                  borderWidth: 2,
+                  shadowBlur: 14,
+                  shadowColor: 'rgba(167, 139, 250, 0.75)'
+                }
+              : { color: valLine },
+            lineStyle: th.d
+              ? {
+                  width: 2.5,
+                  color: valLine,
+                  type: 'dashed',
+                  shadowBlur: 16,
+                  shadowColor: 'rgba(139, 92, 246, 0.45)'
+                }
+              : { width: 2, type: 'dashed', color: valLine },
+            smooth: true,
+            connectNulls: true,
+            symbol: 'circle',
+            symbolSize: th.d ? 8 : 5
+          }
+        ]
+      };
+      accuracyChart.setOption(accuracyOption);
+      pcbForceLightChartInk(accuracyChart);
+    }
+
+    // Loss Chart
+    const lossChartContainer = document.getElementById('cnn-loss-chart');
+    if (lossChartContainer) {
+      const lossChart = echarts.init(lossChartContainer);
+      const lossOption = {
+        backgroundColor: 'transparent',
+        tooltip: Object.assign(
+          {
+            trigger: 'axis',
+            formatter: function(params) {
+              let result = params[0].name + '<br/>';
+              params.forEach(param => {
+                result += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(4) + '<br/>';
+              });
+              return result;
+            }
+          },
+          th.tooltip
+        ),
+        legend: Object.assign(
+          {
+            data: ['Training Loss', 'Validation Loss'],
+            top: 0
+          },
+          th.legend
+        ),
+        grid: { left: '10%', right: '10%', top: '15%', bottom: '10%', containLabel: true },
+        xAxis: th.axisCat({
+          type: 'category',
+          data: epochs,
+          boundaryGap: false,
+          name: 'Epoch',
+          nameLocation: 'middle',
+          nameGap: 25,
+          axisLabel: { fontSize: 12, fontWeight: 'bold', interval: 0 },
+          nameTextStyle: { fontSize: 12, fontWeight: 'bold' }
+        }),
+        yAxis: th.axisVal({
+          type: 'value',
+          name: 'Loss',
+          min: 0.04,
+          max: 0.14,
+          axisLabel: {
+            formatter: function(value) {
+              return value.toFixed(2);
+            },
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        series: [
+          {
+            name: 'Training Loss',
+            type: 'line',
+            data: cnnLossData.loss,
+            itemStyle: th.d
+              ? {
+                  color: '#fcd34d',
+                  borderColor: '#f59e0b',
+                  borderWidth: 2,
+                  shadowBlur: 12,
+                  shadowColor: 'rgba(245, 158, 11, 0.6)'
+                }
+              : { color: '#F59E0B' },
+            lineStyle: th.d
+              ? {
+                  width: 2.5,
+                  color: '#fbbf24',
+                  shadowBlur: 16,
+                  shadowColor: 'rgba(245, 158, 11, 0.4)'
+                }
+              : { width: 2, color: '#F59E0B' },
+            smooth: true,
+            connectNulls: true,
+            symbol: 'circle',
+            symbolSize: th.d ? 8 : 5
+          },
+          {
+            name: 'Validation Loss',
+            type: 'line',
+            data: cnnLossData.val_loss,
+            itemStyle: th.d
+              ? {
+                  color: '#fecaca',
+                  borderColor: '#f87171',
+                  borderWidth: 2,
+                  shadowBlur: 12,
+                  shadowColor: 'rgba(248, 113, 113, 0.65)'
+                }
+              : { color: '#EF4444' },
+            lineStyle: th.d
+              ? {
+                  width: 2.5,
+                  color: '#f87171',
+                  type: 'dashed',
+                  shadowBlur: 16,
+                  shadowColor: 'rgba(239, 68, 68, 0.42)'
+                }
+              : { width: 2, type: 'dashed', color: '#EF4444' },
+            smooth: true,
+            connectNulls: true,
+            symbol: 'circle',
+            symbolSize: th.d ? 8 : 5
+          }
+        ]
+      };
+      lossChart.setOption(lossOption);
+      pcbForceLightChartInk(lossChart);
+    }
+
+    // CNN Performance Metrics Bar Chart
+    const metricsContainer = document.getElementById('cnn-performance-metrics-chart');
+    if (metricsContainer) {
+      const metricsChart = echarts.init(metricsContainer);
+      const metricsOption = {
+        backgroundColor: 'transparent',
+        tooltip: Object.assign(
+          {
+            trigger: 'axis',
+            formatter: function(params) {
+              if (params.length > 0) {
+                return params[0].name + ': ' + params[0].value.toFixed(2) + '%';
+              }
+              return '';
+            }
+          },
+          th.tooltip
+        ),
+        legend: Object.assign(
+          {
+            data: ['Test Set Metrics'],
+            bottom: 10
+          },
+          th.legend
+        ),
+        grid: {
+          left: '60px',
+          right: '40px',
+          top: '60px',
+          bottom: '50px',
+          containLabel: true
+        },
+        xAxis: th.axisCat({
+          type: 'category',
+          data: ['Test Accuracy', 'AUC Score', 'PMOS Precision', 'PMOS Recall', 'PMOS F1-Score'],
+          axisLabel: { fontSize: 12, fontWeight: 'bold' },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        yAxis: th.axisVal({
+          type: 'value',
+          name: 'Score (%)',
+          min: 0,
+          max: 100,
+          interval: 20,
+          axisLabel: { formatter: '{value}%', fontSize: 12, fontWeight: 'bold' },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        series: [
+          {
+            name: 'Test Set Metrics',
+            type: 'bar',
+            data: [94.96, 99.82, 97.2, 98, 94.92],
+            itemStyle: pcbNeonBarItemStyle('clinical'),
+            barWidth: '40%'
+          }
+        ]
+      };
+      metricsChart.setOption(metricsOption);
+      pcbForceLightChartInk(metricsChart);
+    }
+
+    // Comparative Performance Chart
+    const comparativeContainer = document.getElementById('comparative-performance-chart');
+    if (comparativeContainer) {
+      const comparativeChart = echarts.init(comparativeContainer);
+      const neon = window.PcodeEchartNeon;
+      const legendNames = ['XGBoost', 'CNN PMOS Positive', 'CNN PMOS Negative'];
+      const legendSwatches = {
+        'XGBoost': neon && neon.legendColor ? neon.legendColor('clinical', '#9333EA') : '#9333EA',
+        'CNN PMOS Positive': neon && neon.legendColor ? neon.legendColor('positive', '#dc2626') : '#dc2626',
+        'CNN PMOS Negative': neon && neon.legendColor ? neon.legendColor('imaging', '#4f46e5') : '#4f46e5'
+      };
+      if (neon && typeof neon.renderHtmlLegend === 'function') {
+        neon.renderHtmlLegend(
+          'comparative-performance-legend',
+          legendNames.map(function (name) {
+            return { label: name, color: legendSwatches[name] };
+          })
+        );
+      }
+      const gridInsets =
+        neon && typeof neon.comparativeGridInsets === 'function'
+          ? neon.comparativeGridInsets()
+          : { left: '10%', right: '10%', top: '15%', bottom: '12%', containLabel: true };
+      const comparativeOption = {
+        backgroundColor: 'transparent',
+        tooltip: Object.assign(
+          {
+            trigger: 'axis',
+            formatter: function(params) {
+              let result = params[0].name + '<br/>';
+              params.forEach(param => {
+                result += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(2) + '%<br/>';
+              });
+              return result;
+            }
+          },
+          th.tooltip
+        ),
+        legend: { show: false },
+        grid: gridInsets,
+        xAxis: th.axisCat({
+          type: 'category',
+          data: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+          boundaryGap: true,
+          axisLabel: { fontSize: 12, fontWeight: 'bold' },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        yAxis: th.axisVal({
+          type: 'value',
+          name: 'Score (%)',
+          min: 50,
+          max: 100,
+          axisLabel: {
+            formatter: function(value) {
+              return value.toFixed(2) + '%';
+            },
+            fontSize: 12,
+            fontWeight: 'bold'
+          },
+          nameTextStyle: { fontSize: 13, fontWeight: 'bold' }
+        }),
+        series: [
+          {
+            name: 'XGBoost',
+            type: 'bar',
+            data: [95.40, 92.42, 95.31, 93.85],
+            itemStyle: pcbNeonBarItemStyle('clinical')
+          },
+          {
+            name: 'CNN PMOS Positive',
+            type: 'bar',
+            data: [96.33, 93.28, 99.63, 96.35],
+            itemStyle: pcbNeonBarItemStyle('positive')
+          },
+          {
+            name: 'CNN PMOS Negative',
+            type: 'bar',
+            data: [96.33, 99.63, 93.21, 96.31],
+            itemStyle: pcbNeonBarItemStyle('imaging')
+          }
+        ]
+      };
+      comparativeChart.setOption(comparativeOption);
+      pcbForceLightChartInk(comparativeChart);
+
+      function refreshComparativeLayout() {
+        const g =
+          neon && typeof neon.comparativeGridInsets === 'function'
+            ? neon.comparativeGridInsets()
+            : gridInsets;
+        comparativeChart.setOption({ grid: g }, false);
+        comparativeChart.resize();
+      }
+      refreshComparativeLayout();
+      window.addEventListener('resize', refreshComparativeLayout);
+    }
+  }
+
+
+  // Resize all ECharts instances when the viewport changes (mobile rotation, split view, etc.)
+  window.addEventListener('resize', function() {
+    if (typeof echarts === 'undefined') return;
+    [
+      'data-split-chart',
+      'performance-metrics-chart',
+      'training-chart',
+      'cnn-data-split-chart',
+      'cnn-accuracy-chart',
+      'cnn-loss-chart',
+      'cnn-performance-metrics-chart',
+      'comparative-performance-chart'
+    ].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var inst = echarts.getInstanceByDom(el);
+      if (inst) inst.resize();
+    });
+  });
+
+  const clinicalUploadElement = document.getElementById('clinical-data-upload');
+  if (clinicalUploadElement) {
+    clinicalUploadElement.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        console.log('Clinical data file selected:', e.target.files[0].name);
+      }
+    });
+  }
+
+  const imageUploadElement = document.getElementById('image-data-upload');
+  if (imageUploadElement) {
+    imageUploadElement.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        console.log('Image data file selected:', e.target.files[0].name);
+      }
+    });
+  }
+</script>
+        <script>
+          // Apply adaptive border colors to metric cards
+          document.addEventListener('DOMContentLoaded', function() {
+            const metricCards = document.querySelectorAll('.metric-card');
+            const colorMap = {
+              'text-purple-600': 'rgba(109, 40, 217, 0.35)',
+              'text-blue-600': 'rgba(168, 85, 247, 0.38)',
+              'text-green-600': 'rgba(16, 185, 129, 0.35)',
+              'text-red-600': 'rgba(239, 68, 68, 0.35)',
+              'text-orange-600': 'rgba(251, 146, 60, 0.35)',
+              'text-indigo-600': 'rgba(99, 102, 241, 0.35)',
+              'text-pink-600': 'rgba(236, 72, 153, 0.35)',
+              'text-teal-600': 'rgba(20, 184, 166, 0.35)',
+              'text-cyan-600': 'rgba(34, 211, 238, 0.35)',
+              'text-yellow-600': 'rgba(250, 204, 21, 0.35)'
+            };
+
+            metricCards.forEach(card => {
+              let foundColor = null;
+              for (const [colorClass, colorValue] of Object.entries(colorMap)) {
+                if (card.innerHTML.includes(colorClass)) {
+                  foundColor = colorValue;
+                  break;
+                }
+              }
+              if (foundColor) {
+                card.style.borderColor = foundColor;
+                card.style.borderWidth = '2.5px';
+              }
+            });
+
+            // Also apply to other white cards with borders
+            const whiteCards = document.querySelectorAll('.bg-white[class*="rounded"][class*="border"]');
+            whiteCards.forEach(card => {
+              let foundColor = null;
+              for (const [colorClass, colorValue] of Object.entries(colorMap)) {
+                if (card.innerHTML.includes(colorClass)) {
+                  foundColor = colorValue;
+                  break;
+                }
+              }
+              if (foundColor) {
+                card.style.borderColor = foundColor;
+                card.style.borderWidth = '2.5px';
+              }
+            });
+          });
+        </script>
+      </body>
+    </html>

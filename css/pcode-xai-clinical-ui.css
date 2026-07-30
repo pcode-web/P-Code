@@ -1,0 +1,186 @@
+/* Prediction summary — channel + severity colors (dark + light)
+ * Typography must stay identical across themes. Never let .pcode-kv-value
+ * (detect results) or light-mode color helpers remap size/weight these. */
+html.pcode-app-bento-root body.pcode-app-bento .pcode-xai-summary-value,
+html.pcode-app-bento-root body.xai-bento-page .pcode-xai-summary-value,
+html.pcode-app-bento-root body.pcode-app-bento .pcode-xai-summary-value.pcode-kv-value,
+html.pcode-app-bento-root body.xai-bento-page .pcode-xai-summary-value.pcode-kv-value,
+body.pcode-app-bento .pcode-xai-summary-grid .pcode-xai-summary-value,
+body.xai-bento-page .pcode-xai-summary-grid .pcode-xai-summary-value,
+.pcode-xai-summary-value {
+  font-size: 1.875rem !important; /* text-3xl — same in light + dark */
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  margin-top: 0 !important;
+}
+
+.pcode-xai-summary-value--clinical {
+  color: #c4b5fd !important; /* orchid — clinical channel */
+}
+
+.pcode-xai-summary-value--imaging {
+  color: #93c5fd !important; /* sky — imaging channel */
+}
+
+.pcode-xai-summary-value--pending {
+  color: #94a3b8 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value--clinical,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value--clinical,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value--clinical,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value--clinical {
+  color: #6d28d9 !important;
+  -webkit-text-fill-color: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value--imaging,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value--imaging,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value--imaging,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value--imaging {
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--positive,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--positive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-severity-text--positive.pcode-xai-summary-value,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-severity-text--positive.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--positive,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--positive,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-severity-text--positive.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-severity-text--positive.pcode-xai-summary-value {
+  color: #e11d48 !important;
+  -webkit-text-fill-color: #e11d48 !important;
+  font-weight: 700 !important;
+  font-size: 1.875rem !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--borderline,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--borderline,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-severity-text--borderline.pcode-xai-summary-value,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-severity-text--borderline.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--borderline,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--borderline,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-severity-text--borderline.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-severity-text--borderline.pcode-xai-summary-value {
+  color: #d97706 !important;
+  -webkit-text-fill-color: #d97706 !important;
+  font-weight: 700 !important;
+  font-size: 1.875rem !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--negative,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--negative,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-severity-text--negative.pcode-xai-summary-value,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-severity-text--negative.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--negative,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--negative,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-severity-text--negative.pcode-xai-summary-value,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-severity-text--negative.pcode-xai-summary-value {
+  color: #059669 !important;
+  -webkit-text-fill-color: #059669 !important;
+  font-weight: 700 !important;
+  font-size: 1.875rem !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--pending,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--pending,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-summary-value.pcode-severity-text--pending,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value.pcode-severity-text--pending {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  font-weight: 700 !important;
+  font-size: 1.875rem !important;
+}
+
+/* Summary labels — same size in light + dark */
+body.pcode-app-bento .pcode-xai-summary-grid > div > p.text-sm:first-child,
+body.xai-bento-page .pcode-xai-summary-grid > div > p.text-sm:first-child {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  font-weight: 400 !important;
+}
+
+/* Clinical XAI UI — info badge + integrated-risk popover */
+.pcode-info-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  padding: 0;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: middle;
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  background: rgba(124, 58, 237, 0.1);
+  color: rgba(88, 28, 135, 0.95);
+  cursor: pointer;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pcode-info-badge__glyph {
+  display: block;
+  font-size: 0.625rem;
+  line-height: 1;
+  transform: translateY(0.5px);
+}
+
+html.pcode-app-bento-root.dark .pcode-info-badge,
+html[data-pcode-theme="dark"] .pcode-info-badge {
+  border-color: rgba(196, 181, 253, 0.45);
+  background: rgba(124, 58, 237, 0.22);
+  color: #e9d5ff;
+}
+
+.pcode-info-badge:hover,
+.pcode-info-badge:focus-visible {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.65);
+  outline: none;
+}
+
+html.pcode-app-bento-root.dark .pcode-info-badge:hover,
+html.pcode-app-bento-root.dark .pcode-info-badge:focus-visible,
+html[data-pcode-theme="dark"] .pcode-info-badge:hover,
+html[data-pcode-theme="dark"] .pcode-info-badge:focus-visible {
+  background: rgba(124, 58, 237, 0.35);
+  border-color: rgba(216, 180, 254, 0.7);
+}
+
+.pcode-integrated-risk-popover {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  top: calc(100% + 0.4rem);
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(124, 58, 237, 0.28);
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+html.pcode-app-bento-root.dark .pcode-integrated-risk-popover,
+html[data-pcode-theme="dark"] .pcode-integrated-risk-popover {
+  background: rgba(24, 24, 27, 0.96);
+  border-color: rgba(196, 181, 253, 0.28);
+  color: #e4e4e7;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.pcode-integrated-risk-popover[hidden] {
+  display: none !important;
+}

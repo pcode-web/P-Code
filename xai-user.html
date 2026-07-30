@@ -1,0 +1,3227 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P-Code - XAI Insights</title>
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <style>
+    * { box-sizing: border-box; }
+    html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; width: 100%; max-width: 100vw; margin: 0; padding: 0; }
+
+    /* —— Near-black canvas + light lavender purple trim —— */
+    body.xai-bento-page {
+      --xai-bg-deep: #000000;
+      --xai-bg-mid: #000000;
+      --xai-surface: #111018;
+      --xai-surface-2: #08070d;
+      --xai-card-edge: rgba(244, 240, 255, 0.44);
+      --xai-card-edge-strong: rgba(233, 213, 254, 0.64);
+      --xai-accent: #faf5ff;
+      --xai-accent-hover: #ffffff;
+      --xai-accent-core: #e9d5ff;
+      --xai-accent-deep: #d8b4fe;
+      --xai-well: #000000;
+      --xai-muted: rgba(220, 220, 232, 0.98);
+      --xai-faint: rgba(180, 180, 200, 0.95);
+      background-color: var(--xai-bg-deep);
+      color: #ffffff;
+    }
+    body.xai-bento-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.038;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .xai-bento-page .page-shell { position: relative; z-index: 1; }
+    .xai-bento-page .gradient-bg {
+      position: relative;
+      overflow: hidden;
+      /* Figma-like: mostly black; faint violet/indigo orbs (accents stay purple elsehwere) */
+      background:
+        radial-gradient(ellipse 78% 60% at 50% -8%, rgba(220, 200, 255, 0.2) 0%, transparent 52%),
+        radial-gradient(ellipse 58% 48% at 90% 50%, rgba(200, 210, 255, 0.11) 0%, transparent 48%),
+        linear-gradient(180deg, #000000 0%, #050508 50%, #000000 100%);
+      background-attachment: fixed;
+    }
+    .xai-bento-page .gradient-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.028) 0%, transparent 42%);
+    }
+    .xai-bento-page nav.xai-topnav {
+      background: rgba(0, 0, 0, 0.94);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(244, 240, 255, 0.32);
+      box-shadow: 0 1px 0 rgba(233, 213, 254, 0.24) inset;
+    }
+    .xai-bento-page .bento-card {
+      background: var(--xai-surface);
+      border: 1px solid var(--xai-card-edge);
+      border-radius: 24px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.055),
+        0 20px 56px rgba(0, 0, 0, 0.58),
+        0 0 0 1px rgba(233, 213, 254, 0.12);
+    }
+    .xai-bento-page .bento-inner {
+      background: var(--xai-surface-2);
+      border: 1px solid rgba(244, 240, 255, 0.22);
+      border-radius: 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .xai-bento-page .chart-well {
+      background: var(--xai-well) !important;
+      border: 1px solid rgba(233, 213, 254, 0.34);
+      border-radius: 16px;
+    }
+    .xai-bento-page .bento-icon-wrap {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 9, 14, 0.98);
+      border: 1px solid var(--xai-card-edge-strong);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 28px rgba(233, 213, 254, 0.14);
+    }
+    .xai-bento-page .bento-icon-wrap--blue {
+      background: rgba(10, 9, 14, 0.98);
+      border-color: rgba(125, 211, 252, 0.55);
+    }
+    .xai-bento-page .xai-section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #faf5ff;
+      margin-bottom: 0;
+    }
+    .xai-bento-page .xai-section-kicker svg {
+      width: 1rem;
+      height: 1rem;
+      color: var(--xai-accent-core);
+    }
+    .xai-bento-page .bento-callout {
+      border-radius: 0.75rem;
+      background: rgba(245, 158, 11, 0.03);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      color: rgba(252, 211, 77, 0.8);
+    }
+    .xai-bento-page .bento-callout--note {
+      border-left-width: 0;
+    }
+    .xai-bento-page .bento-callout--info {
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(129, 140, 248, 0.22);
+      color: rgba(199, 210, 254, 0.88);
+      border-left-width: 0;
+    }
+    .pcode-xai-glass-item {
+      background: rgba(255, 255, 255, 0.02);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+    }
+    .xai-bento-page .bento-pill-well {
+      background: var(--xai-surface-2);
+      border: 1px solid rgba(244, 240, 255, 0.26);
+    }
+    .xai-bento-page .bento-input,
+    .xai-bento-page select.bento-input {
+      background: #0a090e;
+      border: 1px solid rgba(244, 240, 255, 0.42);
+      color: #ffffff;
+      border-radius: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .xai-bento-page .bento-input:focus,
+    .xai-bento-page select.bento-input:focus {
+      outline: none;
+      border-color: rgba(250, 245, 255, 0.82);
+      box-shadow: 0 0 0 3px rgba(233, 213, 254, 0.26);
+    }
+    .xai-bento-page .btn-accent {
+      background: linear-gradient(180deg, #ffffff 0%, #faf5ff 28%, var(--xai-accent-core) 62%, var(--xai-accent-deep) 100%);
+      color: #1a0a28 !important;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.32) inset, 0 8px 40px rgba(233, 213, 254, 0.38);
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    }
+    .xai-bento-page .btn-accent:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.36) inset, 0 12px 48px rgba(244, 240, 255, 0.48);
+    }
+    .xai-bento-page .btn-ghost {
+      background: rgba(233, 213, 254, 0.1);
+      color: #faf5ff !important;
+      border: 1px solid rgba(244, 240, 255, 0.55);
+      border-radius: 14px;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+    .xai-bento-page .btn-ghost:hover {
+      background: rgba(244, 240, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.78);
+    }
+    .xai-bento-page footer.xai-footer {
+      background: #000000;
+      border-top: 1px solid rgba(244, 240, 255, 0.3);
+    }
+    .xai-bento-page .modal-content {
+      background: var(--xai-surface) !important;
+      border: 1px solid var(--xai-card-edge);
+      border-radius: 24px !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.62);
+      color: #ffffff;
+      overflow: hidden;
+    }
+    .xai-bento-page .hero-title {
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+    .xai-bento-page .hero-sub {
+      color: var(--xai-muted) !important;
+      max-width: 36rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .xai-bento-page .img-well {
+      background: var(--xai-well) !important;
+      border: 1px solid rgba(233, 213, 254, 0.32);
+    }
+    .xai-bento-page .modal-content .modal-body-pad {
+      color: var(--xai-muted);
+    }
+    .xai-bento-page .bento-card h2,
+    .xai-bento-page .bento-card h3,
+    .xai-bento-page .bento-card h4 { color: #ffffff !important; }
+    .xai-bento-page .bento-card .text-gray-600 { color: var(--xai-muted) !important; }
+    .xai-bento-page .bento-card .text-gray-700 { color: rgba(228, 228, 238, 0.98) !important; }
+    .xai-bento-page .bento-card .text-gray-500 { color: var(--xai-faint) !important; }
+    .xai-bento-page .bento-card .text-gray-800 { color: #ffffff !important; }
+    .xai-bento-page .bento-loading-panel {
+      background: var(--xai-surface);
+      border: 1px solid var(--xai-card-edge);
+      border-radius: 24px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 20px 56px rgba(0,0,0,0.5);
+    }
+    footer { margin-top: auto; width: 100%; min-height: 64px; display: flex; align-items: center; padding: 0 !important; }
+    footer > div { width: 100%; }
+    footer.py-4 { padding-top: 0 !important; padding-bottom: 0 !important; }
+    nav { width: 100%; flex-shrink: 0; }
+    .gradient-bg { width: 100%; flex-shrink: 0; }
+    .max-w-7xl { max-width: 100% !important; width: 100% !important; }
+    #profile-navbar, #mobile-profile { transition: opacity 0.3s ease-in-out; }
+    #profile-navbar.hidden, #mobile-profile.hidden { display: none !important; }
+    .xai-bento-page .mobile-menu {
+      background: linear-gradient(198deg, #06060a 0%, #000000 100%);
+      border-left: 1px solid rgba(244, 240, 255, 0.42);
+      box-shadow: -12px 0 52px rgba(0, 0, 0, 0.65);
+    }
+    .nav-desktop { display: flex; gap: 2rem; align-items: center; }
+    @media (max-width: 768px) { .nav-desktop { display: none !important; } }
+
+    .mobile-menu { position: fixed; right: 0; top: 0; width: 320px; height: 100vh; background: linear-gradient(135deg, rgba(88, 28, 135, 0.95) 0%, rgba(109, 40, 217, 0.95) 100%); color: white; box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1); transform: translateX(100%); transition: transform 0.3s ease-out; z-index: 50; overflow-y: auto; }
+    .mobile-menu::-webkit-scrollbar { width: 6px; }
+    .mobile-menu::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+    .mobile-menu::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+    .mobile-menu.active { transform: translateX(0); }
+    .mobile-menu-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s ease-out; z-index: 45; }
+    .mobile-menu-overlay.active { opacity: 1; pointer-events: auto; }
+    #mobile-menu-close-btn { position: absolute; top: 12px; right: 12px; z-index: 60; }
+    #mobile-menu-btn { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+    nav .flex.justify-between { min-height: 64px; flex-wrap: nowrap; }
+    .mobile-menu { width: min(320px, 85vw); max-width: 90vw; -webkit-overflow-scrolling: touch; }
+    /* .auth-modal / .auth-modal-content: use css/tailwind.css (input.css) — same max-w-md + card as XAI / login loading */
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .spinner { display: inline-block; animation: spin 1s linear infinite !important; will-change: transform; }
+    /* Modal Styles */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .xai-bento-page .modal { background-color: rgba(0, 0, 0, 0.72); }
+    .modal-content { border-radius: 12px; max-width: 4xl; width: 90%; max-height: 90vh; overflow-y: auto; }
+    .modal-hero-bg { background-attachment: fixed; }
+
+    /* Charts: override inline pixel heights for responsiveness */
+    #shap-force-plot { height: clamp(300px, 42vh, 520px) !important; width: 100% !important; }
+    #shap-importance-chart { height: clamp(280px, 38vh, 440px) !important; width: 100% !important; }
+    .xai-factors-grid { align-items: start; }
+    .xai-factors-grid > .bento-card { align-self: start; width: 100%; }
+    #consensus-chart { height: clamp(280px, 45vh, 450px) !important; width: 100% !important; }
+
+    /* Mobile responsive improvements */
+    @media (max-width: 1024px) {
+      .max-w-7xl { padding: 1.5rem !important; }
+      .hero-title, h2 { font-size: 1.5rem !important; }
+      .xai-bento-page .gradient-bg .hero-title { font-size: clamp(1.85rem, 5.5vw, 2.75rem) !important; }
+    }
+
+    @media (max-width: 768px) {
+      .max-w-7xl { padding: 1rem !important; }
+      .hero-title { font-size: 1.25rem !important; }
+      .xai-bento-page .gradient-bg .hero-title { font-size: clamp(1.65rem, 6vw, 2.25rem) !important; }
+      h2 { font-size: 1.125rem !important; }
+      p { font-size: 0.9375rem !important; }
+      button { min-height: 44px !important; }
+      input, select, textarea { min-height: 44px !important; font-size: 1rem; }
+      /* Avoid iOS Safari jank with fixed backgrounds */
+      .gradient-bg { background-attachment: scroll !important; }
+      .modal-hero-bg { background-attachment: scroll !important; }
+
+      /* Charts: height set dynamically from feature count */
+      #shap-force-plot,
+      #shap-importance-chart,
+      #consensus-chart {
+        height: auto !important;
+        max-height: none !important;
+        min-height: 200px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 0; }
+      .max-w-7xl { padding: 0.75rem; }
+      .hero-title { font-size: 1.125rem !important; }
+      .xai-bento-page .gradient-bg .hero-title { font-size: clamp(1.45rem, 7vw, 2rem) !important; }
+      h2 { font-size: 1rem !important; }
+      p { font-size: 0.875rem !important; }
+      button { padding: 0.5rem 1rem !important; font-size: 0.875rem !important; min-height: 48px !important; }
+      input, select, textarea { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
+    }
+
+    /* Mobile card sizing: reduce padding + stack actions */
+    @media (max-width: 640px) {
+      .xai-bento-page .mobile-card.bento-card {
+        padding: 1.15rem !important;
+        border-radius: 1.35rem !important;
+      }
+      .mobile-card:not(.bento-card) {
+        padding: 1rem !important;
+        border-radius: 0.875rem !important;
+      }
+      .mobile-card h2 {
+        font-size: 1.125rem !important;
+        line-height: 1.5rem !important;
+      }
+      .mobile-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+      }
+      .mobile-actions > button,
+      .mobile-actions > a {
+        width: 100% !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+  <link rel="stylesheet" href="css/pcode-xai-clinical-ui.css?v=20260723-fonts">
+  <link rel="stylesheet" href="css/pcode-diagnostic-severity.css">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-xai-mobile.css?v=20260710d">
+  <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260724-nouserprovider">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260725-backleft">
+</head>
+<body class="xai-bento-page min-h-screen h-auto flex flex-col text-zinc-50 antialiased">
+  <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <nav class="pcode-topnav xai-topnav sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-2 sm:space-x-6">
+          <div class="flex-shrink-0">
+            <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+          </div>
+          <div class="block">
+            <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+          </div>
+        </div>
+        <div class="nav-desktop">
+          <a href="index.html" class="pcode-nav-link">Dashboard</a>
+          <a href="detect-user.html" class="pcode-nav-link">Detect</a>
+          <a href="history-user.html" class="pcode-nav-link">History</a>
+          <a href="xai-user.html" class="pcode-nav-link is-active" aria-current="page">XAI Insights</a>
+          <a href="about.html" class="pcode-nav-link">About</a>
+        </div>
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-xl transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Auth Modal — floating portal chooser (injected/upgraded by auth.js if needed) -->
+  <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
+    <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" class="pcode-auth-float-close" onclick="auth.closeAuthModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
+        <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+          <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
+        </div>
+        <div class="pcode-auth-float-hint">
+          <h3 id="auth-modal-title">Choose How to Continue</h3>
+          <p>Select your access type before logging in or registering.</p>
+        </div>
+        <div class="pcode-auth-float-grid">
+          <button type="button" id="auth-entry-community" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+                <circle cx="32" cy="24" r="7" stroke="currentColor" stroke-width="3"/>
+                <path d="M19 45C21.5 38.5 27 35 32 35C37 35 42.5 38.5 45 45" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as <span class="pcode-regular-user-label">Regular User</span></p>
+            <p class="pcode-auth-float-option-desc">For personal early detection, promoting timely clinical intervention and awareness.</p>
+          </button>
+          <button type="button" id="auth-entry-provider" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="11" y="10" width="42" height="44" rx="8" stroke="currentColor" stroke-width="3"/>
+                <path d="M32 20V40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 30H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 50H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as<br>OB-GYN</p>
+            <p class="pcode-auth-float-option-desc">For OB-GYN specialists using decision support tools with patient management, improving clinical efficiency and patient care.</p>
+          </button>
+        </div>
+      </div>
+      <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
+        <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
+        <div id="login-form-container" class="pcode-auth-float-signin-body">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+          <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
+          <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
+          <div class="pcode-google-oauth-panel">
+            <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
+            <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
+            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+            <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+<div id="mobile-menu" class="mobile-menu">
+        <button id="mobile-menu-close-btn" type="button" onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div class="h-full px-4 sm:px-6 py-4 space-y-2 md:py-6 md:space-y-4">
+          <!-- Profile Section -->
+          <div id="mobile-profile" class="hidden pb-4 border-b border-white border-opacity-20">
+            <div class="flex items-center space-x-3 mb-4">
+              <img id="mobile-profile-avatar" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+              <div class="flex-1">
+                <p id="mobile-profile-name" class="text-sm font-semibold text-white"></p>
+                <p id="mobile-profile-role" class="text-xs text-white text-opacity-80"></p>
+              </div>
+            </div>
+            <button id="mobile-logout-btn" onclick="auth.logout()" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm active:bg-red-800">
+          Sign out
+        </button>
+      </div>
+
+      <!-- Sign in (logged-out / guest only) -->
+      <div id="mobile-auth-panel" class="hidden pb-4 border-b border-white border-opacity-20">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Account</p>
+        <button id="mobile-auth-button" type="button" class="pcode-sidebar-signin-btn">
+          Sign in
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="mobile-nav-links pt-2">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Menu</p>
+        <div class="space-y-1">
+          <a href="index.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Dashboard</a>
+          <a href="detect-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Detect</a>
+          <a href="history-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">History</a>
+          <a href="xai-user.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 transition-colors font-medium">XAI Insights</a>
+          <a href="about.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">About</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gradient-bg py-8 sm:py-12 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="flex justify-center mb-3">
+          <p class="xai-section-kicker">
+            <svg class="shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Explainability
+          </p>
+        </div>
+        <h1 class="pcode-hero-title font-extrabold">Why your result looks this way</h1>
+        <p class="text-base sm:text-lg hero-sub leading-relaxed mt-2">Plain-language explanations of which details and ultrasound patterns most influenced your PMOS screening — helpful for questions at your next clinic visit.</p>
+        <div class="pcode-user-actions justify-center mt-5">
+          <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero" href="index.html#pmos-learn">What is PMOS?</a>
+          <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero" href="detect-user.html">Update screening</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 relative z-10 h-auto">
+    <!-- Provider-only patient picker lives on xai-provider.html. Keep a inert stub so legacy script refs to #patient-selector do not throw. -->
+    <div id="xai-patient-selection-card" class="!hidden" hidden aria-hidden="true" style="display:none!important">
+      <select id="patient-selector" class="!hidden" hidden aria-hidden="true" tabindex="-1">
+        <option value=""></option>
+      </select>
+    </div>
+
+
+    <!-- Interpretability loading overlay -->
+    <div id="xai-loading-spinner"
+         class="hidden opacity-0 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-slate-950/80 transition-opacity duration-300 ease-out pointer-events-none"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="xai-loading-title"
+         aria-hidden="true">
+      <div class="bento-loading-panel p-8 sm:p-10 flex flex-col items-center gap-4 max-w-md mx-4 text-center">
+        <div class="pcode-dual-ring-spinner pcode-dual-ring-spinner--lg" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="48" height="48" aria-hidden="true">
+            <circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/>
+            <circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/>
+          </svg>
+        </div>
+        <p id="xai-loading-title" class="text-white font-semibold text-lg sm:text-xl tracking-tight">Loading Interpretability...</p>
+        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your health-factor insights and ultrasound heatmap interpretation—this usually takes just a moment.</p>
+      </div>
+    </div>
+
+    <div id="xai-content" class="hidden">
+
+      <div class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-6">Your screening summary</h2>
+        <div class="bento-inner p-5 sm:p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pcode-xai-summary-grid">
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Clinical Score</p>
+            <p class="text-3xl pcode-xai-summary-value pcode-xai-summary-value--clinical" id="clinical-score">--</p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Imaging Score</p>
+            <p class="text-3xl pcode-xai-summary-value pcode-xai-summary-value--imaging" id="imaging-score">--</p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Final Diagnosis</p>
+            <p class="text-3xl pcode-xai-summary-value pcode-severity-text--pending" id="final-diagnosis">--</p>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-gray-600">Confidence</p>
+            <p class="text-3xl pcode-xai-summary-value pcode-severity-text--pending" id="confidence-level">--</p>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10">
+        <div class="flex items-center mb-6 pcode-xai-card-header">
+          <div class="bento-icon-wrap mr-4 shrink-0">
+            <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">What influenced the result</h2>
+            <p class="text-gray-600">A simple breakdown of the strongest factors</p>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4">AI Interpretation of Clinical Parameters</h3>
+          <div class="pcode-chart-scroll pcb-scroll-x w-full overflow-x-auto scrollbar-thin">
+            <div id="shap-force-plot" class="chart-well rounded-xl p-4 pcb-echart-host"></div>
+          </div>
+          <p class="text-base text-gray-600 mt-2">
+            This chart shows which details pushed the result <span class="font-semibold">toward higher risk</span> or <span class="font-semibold">toward lower risk</span>. Bigger bars mean that factor had a stronger effect on the outcome.
+          </p>
+          <p class="text-sm mt-3 bento-callout bento-callout--note px-4 py-3">
+            <span class="font-semibold text-amber-200">Note:</span> This is a supportive explanation from the AI model. It’s not a medical diagnosis by itself—use it together with clinical assessment.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 items-start xai-factors-grid">
+        <div class="pcode-card-static mobile-card bento-card p-6 sm:p-8">
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-3">Which factors matter most overall</h2>
+          <div class="pcode-chart-scroll pcb-scroll-x w-full overflow-x-auto scrollbar-thin">
+            <div class="chart-well rounded-xl p-2 sm:p-3">
+              <div id="shap-importance-chart" class="pcb-echart-host"></div>
+            </div>
+          </div>
+          <p class="text-base text-gray-600 mt-4">
+            This chart shows which health details the system weighs most when reviewing cases like yours. Items near the top usually matter more than those lower on the list.
+          </p>
+          <p class="text-sm mt-3 bento-callout bento-callout--note px-4 py-3">
+            <span class="font-semibold text-amber-200">Helpful hint:</span> If something near the top looks wrong or incomplete, double-check what you entered and discuss it with a clinician if you are unsure.
+          </p>
+        </div>
+
+        <div class="pcode-card-static mobile-card bento-card p-6 sm:p-8">
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-3">Your top factors</h2>
+          <div id="feature-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div id="xgboost-results-card" class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10" style="display:none;">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="bento-icon-wrap shrink-0" aria-hidden="true">
+            <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">What this means, in simple terms</h2>
+            <p class="text-sm text-gray-600 mt-1">A short, everyday explanation—separate from the charts above.</p>
+          </div>
+        </div>
+        <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">When your insights load, a brief summary of the main takeaway will appear here.</div>
+        <p class="text-sm mt-4 italic bento-callout bento-callout--note px-3 py-2 rounded-r">This section is for education and context only—it is not a medical diagnosis. Use it alongside your own judgment. <span class="font-semibold text-violet-100 not-italic">Seeking a qualified clinician’s advice is strongly recommended</span>, especially before you change care or if you have symptoms or concerns.</p>
+      </div>
+
+      <div id="gradcam-results-card" class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10" style="display:none;">
+        <div class="flex items-center mb-6 pcode-xai-card-header">
+          <div class="bento-icon-wrap bento-icon-wrap--blue mr-4 shrink-0">
+            <svg class="w-6 h-6 text-sky-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">AI Heatmap Image Interpretation</h2>
+            <p class="text-lg text-gray-600">Shows the parts of the ultrasound image the model focused on</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start content-start">
+          <!-- Original Ultrasound Image -->
+          <div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-4">Original Ultrasound Image</h3>
+            <div id="gradcam-original-container" class="img-well rounded-xl overflow-hidden" style="width: auto; height: auto; display: flex; align-items: center; justify-content: center;">
+              <div id="original-loading-spinner" class="text-center">
+                <div class="spinner-circle mx-auto mb-4" style="width: 40px; height: 40px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></div>
+                <p class="text-violet-300/80">Loading ultrasound image...</p>
+              </div>
+            </div>
+            <div id="imaging-prediction-stats" class="mt-4 space-y-3"></div>
+          </div>
+
+          <!-- AI Heatmap Image Interpretation -->
+          <div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-4">Activation overlay</h3>
+            <div id="gradcam-heatmap-container" class="img-well rounded-xl overflow-hidden" style="width: auto; height: auto; display: flex; align-items: center; justify-content: center;">
+              <div id="gradcam-loading-spinner" class="text-center">
+                <div class="spinner-circle mx-auto mb-4" style="width: 40px; height: 40px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></div>
+                <p class="text-violet-300/80">Generating highlight...</p>
+              </div>
+            </div>
+            <p id="gradcam-heatmap-caption" class="text-sm mt-3 italic bento-callout bento-callout--info px-3 py-2">
+              <span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap with light grain, weighted toward peripheral follicles (string of pearls) — <strong class="text-white">Red</strong> highest AI model attribution, <strong class="text-white">Yellow/Green</strong> moderate, <strong class="text-white">Blue/Cyan</strong> lower. 40% overlay over grayscale ultrasound (60% base).
+            </p>
+          </div>
+        </div>
+
+        <div id="gradcam-interpretation" class="mt-8 p-5 bento-callout bento-callout--info rounded-xl">
+          <h4 class="text-xl font-semibold text-white mb-2">What the AI heatmap suggests</h4>
+          <p id="gradcam-text" class="text-lg text-violet-100/90">
+            After your screening loads, the AI heatmap interpretation will appear here.
+          </p>
+        </div>
+      </div>
+
+      <div class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-8">How your scores line up</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start content-start pcode-xai-diagnostic-grid">
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Clinical vs imaging agreement</h3>
+            <div class="pcode-chart-scroll pcb-scroll-x w-full overflow-x-auto scrollbar-thin">
+              <div id="consensus-chart" class="chart-well rounded-xl p-2 pcb-echart-host"></div>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Attribution split</h3>
+            <div class="space-y-4">
+              <div id="decision-factor-clinical" class="flex items-center justify-between p-4 bento-pill-well rounded-xl pcode-attribution-row">
+                <span class="text-sm font-medium text-violet-100/90">Clinical Indicator Weight</span>
+                <div class="flex items-center pcode-attribution-meter">
+                  <div class="pcode-attribution-track">
+                    <div id="decision-factor-clinical-bar" class="pcode-neon-bar-fill pcode-neon-bar-fill--clinical pcode-attribution-fill" style="width: 0%"></div>
+                  </div>
+                  <span id="decision-factor-clinical-text" class="text-sm text-violet-100/95 pcode-attribution-pct">0%</span>
+                </div>
+              </div>
+              <div id="decision-factor-ultrasound" class="flex items-center justify-between p-4 bento-pill-well rounded-xl pcode-attribution-row hidden">
+                <span class="text-sm font-medium text-violet-100/90">Ultrasound Marker Weight</span>
+                <div class="flex items-center pcode-attribution-meter">
+                  <div class="pcode-attribution-track">
+                    <div id="decision-factor-ultrasound-bar" class="pcode-neon-bar-fill pcode-neon-bar-fill--imaging pcode-attribution-fill" style="width: 0%"></div>
+                  </div>
+                  <span id="decision-factor-ultrasound-text" class="text-sm text-violet-100/95 pcode-attribution-pct">0%</span>
+                </div>
+              </div>
+              <div id="decision-factor-confidence" class="flex items-center justify-between p-4 bento-pill-well rounded-xl pcode-attribution-row">
+                <span class="text-sm font-medium text-violet-100/90">Integrated Diagnostic Risk</span>
+                <div class="flex items-center pcode-attribution-meter">
+                  <div class="pcode-attribution-track">
+                    <div id="decision-factor-confidence-bar" class="pcode-neon-bar-fill pcode-neon-bar-fill--consensus pcode-attribution-fill" style="width: 0%"></div>
+                  </div>
+                  <span id="decision-factor-confidence-text" class="text-sm text-violet-100/95 pcode-attribution-pct">0%</span>
+                </div>
+              </div>
+            </div>
+            <p id="decision-factors-summary" class="text-base mt-6 p-4 bento-callout bento-callout--info rounded-xl text-violet-100/90">
+              <span class="font-semibold">Diagnostic Summary:</span> Load a patient to view the integrated diagnostic rationale.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest Registration Modal -->
+  <div id="guest-registration-modal-xai" class="modal">
+      <div class="modal-content" style="max-width: 500px; width: 90%;">
+          <div class="modal-hero-bg rounded-t-3xl overflow-hidden" style="background: radial-gradient(ellipse 90% 85% at 50% 0%, rgba(221, 200, 255, 0.22) 0%, transparent 52%), linear-gradient(165deg, #120e1c 0%, #000000 100%); padding: 1.75rem; text-align: center;">
+              <div class="w-16 h-16 bento-icon-wrap mx-auto mb-4">
+                  <svg class="w-8 h-8 text-zinc-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+              </div>
+              <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">Unlock Advanced XAI Features</h2>
+              <p class="text-violet-100">Create an account to access detailed AI Interpretation of Clinical Parameters and AI Heatmap Image Interpretation</p>
+          </div>
+          
+          <div class="px-6 py-8 modal-body-pad">
+              <p class="text-center mb-6 text-violet-100/90">
+                  <strong class="text-white">Full XAI Analysis</strong> including feature importance charts, AI Heatmap Image Interpretation views, and detailed prediction explanations are available to registered users.
+              </p>
+              
+              <p class="text-center text-sm mb-8 text-violet-300/80">
+                  Register now to get instant access to comprehensive AI decision explanations for all your patient analyses.
+              </p>
+              
+              <div class="space-y-3">
+                  <button onclick="goToRegisterFromXAI()" class="w-full px-6 py-3 btn-accent rounded-xl font-semibold">
+                      ⚡ Register to Unlock XAI Features
+                  </button>
+                  
+                  <button onclick="closeGuestRegistrationModalXAI()" class="w-full px-6 py-3 btn-ghost font-semibold rounded-xl">
+                      Continue as Guest
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+  <!-- Load libraries first (before main script) -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
+  <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
+  <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260710f"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
+
+  <!-- Load auth module -->
+  <script src="js/auth.js?v=20260730-authrace"></script>
+  <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
+  <script src="js/pcode-xai-loading.js"></script>
+  <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
+  <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+  <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+
+  <script>
+    let currentPatient = null;
+    let allPatients = [];
+
+    // Chart label/axis colors come from PcodeEchartNeon.chartTheme() (light = black ink).
+
+    // Helper function to convert numeric blood group codes to letters
+    function convertBloodGroupToLetters(bloodGroupValue) {
+      if (bloodGroupValue === null || bloodGroupValue === undefined || bloodGroupValue === 0 || bloodGroupValue === '0') return 'Unknown';
+      
+      if (typeof bloodGroupValue === 'string') {
+        // If it's already a string like "O+", "A-", etc., return as is
+        if (/^[ABO]+[+-]?$/.test(bloodGroupValue)) return bloodGroupValue;
+      }
+      
+      // Convert numeric codes to blood group letters (standardized mapping: 11-18)
+      const bloodGroupMap = {
+        11: 'O+', '11': 'O+',
+        12: 'O-', '12': 'O-',
+        13: 'A+', '13': 'A+',
+        14: 'A-', '14': 'A-',
+        15: 'B+', '15': 'B+',
+        16: 'B-', '16': 'B-',
+        17: 'AB+', '17': 'AB+',
+        18: 'AB-', '18': 'AB-',
+        // Legacy mappings (1-8) for backwards compatibility with old data
+        1: 'O+', '1': 'O+',
+        2: 'O-', '2': 'O-',
+        3: 'A+', '3': 'A+',
+        4: 'A-', '4': 'A-',
+        5: 'B+', '5': 'B+',
+        6: 'B-', '6': 'B-',
+        7: 'AB+', '7': 'AB+',
+        8: 'AB-', '8': 'AB-'
+      };
+      
+      return bloodGroupMap[bloodGroupValue] || 'Unknown';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check authentication first
+      if (!auth || !auth.isAuthenticated()) {
+        window.location.href = 'login-new.html';
+        return;
+      }
+      if (typeof PcodeUserCare !== 'undefined' && typeof PcodeUserCare.initXaiCare === 'function') {
+        PcodeUserCare.initXaiCare();
+      }
+
+      // Community-only page: never show provider patient picker; providers belong on xai-provider.html
+      const isGuest = !!(auth?.currentUser && auth.currentUser.isGuest);
+      const isRegularUser = !isGuest && !!(auth && typeof auth.roleStringIsAppRegularUser === 'function'
+        ? auth.roleStringIsAppRegularUser(auth.currentUser?.role)
+        : /regular\s*user/i.test(String(auth?.currentUser?.role || '')));
+
+      const patientSelectionCard = document.getElementById('xai-patient-selection-card');
+      if (patientSelectionCard) {
+        patientSelectionCard.classList.add('!hidden', 'hidden');
+        patientSelectionCard.setAttribute('hidden', '');
+        patientSelectionCard.setAttribute('aria-hidden', 'true');
+        patientSelectionCard.style.setProperty('display', 'none', 'important');
+      }
+
+      // Try to animate, but don't block if it fails (never animate the inert patient-selection stub)
+      try {
+        const animElements = Array.from(document.querySelectorAll('.bento-card')).filter(
+          (el) => el.id !== 'xai-patient-selection-card' && !el.closest('#xai-patient-selection-card')
+        );
+        if (animElements.length > 0 && typeof anime !== 'undefined' && typeof anime.stagger !== 'undefined') {
+          anime({
+            targets: animElements,
+            translateY: [30, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(200),
+            duration: 800,
+            easing: 'easeOutExpo'
+          });
+        }
+      } catch (e) {
+        console.warn('Animation library error:', e);
+      }
+
+      // Regular User flow: auto-run XAI insights using their latest saved screening
+      if (isRegularUser) {
+        // Start hidden until we actually have a saved screening/prediction
+        try {
+          document.getElementById('xai-content')?.classList.add('hidden');
+          const gradcamCard = document.getElementById('gradcam-results-card');
+          const xgCard = document.getElementById('xgboost-results-card');
+          if (gradcamCard) gradcamCard.style.display = 'none';
+          if (xgCard) xgCard.style.display = 'none';
+        } catch (_) {}
+        setTimeout(loadMyLatestXAIInsights, 150);
+        return;
+      }
+
+      // This is the Regular User XAI page; providers / guests should use the matching portal page.
+      window.location.replace(isGuest ? 'login-new.html' : 'xai-provider.html');
+      return;
+    });
+
+    function transformClinicalInputsForXAI(clinicalInputs) {
+      const src = clinicalInputs || {};
+      const out = { ...src };
+
+      // Map Detect-form keys -> model/API expected keys used in XAI page
+      const map = {
+        age: 'Age_yrs',
+        Pulse_rate: 'Pulse_rate_bpm',
+        RR_breath: 'RR_breath_min',
+        BP_systolic: 'BP_Systolic_mmHg',
+        BP_diastolic: 'BP_Diastolic_mmHg',
+        Hemoglobin: 'Hb_g_dl',
+        Cycle_R_I: 'CycleR_I',
+        Cycle_length: 'Cycle_length_days',
+        Marriage_duration: 'Marriage_Status_years',
+        Pregnant_status: 'Pregnant',
+        No_abortions: 'No_of_abortions',
+        I_Beta_HCG: 'I_beta_HCG_mIU_mL',
+        II_Beta_HCG: 'II_beta_HCG_mIU_mL',
+        LH_level: 'LH_mIU_mL',
+        FSH_level: 'FSH_mIU_mL',
+        AMH_level: 'AMH_ng_mL',
+        PRL_level: 'PRL_ng_mL',
+        TSH_level: 'TSH_mIU_L',
+        Vitamin_D3_level: 'Vit_D3_ng_mL',
+        Progesterone_level: 'PRG_ng_mL',
+        RBS: 'RBS_mg_dl',
+        Avg_F_size_L: 'Avg_F_size_L_mm',
+        Avg_F_size_R: 'Avg_F_size_R_mm'
+      };
+
+      Object.keys(map).forEach((k) => {
+        if (src[k] !== undefined && src[k] !== null && src[k] !== '') {
+          out[map[k]] = src[k];
+        }
+      });
+
+      // Normalize LH/FSH ratio key (Detect uses LH_FSH_Ratio)
+      if (src.LH_FSH_Ratio !== undefined) {
+        out.LH_FSH_Ratio = src.LH_FSH_Ratio;
+      }
+
+      return out;
+    }
+
+    // Track which model outputs are actually available for the current view
+    let currentXaiAvailability = { clinical: true, imaging: true, overall: true };
+
+    async function loadMyLatestXAIInsights() {
+      try {
+        const token = sessionStorage.getItem('PMOS_auth_token') || '';
+        if (!token) return;
+
+        // Show loading spinner
+        setXaiLoading(true);
+
+        const resp = await fetch('./api/get_user_diagnosis.php', {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const payload = await resp.json().catch(() => null);
+        if (!resp.ok || !payload?.success || !payload?.data) {
+          setXaiLoading(false);
+          alert('No saved screening found yet. Please go to Detect, run an analysis, then click “Save My Record”.');
+          return;
+        }
+
+        const row = payload.data;
+
+        // Convert numeric codes to labels
+        const mapDiag = (code) => {
+          if (code === null || code === undefined || code === '') return null;
+          const n = Number(code);
+          if (!Number.isFinite(n)) return String(code);
+          if (n === 1) return 'positive';
+          if (n === 0) return 'negative';
+          if (n === 2) return 'borderline';
+          return null;
+        };
+
+        const clinicalInputs = transformClinicalInputsForXAI(row || {});
+        const xg = { probability: Number(row.XGBoost_diagnosis_probability_percentage), diagnosis: mapDiag(row.XGBoost_diagnosis) };
+        const cnn = { probability: Number(row.CNN_diagnosis_probability_percentage), diagnosis: mapDiag(row.CNN_diagnosis) };
+        const overall = { probability: Number(row.Overall_diagnosis_probability_percentage), diagnosis: mapDiag(row.Overall_diagnosis) };
+
+        const hasClinical = Number.isFinite(xg.probability) && xg.diagnosis !== null;
+        const hasImaging = Number.isFinite(cnn.probability) && cnn.diagnosis !== null;
+        const hasOverall = Number.isFinite(overall.probability) && overall.diagnosis !== null;
+
+        const clinicalScore = hasClinical ? xg.probability : 0;
+        const imagingScore = hasImaging ? cnn.probability : 0;
+        const overallScore = hasOverall
+          ? overall.probability
+          : (hasClinical || hasImaging ? (clinicalScore * 0.5 + imagingScore * 0.5) : 0);
+
+        currentXaiAvailability = {
+          clinical: hasClinical,
+          imaging: hasImaging,
+          overall: hasOverall || hasClinical || hasImaging
+        };
+
+        const diagnosis = (overall.diagnosis || (currentXaiAvailability.overall ? (overallScore >= 75 ? 'positive' : 'negative') : 'pending'));
+
+        // Construct a "patient-like" object compatible with existing XAI logic
+        const patientData = {
+          patient_id: 'user_latest',
+          id: 'user_latest',
+          patient_name: 'My Latest Screening',
+          name: 'My Latest Screening',
+          ...clinicalInputs,
+          ultrasound_image: row.Ultrasound_image || null,
+          Ultrasound_image: row.Ultrasound_image || null
+        };
+
+        // Ensure downstream Grad-CAM uses the same object
+        currentPatient = patientData;
+
+        // Use existing pipeline: fetch real SHAP + Grad-CAM
+        fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, diagnosis);
+        if (patientData.ultrasound_image) {
+          loadGradCAMVisualization(patientData, imagingScore);
+        }
+      } catch (e) {
+        console.error('Regular user auto XAI failed:', e);
+        setXaiLoading(false);
+        alert('Failed to auto-load XAI insights. Please try again.');
+      }
+    }
+
+    function loadPatientList() {
+      console.log('=== loadPatientList() STARTED ===');
+      console.log('Time:', new Date().toISOString());
+      // Get token from sessionStorage (used by auth.js for both guests and logged-in users)
+      const token = sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '';
+      console.log('Token available:', !!token);
+      console.log('Token source:', sessionStorage.getItem('PMOS_auth_token') ? 'sessionStorage (PMOS_auth_token)' : (localStorage.getItem('token') ? 'localStorage (token)' : 'none'));
+      
+      // **GUEST MODE**: Check if user is guest and has detected patients
+      let parsedToken = null;
+      try {
+        if (token) {
+          parsedToken = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload
+        }
+      } catch (e) {
+        console.warn('Could not decode token:', e);
+      }
+      
+      const isGuest = parsedToken && parsedToken.isGuest === true;
+      console.log('🔍 User is guest:', isGuest);
+      
+      // **GUEST FLOW**: Load from sessionStorage instead of API
+      if (isGuest) {
+        console.log('🚀 GUEST MODE ACTIVATED - Loading detected patients from sessionStorage');
+        const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
+        console.log('Guest detected patients in sessionStorage:', guestDetectedPatients.length);
+        
+        const selector = document.getElementById('patient-selector');
+        selector.innerHTML = '<option value="">Select patient for XAI analysis...</option>';
+        
+        if (guestDetectedPatients.length === 0) {
+          console.warn('⚠️ No detected patients found in guest session');
+          selector.innerHTML = '<option value="">No patients detected yet - please use Detect page to analyze patients</option>';
+          return;
+        }
+        
+        // Populate selector with guest's own detected patients
+        let optionCount = 0;
+        guestDetectedPatients.forEach((patient, idx) => {
+          const option = document.createElement('option');
+          option.value = patient.id;
+          
+          // Get scores from results
+          const clinicalScore = patient.clinical_result?.probability || 0;
+          const imagingScore = patient.imaging_result?.probability || 0;
+          const finalScore = (clinicalScore * 0.5 + imagingScore * 0.5).toFixed(2);
+          
+          option.textContent = `${patient.name} - Combined Score: ${finalScore}%`;
+          selector.appendChild(option);
+          optionCount++;
+          console.log(`✅ Added guest patient option ${optionCount}: ${option.textContent}`);
+        });
+        
+        allPatients = guestDetectedPatients; // Store for later reference
+        console.log('✅ loadPatientList() COMPLETED - Guest mode with', optionCount, 'patients');
+        return; // Exit - don't call API for guests
+      }
+      
+      // **NORMAL FLOW**: Logged-in users fetch from API
+      const apiUrl = 'api/get_patients_xai.php?debug=1';
+      console.log('Fetching from:', apiUrl);
+      
+      fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      })
+      .then(response => {
+        console.log('Response received');
+        console.log('Status:', response.status);
+        console.log('OK:', response.ok);
+        console.log('Headers:', {
+          'content-type': response.headers.get('content-type'),
+          'status': response.status
+        });
+        
+        if (!response.ok) {
+          console.error('Response not OK. Status:', response.status);
+          throw new Error('API returned status ' + response.status);
+        }
+        return response.text();
+      })
+      .then(text => {
+        console.log('Raw text response length:', text.length);
+        console.log('First 500 chars:', text.substring(0, 500));
+        
+        try {
+          const data = JSON.parse(text);
+          console.log('Successfully parsed JSON');
+          console.log('data.success:', data.success);
+          console.log('data.count:', data.count);
+          console.log('data.debug:', data.debug);
+          console.log('Full data object:', data);
+          
+          if (data.debug && Array.isArray(data.debug)) {
+            console.log('=== API DEBUG LOG ===');
+            data.debug.forEach(log => console.log('[API]', log));
+          }
+          
+          if (data.success && data.data && Array.isArray(data.data)) {
+            console.log('Data is valid array with', data.data.length, 'patients');
+            
+            if (data.data.length > 0) {
+              console.log('First patient:', data.data[0]);
+            } else {
+              console.warn('Data array is empty!');
+            }
+            
+            allPatients = data.data;
+            console.log('allPatients variable set to', allPatients.length, 'patients');
+            
+            const selector = document.getElementById('patient-selector');
+            console.log('Selector element:', selector);
+            
+            selector.innerHTML = '<option value="">Select patient for XAI analysis...</option>';
+            console.log('Selector cleared and reset');
+            
+            let optionCount = 0;
+            data.data.forEach((patient, idx) => {
+              console.log(`Processing patient ${idx}:`, {
+                id: patient.id,
+                name: patient.name,
+                diagnosis: patient.overall_diagnosis,
+                score: patient.overall_diagnosis_percentage
+              });
+              
+              const patientId = patient.id;
+              const diagnosis = patient.xgboost_diagnosis || patient.overall_diagnosis || 'Pending';
+              const score = patient.overall_diagnosis_percentage !== null && patient.overall_diagnosis_percentage !== undefined 
+                ? patient.overall_diagnosis_percentage 
+                : patient.clinical_score_percentage !== null && patient.clinical_score_percentage !== undefined
+                ? patient.clinical_score_percentage 
+                : 0;
+              
+              const option = document.createElement('option');
+              option.value = patient.id;
+              option.textContent = `${patient.name} (${patientId}) - ${diagnosis.charAt(0).toUpperCase() + diagnosis.slice(1)} (${parseFloat(score).toFixed(2)}%)`;
+              selector.appendChild(option);
+              optionCount++;
+              
+              console.log(`Added option ${optionCount}: ${option.textContent}`);
+            });
+            
+            console.log('Patient dropdown populated with', optionCount, 'options');
+            console.log('=== loadPatientList() COMPLETED SUCCESSFULLY ===');
+          } else {
+            console.error('Data validation failed');
+            console.error('data.success:', data.success);
+            console.error('data.data is array:', Array.isArray(data.data));
+            console.warn('Unexpected data structure:', data);
+            const selector = document.getElementById('patient-selector');
+            selector.innerHTML = '<option value="">No patients found - check console for details</option>';
+          }
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          console.error('Raw response was:', text);
+          const selector = document.getElementById('patient-selector');
+          selector.innerHTML = '<option value="">JSON parse error - see console</option>';
+        }
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        console.error('Error object:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        const selector = document.getElementById('patient-selector');
+        selector.innerHTML = '<option value="">Error loading patients - see console</option>';
+      });
+    }
+
+    async function loadXAIAnalysis() {
+      const patientSelector = document.getElementById('patient-selector');
+      const selectedPatientId = patientSelector.value;
+      
+      if (!selectedPatientId) {
+        alert('Please select a patient for XAI analysis.');
+        return;
+      }
+
+      // Regular Users do not select patients; they use their own latest screening
+      const isGuest = auth.currentUser && auth.currentUser.isGuest;
+      const isRegularUser = !isGuest && (typeof auth.roleStringIsAppRegularUser === 'function'
+        ? auth.roleStringIsAppRegularUser(auth.currentUser?.role)
+        : /regular\s*user/i.test(String(auth?.currentUser?.role || '')));
+      if (isRegularUser) {
+        loadMyLatestXAIInsights();
+        return;
+      }
+      
+      // Check if user is a guest - if so, show registration modal instead
+      if (isGuest) {
+        console.log('[XAI] Guest user tried to load XAI analysis - showing registration prompt');
+        showGuestRegistrationModalXAI();
+        return;
+      }
+      
+      await paintXaiLoadingBeforeWork();
+      
+      console.log('Looking for patient with ID:', selectedPatientId);
+      console.log('Available patients:', allPatients);
+      
+      const selectedPatient = allPatients.find(p => p.id === selectedPatientId);
+      
+      if (!selectedPatient) {
+        console.error('Patient not found. Available IDs:', allPatients.map(p => p.id));
+        setXaiLoading(false);
+        alert('Patient not found.');
+        return;
+      }
+      
+      console.log('Selected patient:', selectedPatient);
+      console.log('🔍 PATIENT ANALYSIS:');
+      console.log('   - patient.id:', selectedPatient.id);
+      console.log('   - starts with detected_?', selectedPatient.id?.startsWith('detected_'));
+      console.log('   - has clinical_data?', !!selectedPatient.clinical_data);
+      console.log('   - has clinical_result?', !!selectedPatient.clinical_result);
+      console.log('   - will enter GUEST mode?', selectedPatient.clinical_data && selectedPatient.clinical_result && selectedPatient.id?.startsWith('detected_'));
+      
+      // Store current patient for use in Grad-CAM++ visualization
+      currentPatient = selectedPatient;
+      
+      // **GUEST MODE**: Handle guest's detected patient data
+      if (selectedPatient.clinical_data && selectedPatient.clinical_result && selectedPatient.id && selectedPatient.id.startsWith('detected_')) {
+        console.log('🚀 GUEST DETECTED PATIENT MODE - Using stored clinical data');
+        console.log('🔥 FULL selectedPatient object:', JSON.stringify(selectedPatient, null, 2));
+        console.log('🔥 selectedPatient keys:', Object.keys(selectedPatient));
+        console.log('🔥 Has api_response:', 'api_response' in selectedPatient);
+        
+        const clinicalData = selectedPatient.clinical_data;
+        const clinicalResult = selectedPatient.clinical_result;
+        const imagingResult = selectedPatient.imaging_result || { probability: 0 };
+        const ultrasoundImage = selectedPatient.ultrasound_image || null;
+        
+        // CRITICAL: Extract SHAP from api_response
+        console.log('🔍 Checking api_response:');
+        console.log('   - selectedPatient.api_response exists?', !!selectedPatient.api_response);
+        console.log('   - selectedPatient.api_response:', selectedPatient.api_response);
+        
+        let shapExplanation = null;
+        if (selectedPatient.api_response && selectedPatient.api_response.shap_explanation) {
+          shapExplanation = selectedPatient.api_response.shap_explanation;
+          console.log('✅ FOUND SHAP in api_response:', shapExplanation);
+        } else {
+          console.log('❌ NO SHAP in api_response. Checking for direct shap_explanation field...');
+          if (selectedPatient.shap_explanation) {
+            shapExplanation = selectedPatient.shap_explanation;
+            console.log('✅ Found SHAP in direct field:', shapExplanation);
+          } else {
+            console.log('❌ NO SHAP found anywhere');
+            console.log('   - selectedPatient.shap_explanation:', selectedPatient.shap_explanation);
+          }
+        }
+        
+        // Try to use stored SHAP explanation first
+        let features = [];
+        console.log('🔍 Attempting to create features from SHAP or clinical data');
+        console.log('   - shapExplanation:', shapExplanation);
+        console.log('   - hasTopContributions:', shapExplanation && shapExplanation.top_contributions);
+        console.log('   - isArray:', Array.isArray(shapExplanation?.top_contributions));
+        console.log('   - length:', shapExplanation?.top_contributions?.length);
+        
+        if (shapExplanation && shapExplanation.top_contributions && Array.isArray(shapExplanation.top_contributions) && shapExplanation.top_contributions.length > 0) {
+          console.log('✅ Using stored SHAP explanation - found', shapExplanation.top_contributions.length, 'contributions');
+          features = shapExplanation.top_contributions.map((contrib, idx) => ({
+            name: contrib.feature,
+            value: clinicalData[contrib.feature] || 'N/A',
+            contribution: (contrib.shap_value * 50),
+            importance: contrib.abs_shap_value || Math.abs(contrib.shap_value)
+          })).slice(0, 10); // Top 10 features
+          console.log('✅ SHAP features created:', features);
+        } else {
+          // Fallback: Convert clinical data to synthetic features for SHAP display
+          console.log('⚠️ Falling back to synthetic features from clinical data');
+          console.log('   - clinicalData keys:', Object.keys(clinicalData).slice(0, 10));
+          console.log('   - clinicalData sample:', JSON.stringify(Object.entries(clinicalData).slice(0, 3)));
+          features = Object.entries(clinicalData).map(([key, value]) => ({
+            name: key,
+            value: value,
+            contribution: 0,
+            importance: Math.abs(parseFloat(value) || 0) * 0.5
+          })).filter(f => f.value !== null && f.value !== undefined && f.value !== '')
+            .sort((a, b) => b.importance - a.importance)
+            .slice(0, 10); // Top 10 features
+          console.log('⚠️ Synthetic features created:', features);
+        }
+        
+        const clinicalScore = clinicalResult.probability || 0;
+        const imagingScore = imagingResult.probability || 0;
+        const combinedScore = (clinicalScore * 0.5 + imagingScore * 0.5);
+        
+        // CRITICAL FIX: Ensure diagnosis is STRING format for consistency
+        let diagnosis = combinedScore >= 75 ? 'positive' : 'negative';
+        
+        // Also check if guest patient has stored diagnosis that needs conversion
+        if (selectedPatient.diagnosis_result) {
+          let storedDiagnosis = selectedPatient.diagnosis_result;
+          if (typeof storedDiagnosis === 'number' || /^\d+$/.test(String(storedDiagnosis))) {
+            const code = parseInt(storedDiagnosis);
+            const diagnosisMap = {0: 'negative', 1: 'positive', 2: 'borderline'};
+            diagnosis = diagnosisMap[code] || diagnosis;
+          } else {
+            diagnosis = storedDiagnosis || diagnosis;
+          }
+        }
+        
+        // Store current patient for Grad-CAM display
+        currentPatient = selectedPatient;
+        currentPatient.clinical_score_percentage = clinicalScore;
+        currentPatient.imaging_score_percentage = imagingScore;
+        
+        // Use data directly without calling API (data was already processed in detect.html)
+        updateXAIDisplay(
+          features, 
+          clinicalScore, 
+          imagingScore, 
+          combinedScore,
+          diagnosis,
+          selectedPatient.name
+        );
+        
+        // Load Grad-CAM visualization if image is available
+        if (imagingResult && ultrasoundImage) {
+          console.log('🎨 Loading Grad-CAM visualization for guest patient');
+          console.log('   - ultrasoundImage exists:', !!ultrasoundImage);
+          console.log('   - imagingScore:', imagingScore);
+          
+          // Check if we have pre-stored Grad-CAM from CNN prediction
+          if (imagingResult.gradcam_visualization) {
+            console.log('✅ Using pre-stored Grad-CAM visualization');
+            displayGradCAMForGuest(imagingResult.gradcam_visualization, imagingScore);
+          } else if (selectedPatient.cnn_api_response && selectedPatient.cnn_api_response.gradcam_visualization) {
+            console.log('✅ Using Grad-CAM from cnn_api_response');
+            displayGradCAMForGuest(selectedPatient.cnn_api_response.gradcam_visualization, imagingScore);
+          } else {
+            // Fall back to API call if not pre-stored - but construct patient object correctly for API
+            console.log('⚠️ Grad-CAM not pre-stored, calling API with proper patient structure');
+            const gradcamPatient = {
+              patient_id: selectedPatient.id,
+              id: selectedPatient.id,
+              ultrasound_image: ultrasoundImage,
+              Ultrasound_image: ultrasoundImage,  // Add both formats for compatibility
+              CNN_diagnosis_probability_percentage: imagingScore
+            };
+            console.log('🔧 Grad-CAM patient object:', gradcamPatient);
+            loadGradCAMVisualization(gradcamPatient, imagingScore);
+          }
+        } else {
+          console.log('⚠️ Cannot load Grad-CAM - missing imagingResult or ultrasoundImage');
+          console.log('   - imagingResult:', imagingResult);
+          console.log('   - ultrasoundImage:', !!ultrasoundImage);
+        }
+        
+        setXaiLoading(false);
+        return;
+      }
+      
+      /**
+       * NORMAL FLOW (Non-guests): Continue with regular database patient data
+       */
+      const storedResult = sessionStorage.getItem('lastPredictionResult');
+      if (storedResult) {
+        try {
+          const result = JSON.parse(storedResult);
+          if (result && result.shap_explanation && result.shap_explanation.top_contributions) {
+            loadRealtimePredictionData(result, selectedPatient);
+            sessionStorage.removeItem('lastPredictionResult');
+            return;
+          }
+        } catch(e) {
+          console.log('Error loading stored prediction:', e);
+        }
+      }
+      
+      loadDatabasePatientData(selectedPatient);
+    }
+
+    function loadRealtimePredictionData(result, patientData) {
+      const shapData = result.shap_explanation;
+      const features = shapData.top_contributions.map((contrib, idx) => ({
+        name: contrib.feature,
+        value: contrib.value || contrib.shap_value,
+        contribution: (contrib.shap_value * 50),
+        importance: contrib.abs_shap_value || Math.abs(contrib.shap_value)
+      }));
+      
+      const clinicalScore = result.probability_percentage;
+      const imagingScore = Math.max(0, clinicalScore - 20);
+      currentXaiAvailability = { clinical: Number.isFinite(clinicalScore), imaging: Number.isFinite(imagingScore), overall: Number.isFinite(clinicalScore) };
+      
+      // Use diagnosis from patientData if available, otherwise compute from scores
+      let overallDiagnosis = patientData.overall_diagnosis || (clinicalScore >= 75 ? 'positive' : 'negative');
+      
+      // CRITICAL FIX: Ensure overallDiagnosis is STRING format
+      if (typeof overallDiagnosis === 'number' || /^\d+$/.test(String(overallDiagnosis))) {
+        const code = parseInt(overallDiagnosis);
+        const diagnosisMap = {0: 'negative', 1: 'positive', 2: 'borderline'};
+        overallDiagnosis = diagnosisMap[code] || 'pending';
+      }
+      
+      const overallScore = result.probability_percentage || clinicalScore;
+      updateXAIDisplay(features, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.patient_name);
+    }
+
+    function loadDatabasePatientData(patientData) {
+      const rawClinical = patientData?.clinical_score_percentage;
+      const rawImaging = patientData?.imaging_score_percentage;
+      const rawOverall = patientData?.overall_diagnosis_percentage;
+
+      const hasClinical = Number.isFinite(Number(rawClinical));
+      const hasImaging = Number.isFinite(Number(rawImaging));
+      const hasOverall = Number.isFinite(Number(rawOverall));
+
+      const clinicalScore = hasClinical ? Number(rawClinical) : 0;
+      const imagingScore = hasImaging ? Number(rawImaging) : 0;
+      const overallScore = hasOverall ? Number(rawOverall) : ((hasClinical || hasImaging) ? ((clinicalScore + imagingScore) / 2) : 0);
+
+      currentXaiAvailability = { clinical: hasClinical, imaging: hasImaging, overall: hasOverall || hasClinical || hasImaging };
+      
+      // CRITICAL FIX: Convert numeric diagnosis codes to string labels
+      // Database stores: 0 = negative, 1 = positive, 2 = borderline
+      // Frontend expects: 'negative', 'positive', 'borderline'
+      let overallDiagnosis = patientData.overall_diagnosis || 'pending';
+      
+      // If overallDiagnosis is numeric, convert it
+      if (typeof overallDiagnosis === 'number' || /^\d+$/.test(String(overallDiagnosis))) {
+        const code = parseInt(overallDiagnosis);
+        const diagnosisMap = {0: 'negative', 1: 'positive', 2: 'borderline'};
+        overallDiagnosis = diagnosisMap[code] || 'pending';
+        console.log('[XAI] Converted numeric diagnosis', code, 'to string:', overallDiagnosis);
+      }
+      
+      // Attempt to fetch real SHAP values from XGBoost prediction API
+      fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, overallDiagnosis);
+    }
+
+    function fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, overallDiagnosis) {
+      if (!patientData || typeof patientData !== 'object') {
+        console.warn('[XAI] No patient data available for SHAP. Falling back to synthetic features.');
+        const features = createFeaturesFromPatientData(patientData || {});
+        updateXAIDisplay(features, clinicalScore || 0, imagingScore || 0, overallScore || 0, overallDiagnosis || 'pending', (patientData && (patientData.name || patientData.patient_name)) || 'Patient', false);
+        return;
+      }
+
+      // Prepare patient data for XGBoost prediction - include ALL parameters from database
+      // IMPORTANT: Send null for missing values (not 0) so backend knows which fields were actually missing
+      const predictionData = {
+        // Demographic
+        Age_yrs: patientData.age || patientData.Age_yrs || null,
+        Weight_kg: patientData.Weight_kg || null,
+        Height_cm: patientData.Height_cm || null,
+        BMI: patientData.BMI || null,
+        Blood_Group: patientData.Blood_Group || null,
+        
+        // Vital Signs
+        Pulse_rate_bpm: patientData.Pulse_rate_bpm || null,
+        RR_breath_min: patientData.RR_breath_min || null,
+        BP_Systolic_mmHg: patientData.BP_Systolic_mmHg || null,
+        BP_Diastolic_mmHg: patientData.BP_Diastolic_mmHg || null,
+        
+        // Blood Count
+        Hb_g_dl: patientData.Hb_g_dl || null,
+        
+        // Cycle & Pregnancy Information
+        CycleR_I: patientData.CycleR_I || null,
+        Cycle_length_days: patientData.Cycle_length_days || null,
+        Marriage_Status_years: patientData.Marriage_Status_years || null,
+        Pregnant: patientData.Pregnant || null,
+        No_of_abortions: patientData.No_of_abortions || null,
+        
+        // Hormonal Levels
+        I_beta_HCG_mIU_mL: patientData.I_beta_HCG_mIU_mL || null,
+        II_beta_HCG_mIU_mL: patientData.II_beta_HCG_mIU_mL || null,
+        FSH_mIU_mL: patientData.FSH_mIU_mL || null,
+        LH_mIU_mL: patientData.LH_mIU_mL || null,
+        LH_FSH_Ratio: (() => {
+            // FSH_LH column stores LH/FSH directly
+            if (patientData.FSH_LH && patientData.FSH_LH > 0) {
+                return parseFloat(patientData.FSH_LH);
+            }
+            return patientData.LH_FSH_Ratio || null;
+        })(),
+        TSH_mIU_L: patientData.TSH_mIU_L || null,
+        AMH_ng_mL: patientData.AMH_ng_mL || null,
+        PRL_ng_mL: patientData.PRL_ng_mL || null,
+        Vit_D3_ng_mL: patientData.Vit_D3_ng_mL || null,
+        PRG_ng_mL: patientData.PRG_ng_mL || null,
+        RBS_mg_dl: patientData.RBS_mg_dl || null,
+        
+        // Anthropometric
+        Hip_inch: patientData.Hip_inch || null,
+        Waist_inch: patientData.Waist_inch || null,
+        Waist_hip_ratio: patientData.Waist_hip_ratio || null,
+        
+        // Ultrasound Parameters - KEEP NULL if missing in database
+        Follicle_no_L: patientData.Follicle_no_L !== null && patientData.Follicle_no_L !== undefined ? patientData.Follicle_no_L : null,
+        Follicle_no_R: patientData.Follicle_no_R !== null && patientData.Follicle_no_R !== undefined ? patientData.Follicle_no_R : null,
+        Avg_F_size_L_mm: patientData.Avg_F_size_L_mm !== null && patientData.Avg_F_size_L_mm !== undefined ? patientData.Avg_F_size_L_mm : null,
+        Avg_F_size_R_mm: patientData.Avg_F_size_R_mm !== null && patientData.Avg_F_size_R_mm !== undefined ? patientData.Avg_F_size_R_mm : null,
+        Endometrium_mm: patientData.Endometrium_mm !== null && patientData.Endometrium_mm !== undefined ? patientData.Endometrium_mm : null,
+        
+        // Clinical Symptoms - use explicit checks to preserve 0 values (unchecked checkboxes)
+        Weight_gain: patientData.Weight_gain !== null && patientData.Weight_gain !== undefined ? patientData.Weight_gain : null,
+        Hair_growth: patientData.Hair_growth !== null && patientData.Hair_growth !== undefined ? patientData.Hair_growth : null,
+        Skin_darkening: patientData.Skin_darkening !== null && patientData.Skin_darkening !== undefined ? patientData.Skin_darkening : null,
+        Hair_loss: patientData.Hair_loss !== null && patientData.Hair_loss !== undefined ? patientData.Hair_loss : null,
+        Pimples: patientData.Pimples !== null && patientData.Pimples !== undefined ? patientData.Pimples : null,
+        Fast_food: patientData.Fast_food !== null && patientData.Fast_food !== undefined ? patientData.Fast_food : null,
+        Reg_Exercise: patientData.Reg_Exercise !== null && patientData.Reg_Exercise !== undefined ? patientData.Reg_Exercise : null,
+        
+        patient_id: patientData.patient_id
+      };
+      
+      console.log('Fetching XGBoost SHAP explanation with data:', predictionData);
+
+      // Call XGBoost prediction API for SHAP explanations
+      fetch('api/predict_xgboost.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(predictionData)
+      })
+      .then(async (response) => {
+        const json = await response.json().catch(() => null);
+        if (!response.ok || !json) {
+          const msg = json?.error || `AI model explanation request failed (HTTP ${response.status})`;
+          throw new Error(msg);
+        }
+        if (json.success === false) {
+          throw new Error(json.error || 'AI model explanation request failed');
+        }
+        return json;
+      })
+      .then(result => {
+        console.log('XGBoost prediction result:', result);
+        console.log('Top contributions:', result.success ? result.shap_explanation.top_contributions : 'N/A');
+        
+        if (result.success && result.shap_explanation && result.shap_explanation.top_contributions && result.shap_explanation.top_contributions.length > 0) {
+          console.log('Using real SHAP explanations from XGBoost model');
+          // Use real SHAP values from the algorithm
+          const apiFeatures = result.shap_explanation.top_contributions.map((contrib, idx) => {
+            // Get actual patient data value by matching feature name to predictionData
+            let patientValue = 'N/A';
+            
+            // Create mapping of feature names to values from predictionData
+            const featureValueMap = {
+              'Age_yrs': predictionData.Age_yrs,
+              'Weight_kg': predictionData.Weight_kg,
+              'Height_cm': predictionData.Height_cm,
+              'BMI': predictionData.BMI,
+              'Blood_Group': predictionData.Blood_Group,
+              'Pulse_rate_bpm': predictionData.Pulse_rate_bpm,
+              'RR_breath_min': predictionData.RR_breath_min,
+              'BP_Systolic_mmHg': predictionData.BP_Systolic_mmHg,
+              'BP_Diastolic_mmHg': predictionData.BP_Diastolic_mmHg,
+              'Hb_g_dl': predictionData.Hb_g_dl,
+              'CycleR_I': predictionData.CycleR_I,
+              'Cycle_length_days': predictionData.Cycle_length_days,
+              'Marriage_Status_years': predictionData.Marriage_Status_years,
+              'Pregnant': predictionData.Pregnant,
+              'No_of_abortions': predictionData.No_of_abortions,
+              'FSH_mIU_mL': predictionData.FSH_mIU_mL,
+              'LH_mIU_mL': predictionData.LH_mIU_mL,
+              'LH_FSH_Ratio': predictionData.LH_FSH_Ratio,
+              'I_beta_HCG_mIU_mL': predictionData.I_beta_HCG_mIU_mL,
+              'II_beta_HCG_mIU_mL': predictionData.II_beta_HCG_mIU_mL,
+              'AMH_ng_mL': predictionData.AMH_ng_mL,
+              'TSH_mIU_L': predictionData.TSH_mIU_L,
+              'PRL_ng_mL': predictionData.PRL_ng_mL,
+              'Vit_D3_ng_mL': predictionData.Vit_D3_ng_mL,
+              'PRG_ng_mL': predictionData.PRG_ng_mL,
+              'RBS_mg_dl': predictionData.RBS_mg_dl,
+              'Follicle_no_L': predictionData.Follicle_no_L,
+              'Follicle_no_R': predictionData.Follicle_no_R,
+              'Avg_F_size_L_mm': predictionData.Avg_F_size_L_mm,
+              'Avg_F_size_R_mm': predictionData.Avg_F_size_R_mm,
+              'Endometrium_mm': predictionData.Endometrium_mm,
+              'Hip_inch': predictionData.Hip_inch,
+              'Waist_inch': predictionData.Waist_inch,
+              'Waist_hip_ratio': predictionData.Waist_hip_ratio,
+              'Weight_gain': predictionData.Weight_gain,
+              'Hair_growth': predictionData.Hair_growth,
+              'Skin_darkening': predictionData.Skin_darkening,
+              'Hair_loss': predictionData.Hair_loss,
+              'Pimples': predictionData.Pimples,
+              'Fast_food': predictionData.Fast_food,
+              'Reg_Exercise': predictionData.Reg_Exercise
+            };
+            
+            console.log(`API Feature name: "${contrib.feature}"`);
+            
+            // Try exact match first
+            if (featureValueMap.hasOwnProperty(contrib.feature)) {
+              patientValue = featureValueMap[contrib.feature];
+              console.log(`✓ Exact match found: ${patientValue}`);
+            } else {
+              // Try case-insensitive and fuzzy matching with improved logic
+              const normalize = (s) => String(s || '')
+                .toLowerCase()
+                .replace(/\([^)]*\)/g, '')     // drop "(...)"
+                .replace(/[^a-z0-9]+/g, '')    // keep only letters+numbers
+                .trim();
+
+              const featureLower = String(contrib.feature || '').toLowerCase();
+              const normFeature = normalize(contrib.feature);
+              
+              // Try matching against cleaned versions of keys
+              for (const [key, value] of Object.entries(featureValueMap)) {
+                const keyLower = key.toLowerCase();
+                const normKey = normalize(key);
+                
+                // Check multiple matching strategies
+                if (keyLower === featureLower ||
+                    normKey === normFeature ||
+                    (normKey && normFeature && (normFeature.includes(normKey) || normKey.includes(normFeature)))) {
+                  patientValue = value;
+                  console.log(`✓ Fuzzy match found (${key}): ${patientValue}`);
+                  break;
+                }
+              }
+            }
+            
+            if (patientValue === 'N/A') {
+              console.warn(`✗ No match for: "${contrib.feature}"`);
+              console.log('Available keys:', Object.keys(featureValueMap));
+            }
+            
+            return {
+              name: contrib.feature,
+              value: patientValue,  // Use actual patient data, not SHAP value
+              contribution: (contrib.shap_value * 50),
+              importance: contrib.abs_shap_value || Math.abs(contrib.shap_value)
+            };
+          });
+          
+          // Don't add synthetic features - use only API features if available
+          // The API already provides the best SHAP explanations
+          const combinedFeatures = apiFeatures.sort((a, b) => b.importance - a.importance);
+          
+          updateXAIDisplay(combinedFeatures, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.name);
+        } else if (result.success && result.shap_explanation) {
+          // SHAP available but no top contributions
+          console.warn('SHAP available but no top contributions:', result.shap_explanation);
+          const features = createFeaturesFromPatientData(patientData);
+          updateXAIDisplay(features, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.name, false);
+        } else {
+          console.warn('No SHAP explanation returned, using synthetic features');
+          // Fallback to synthetic features if API doesn't return SHAP
+          const features = createFeaturesFromPatientData(patientData);
+          updateXAIDisplay(features, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.name, false);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching XGBoost SHAP explanation:', error);
+        console.log('Falling back to synthetic features');
+        // Fallback to synthetic features if API call fails
+        const features = createFeaturesFromPatientData(patientData);
+        updateXAIDisplay(features, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.name, false);
+      });
+    }
+
+    function updateXAIDisplay(features, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientName, hasRealSHAPData = true) {
+      // Hide unavailable model results (applies to both Regular Users and Providers)
+      const avail = currentXaiAvailability || { clinical: true, imaging: true, overall: true };
+      const hasUltrasoundImage = (() => {
+        try {
+          const p = currentPatient;
+          return !!(p && (p.ultrasound_image || p.Ultrasound_image));
+        } catch (_) {
+          return false;
+        }
+      })();
+
+      const clinicalScoreEl = document.getElementById('clinical-score');
+      const imagingScoreEl = document.getElementById('imaging-score');
+      const confidenceEl = document.getElementById('confidence-level');
+      const diagnosisEl = document.getElementById('final-diagnosis');
+
+      const clinicalTile = clinicalScoreEl?.closest('.text-center');
+      const imagingTile = imagingScoreEl?.closest('.text-center');
+      const confidenceTile = confidenceEl?.closest('.text-center');
+      const diagnosisTile = diagnosisEl?.closest('.text-center');
+
+      if (clinicalTile) clinicalTile.style.display = avail.clinical ? '' : 'none';
+      if (imagingTile) imagingTile.style.display = avail.imaging ? '' : 'none';
+      if (confidenceTile) confidenceTile.style.display = avail.overall ? '' : 'none';
+      if (diagnosisTile) diagnosisTile.style.display = avail.overall ? '' : 'none';
+
+      const dfClinical = document.getElementById('decision-factor-clinical');
+      const dfUltrasound = document.getElementById('decision-factor-ultrasound');
+      if (dfClinical) dfClinical.style.display = avail.clinical ? '' : 'none';
+      if (dfUltrasound) dfUltrasound.style.display = avail.imaging ? '' : 'none';
+
+      // Hide ultrasound highlight card unless we have an imaging prediction AND an ultrasound image
+      const gradcamCard = document.getElementById('gradcam-results-card');
+      // Regular-user saves may not include a stored CNN diagnosis/probability, but we can still
+      // generate Grad-CAM from the ultrasound image alone. Gate on image availability.
+      if (gradcamCard) gradcamCard.style.display = hasUltrasoundImage ? 'block' : 'none';
+
+      // Hide SHAP/clinical explanation blocks if no clinical prediction exists
+      const shapCard = document.getElementById('shap-force-plot')?.closest('.bento-card');
+      const rankingCard = document.getElementById('shap-importance-chart')?.closest('.bento-card');
+      const topFeaturesCard = document.getElementById('feature-list')?.closest('.bento-card');
+      if (shapCard) shapCard.style.display = avail.clinical ? '' : 'none';
+      if (rankingCard) rankingCard.style.display = avail.clinical ? '' : 'none';
+      if (topFeaturesCard) topFeaturesCard.style.display = avail.clinical ? '' : 'none';
+
+      // Hide model agreement section if we don't have at least one model score
+      const consensusCard = document.getElementById('consensus-chart')?.closest('.bento-card');
+      if (consensusCard) consensusCard.style.display = (avail.clinical || avail.imaging) ? '' : 'none';
+
+      // Use actual diagnosis from database, not calculated
+      const diagnosisDisplay = overallDiagnosis === 'positive' ? 'Positive' : 
+                              overallDiagnosis === 'negative' ? 'Negative' : 
+                              overallDiagnosis === 'borderline' ? 'Borderline' : 'Pending';
+      
+      // Display scores directly from database
+      if (clinicalScoreEl) clinicalScoreEl.textContent = `${clinicalScore.toFixed(2)}%`;
+      if (imagingScoreEl) imagingScoreEl.textContent = `${imagingScore.toFixed(2)}%`;
+      
+      // Display actual overall diagnosis result + confidence with severity colors
+      if (diagnosisEl) diagnosisEl.textContent = diagnosisDisplay;
+      if (confidenceEl) confidenceEl.textContent = `${overallScore.toFixed(2)}%`;
+      const ds = window.PcodeDiagnosticSeverity;
+      if (ds && ds.applyDiagnosticSeverity) {
+        ds.applyDiagnosticSeverity(diagnosisEl, diagnosisDisplay);
+        ds.applyDiagnosticSeverity(confidenceEl, diagnosisDisplay);
+        if (diagnosisEl) diagnosisEl.classList.add('text-3xl', 'pcode-xai-summary-value');
+        if (confidenceEl) confidenceEl.classList.add('text-3xl', 'pcode-xai-summary-value');
+      } else if (diagnosisEl) {
+        diagnosisEl.className = `text-3xl pcode-xai-summary-value ${
+          diagnosisDisplay === 'Positive' ? 'pcode-severity-text--positive' :
+          diagnosisDisplay === 'Negative' ? 'pcode-severity-text--negative' :
+          diagnosisDisplay === 'Borderline' ? 'pcode-severity-text--borderline' :
+          'pcode-severity-text--pending'
+        }`;
+        if (confidenceEl) {
+          confidenceEl.className = `text-3xl pcode-xai-summary-value ${
+            diagnosisDisplay === 'Positive' ? 'pcode-severity-text--positive' :
+            diagnosisDisplay === 'Negative' ? 'pcode-severity-text--negative' :
+            diagnosisDisplay === 'Borderline' ? 'pcode-severity-text--borderline' :
+            'pcode-severity-text--pending'
+          }`;
+        }
+      }
+
+      // Update decision factor bars and hide ghost ultrasound values when no imaging analysis exists
+      try {
+        const clampPct = (v) => {
+          const n = Number(v);
+          if (!Number.isFinite(n)) return 0;
+          return Math.max(0, Math.min(100, n));
+        };
+
+        const clinicalPct = clampPct(clinicalScore);
+        const imagingPct = clampPct(imagingScore);
+        const confidencePct = clampPct(overallScore);
+
+        const clinicalBar = document.getElementById('decision-factor-clinical-bar');
+        const clinicalText = document.getElementById('decision-factor-clinical-text');
+        if (clinicalBar) {
+          clinicalBar.style.width = `${clinicalPct}%`;
+          if (window.PcodeEchartNeon) window.PcodeEchartNeon.applyNeonBarClasses(clinicalBar, 'clinical');
+        }
+        if (clinicalText) clinicalText.textContent = `${clinicalPct.toFixed(2)}%`;
+
+        const ultrasoundRow = document.getElementById('decision-factor-ultrasound');
+        const ultrasoundBar = document.getElementById('decision-factor-ultrasound-bar');
+        const ultrasoundText = document.getElementById('decision-factor-ultrasound-text');
+
+        // Only show ultrasound morphology when imaging analysis actually ran (non-zero imaging score)
+        const hasImagingAnalysis = imagingPct > 0;
+        if (ultrasoundRow) {
+          ultrasoundRow.classList.toggle('hidden', !hasImagingAnalysis);
+        }
+        if (ultrasoundBar) {
+          ultrasoundBar.style.width = `${imagingPct}%`;
+          if (window.PcodeEchartNeon) window.PcodeEchartNeon.applyNeonBarClasses(ultrasoundBar, 'imaging');
+        }
+        if (ultrasoundText) ultrasoundText.textContent = `${imagingPct.toFixed(2)}%`;
+
+        const confidenceBar = document.getElementById('decision-factor-confidence-bar');
+        const confidenceText = document.getElementById('decision-factor-confidence-text');
+        if (confidenceBar) {
+          confidenceBar.style.width = `${confidencePct}%`;
+          const riskVariant = window.PcodeXaiClinical
+            ? PcodeXaiClinical.integratedRiskBarVariant(overallDiagnosis, confidencePct)
+            : 'borderline';
+          if (window.PcodeEchartNeon) window.PcodeEchartNeon.applyNeonBarClasses(confidenceBar, riskVariant);
+        }
+        if (confidenceText) confidenceText.textContent = `${confidencePct.toFixed(2)}%`;
+
+        const summaryEl = document.getElementById('decision-factors-summary');
+        if (summaryEl && window.PcodeXaiClinical) {
+          summaryEl.innerHTML = PcodeXaiClinical.buildDiagnosticSummary(
+            confidencePct,
+            clinicalPct,
+            imagingPct,
+            hasImagingAnalysis
+          );
+        }
+      } catch (e) {
+        console.warn('[XAI] Decision factor UI update failed:', e);
+      }
+      
+      createSHAPForcePlot(features);
+      createSHAPImportanceChart(features);
+      createFeatureList(features);
+      createConsensusChart(clinicalScore, imagingScore, avail, overallDiagnosis, overallScore);
+      
+      // Show/Hide XGBoost results card based on whether we have real SHAP data
+      const xgboostCard = document.getElementById('xgboost-results-card');
+      if (xgboostCard) {
+        if (hasRealSHAPData) {
+          xgboostCard.style.display = 'block';
+        } else {
+          xgboostCard.style.display = 'none';
+        }
+      }
+      
+      // Load Grad-CAM++ visualization
+      try {
+        const p = currentPatient;
+        const hasImg = !!(p && (p.ultrasound_image || p.Ultrasound_image));
+        if (hasImg) {
+          loadGradCAMVisualization(p, imagingScore);
+        }
+      } catch (e) {
+        console.warn('[XAI] Grad-CAM trigger failed:', e);
+      }
+      
+      document.getElementById('xai-content').classList.remove('hidden');
+      
+      // Re-render charts after content becomes visible with proper timing
+      setTimeout(() => {
+        const forceChart = echarts.getInstanceByDom(document.getElementById('shap-force-plot'));
+        const importanceChart = echarts.getInstanceByDom(document.getElementById('shap-importance-chart'));
+        const consensusChart = echarts.getInstanceByDom(document.getElementById('consensus-chart'));
+        
+        if (forceChart) forceChart.resize();
+        if (importanceChart) importanceChart.resize();
+        if (consensusChart) consensusChart.resize();
+      }, 100);
+      
+      // Render all charts first
+      try {
+        const elements = Array.from(document.querySelectorAll('#xai-content .bento-card'));
+        if (elements.length > 0 && typeof anime !== 'undefined' && typeof anime.stagger !== 'undefined') {
+          anime({
+            targets: elements,
+            translateY: [30, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(200),
+            duration: 800,
+            easing: 'easeOutExpo'
+          });
+        }
+      } catch (e) {
+        console.warn('Animation library error:', e);
+      }
+      
+      document.getElementById('shap-explanation').innerHTML = generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName, 'self');
+      
+      // Hide loading spinner
+      setXaiLoading(false);
+      
+      document.getElementById('xai-content').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function createFeaturesFromPatientData(patientData) {
+      const features = [];
+      
+      // Demographic Information
+      if (patientData.Age_yrs !== null && patientData.Age_yrs !== undefined) {
+        features.push({
+          name: 'Age (years)',
+          value: patientData.Age_yrs,
+          contribution: Math.abs(patientData.Age_yrs - 30) * 0.3,
+          importance: 0.70
+        });
+      }
+      
+      // Weight and Height
+      if (patientData.Weight_kg !== null && patientData.Weight_kg !== undefined) {
+        features.push({
+          name: 'Weight (kg)',
+          value: patientData.Weight_kg.toFixed(1),
+          contribution: (patientData.Weight_kg - 60) * 0.2,
+          importance: 0.65
+        });
+      }
+      
+      if (patientData.Height_cm !== null && patientData.Height_cm !== undefined) {
+        features.push({
+          name: 'Height (cm)',
+          value: patientData.Height_cm.toFixed(1),
+          contribution: (patientData.Height_cm - 160) * 0.15,
+          importance: 0.55
+        });
+      }
+      
+      // BMI
+      if (patientData.BMI !== null && patientData.BMI !== undefined) {
+        features.push({
+          name: 'BMI',
+          value: patientData.BMI.toFixed(1),
+          contribution: (patientData.BMI - 25) * 0.5,
+          importance: 0.72
+        });
+      }
+      
+      // Blood Group
+      if (patientData.Blood_Group !== null && patientData.Blood_Group !== undefined && patientData.Blood_Group !== 0 && patientData.Blood_Group !== '0') {
+        features.push({
+          name: 'Blood Group',
+          value: convertBloodGroupToLetters(patientData.Blood_Group),
+          contribution: 0.5,
+          importance: 0.45
+        });
+      }
+      
+      // Vital Signs
+      if (patientData.Pulse_rate_bpm !== null && patientData.Pulse_rate_bpm !== undefined) {
+        features.push({
+          name: 'Pulse Rate (bpm)',
+          value: patientData.Pulse_rate_bpm,
+          contribution: Math.abs(patientData.Pulse_rate_bpm - 70) * 0.1,
+          importance: 0.60
+        });
+      }
+      
+      if (patientData.RR_breath_min !== null && patientData.RR_breath_min !== undefined) {
+        features.push({
+          name: 'Respiratory Rate (breaths/min)',
+          value: patientData.RR_breath_min,
+          contribution: Math.abs(patientData.RR_breath_min - 16) * 0.15,
+          importance: 0.50
+        });
+      }
+      
+      if (patientData.BP_Systolic_mmHg !== null && patientData.BP_Systolic_mmHg !== undefined && patientData.BP_Diastolic_mmHg !== null && patientData.BP_Diastolic_mmHg !== undefined) {
+        features.push({
+          name: 'Blood Pressure',
+          value: `${patientData.BP_Systolic_mmHg}/${patientData.BP_Diastolic_mmHg}`,
+          contribution: (Math.abs(patientData.BP_Systolic_mmHg - 120) + Math.abs(patientData.BP_Diastolic_mmHg - 80)) * 0.1,
+          importance: 0.68
+        });
+      }
+      
+      // Blood Count
+      if (patientData.Hb_g_dl !== null && patientData.Hb_g_dl !== undefined) {
+        features.push({
+          name: 'Hemoglobin (g/dL)',
+          value: patientData.Hb_g_dl.toFixed(1),
+          contribution: Math.abs(patientData.Hb_g_dl - 12) * 0.3,
+          importance: 0.62
+        });
+      }
+      
+      // Cycle Information
+      if (patientData.CycleR_I !== null && patientData.CycleR_I !== undefined) {
+        features.push({
+          name: 'Cycle Regularity Index',
+          value: patientData.CycleR_I.toFixed(2),
+          contribution: (1 - patientData.CycleR_I) * 10,
+          importance: 0.75
+        });
+      }
+      
+      if (patientData.Cycle_length_days !== null && patientData.Cycle_length_days !== undefined) {
+        features.push({
+          name: 'Cycle Length (days)',
+          value: patientData.Cycle_length_days,
+          contribution: (patientData.Cycle_length_days > 35 ? (patientData.Cycle_length_days - 35) / 10 : -(35 - patientData.Cycle_length_days) / 20) * 5,
+          importance: 0.68
+        });
+      }
+      
+      // Marriage and Pregnancy Info
+      if (patientData.Marriage_Status_years !== null && patientData.Marriage_Status_years !== undefined) {
+        features.push({
+          name: 'Marriage Status (years)',
+          value: patientData.Marriage_Status_years,
+          contribution: patientData.Marriage_Status_years * 0.1,
+          importance: 0.55
+        });
+      }
+      
+      if (patientData.Pregnant !== null && patientData.Pregnant !== undefined && patientData.Pregnant !== '0') {
+        features.push({
+          name: 'Pregnancy Status',
+          value: patientData.Pregnant,
+          contribution: 5,
+          importance: 0.90
+        });
+      }
+      
+      if (patientData.No_of_abortions !== null && patientData.No_of_abortions !== undefined && patientData.No_of_abortions > 0) {
+        features.push({
+          name: 'Number of Abortions',
+          value: patientData.No_of_abortions,
+          contribution: patientData.No_of_abortions * 2,
+          importance: 0.70
+        });
+      }
+      
+      // Hormonal Levels
+      if (patientData.AMH_ng_mL !== null && patientData.AMH_ng_mL !== undefined) {
+        features.push({
+          name: 'AMH Level (ng/mL)',
+          value: patientData.AMH_ng_mL.toFixed(2),
+          contribution: (patientData.AMH_ng_mL / 10) * 15,
+          importance: 0.95
+        });
+      }
+      
+      if (patientData.FSH_mIU_mL !== null && patientData.FSH_mIU_mL !== undefined) {
+        features.push({
+          name: 'FSH (mIU/mL)',
+          value: patientData.FSH_mIU_mL.toFixed(2),
+          contribution: Math.abs(patientData.FSH_mIU_mL - 6) * 0.5,
+          importance: 0.85
+        });
+      }
+      
+      if (patientData.LH_mIU_mL !== null && patientData.LH_mIU_mL !== undefined) {
+        features.push({
+          name: 'LH (mIU/mL)',
+          value: patientData.LH_mIU_mL.toFixed(2),
+          contribution: Math.abs(patientData.LH_mIU_mL - 5) * 0.5,
+          importance: 0.83
+        });
+      }
+      
+      // Use stored LH/FSH ratio if available, otherwise calculate from individual values
+      let lhFshRatio = null;
+      if (patientData.FSH_LH !== null && patientData.FSH_LH !== undefined && patientData.FSH_LH > 0) {
+        // FSH_LH column stores LH/FSH directly
+        lhFshRatio = parseFloat(patientData.FSH_LH);
+      } else if (patientData.LH_mIU_mL !== null && patientData.FSH_mIU_mL !== null && patientData.FSH_mIU_mL > 0) {
+        lhFshRatio = parseFloat((patientData.LH_mIU_mL / patientData.FSH_mIU_mL).toFixed(2));
+      }
+      
+      if (lhFshRatio !== null) {
+        features.push({
+          name: 'LH/FSH Ratio',
+          value: parseFloat(lhFshRatio).toFixed(2),
+          contribution: (lhFshRatio > 2.5 ? lhFshRatio - 2.5 : -(2.5 - lhFshRatio)) * 8,
+          importance: 0.88
+        });
+      }
+      
+      if (patientData.FSH_LH !== null && patientData.FSH_LH !== undefined) {
+        features.push({
+          name: 'FSH/LH Ratio',
+          value: patientData.FSH_LH.toFixed(2),
+          contribution: Math.abs(patientData.FSH_LH - 1) * 3,
+          importance: 0.75
+        });
+      }
+      
+      // Beta HCG Levels
+      if (patientData.I_beta_HCG_mIU_mL !== null && patientData.I_beta_HCG_mIU_mL !== undefined && patientData.I_beta_HCG_mIU_mL > 0) {
+        features.push({
+          name: 'Beta HCG - I (mIU/mL)',
+          value: patientData.I_beta_HCG_mIU_mL.toFixed(2),
+          contribution: patientData.I_beta_HCG_mIU_mL * 0.01,
+          importance: 0.65
+        });
+      }
+      
+      if (patientData.II_beta_HCG_mIU_mL !== null && patientData.II_beta_HCG_mIU_mL !== undefined && patientData.II_beta_HCG_mIU_mL > 0) {
+        features.push({
+          name: 'Beta HCG - II (mIU/mL)',
+          value: patientData.II_beta_HCG_mIU_mL.toFixed(2),
+          contribution: patientData.II_beta_HCG_mIU_mL * 0.01,
+          importance: 0.65
+        });
+      }
+      
+      // Other Hormones
+      if (patientData.TSH_mIU_L !== null && patientData.TSH_mIU_L !== undefined) {
+        features.push({
+          name: 'TSH (mIU/L)',
+          value: patientData.TSH_mIU_L.toFixed(2),
+          contribution: Math.abs(patientData.TSH_mIU_L - 2.5) * 0.8,
+          importance: 0.78
+        });
+      }
+      
+      if (patientData.PRL_ng_mL !== null && patientData.PRL_ng_mL !== undefined) {
+        features.push({
+          name: 'Prolactin (ng/mL)',
+          value: patientData.PRL_ng_mL.toFixed(2),
+          contribution: Math.abs(patientData.PRL_ng_mL - 15) * 0.2,
+          importance: 0.70
+        });
+      }
+      
+      if (patientData.Vit_D3_ng_mL !== null && patientData.Vit_D3_ng_mL !== undefined) {
+        features.push({
+          name: 'Vitamin D3 (ng/mL)',
+          value: patientData.Vit_D3_ng_mL.toFixed(2),
+          contribution: (patientData.Vit_D3_ng_mL < 20 ? (20 - patientData.Vit_D3_ng_mL) * 0.3 : 0),
+          importance: 0.72
+        });
+      }
+      
+      if (patientData.PRG_ng_mL !== null && patientData.PRG_ng_mL !== undefined) {
+        features.push({
+          name: 'Progesterone (ng/mL)',
+          value: patientData.PRG_ng_mL.toFixed(2),
+          contribution: Math.abs(patientData.PRG_ng_mL - 10) * 0.3,
+          importance: 0.80
+        });
+      }
+      
+      // Blood Sugar
+      if (patientData.RBS_mg_dl !== null && patientData.RBS_mg_dl !== undefined) {
+        features.push({
+          name: 'Random Blood Sugar (mg/dL)',
+          value: patientData.RBS_mg_dl.toFixed(1),
+          contribution: Math.abs(patientData.RBS_mg_dl - 100) * 0.1,
+          importance: 0.68
+        });
+      }
+      
+      // Anthropometric Measurements
+      if (patientData.Hip_inch !== null && patientData.Hip_inch !== undefined) {
+        features.push({
+          name: 'Hip Circumference (inches)',
+          value: patientData.Hip_inch.toFixed(1),
+          contribution: (patientData.Hip_inch - 35) * 0.1,
+          importance: 0.55
+        });
+      }
+      
+      if (patientData.Waist_inch !== null && patientData.Waist_inch !== undefined) {
+        features.push({
+          name: 'Waist Circumference (inches)',
+          value: patientData.Waist_inch.toFixed(1),
+          contribution: (patientData.Waist_inch - 30) * 0.15,
+          importance: 0.65
+        });
+      }
+      
+      if (patientData.Waist_hip_ratio !== null && patientData.Waist_hip_ratio !== undefined) {
+        features.push({
+          name: 'Waist-Hip Ratio',
+          value: patientData.Waist_hip_ratio.toFixed(2),
+          contribution: Math.abs(patientData.Waist_hip_ratio - 0.8) * 5,
+          importance: 0.72
+        });
+      }
+      
+      // Ultrasound Parameters
+      if (patientData.Follicle_no_L !== null && patientData.Follicle_no_L !== undefined) {
+        features.push({
+          name: 'Follicles - Left Ovary',
+          value: patientData.Follicle_no_L,
+          contribution: (patientData.Follicle_no_L > 6 ? (patientData.Follicle_no_L - 6) / 2 : -(6 - patientData.Follicle_no_L) / 5) * 5,
+          importance: 0.85
+        });
+      }
+      
+      if (patientData.Follicle_no_R !== null && patientData.Follicle_no_R !== undefined) {
+        features.push({
+          name: 'Follicles - Right Ovary',
+          value: patientData.Follicle_no_R,
+          contribution: (patientData.Follicle_no_R > 6 ? (patientData.Follicle_no_R - 6) / 2 : -(6 - patientData.Follicle_no_R) / 5) * 5,
+          importance: 0.85
+        });
+      }
+      
+      if (patientData.Avg_F_size_L_mm !== null && patientData.Avg_F_size_L_mm !== undefined) {
+        features.push({
+          name: 'Avg Follicle Size - Left (mm)',
+          value: patientData.Avg_F_size_L_mm.toFixed(1),
+          contribution: Math.abs(patientData.Avg_F_size_L_mm - 12) * 0.2,
+          importance: 0.75
+        });
+      }
+      
+      if (patientData.Avg_F_size_R_mm !== null && patientData.Avg_F_size_R_mm !== undefined) {
+        features.push({
+          name: 'Avg Follicle Size - Right (mm)',
+          value: patientData.Avg_F_size_R_mm.toFixed(1),
+          contribution: Math.abs(patientData.Avg_F_size_R_mm - 12) * 0.2,
+          importance: 0.75
+        });
+      }
+      
+      if (patientData.Endometrium_mm !== null && patientData.Endometrium_mm !== undefined) {
+        features.push({
+          name: 'Endometrium Thickness (mm)',
+          value: patientData.Endometrium_mm.toFixed(1),
+          contribution: Math.abs(patientData.Endometrium_mm - 8) * 0.3,
+          importance: 0.72
+        });
+      }
+      
+      // Lifestyle Factors
+      if (patientData.Fast_food === 1) {
+        features.push({
+          name: 'Fast Food Consumption',
+          value: 'Yes',
+          contribution: 2,
+          importance: 0.58
+        });
+      }
+      
+      if (patientData.Reg_Exercise === 1) {
+        features.push({
+          name: 'Regular Exercise',
+          value: 'Yes',
+          contribution: -3,
+          importance: 0.60
+        });
+      }
+      
+      return features.sort((a, b) => b.importance - a.importance);
+    }
+
+    function createSHAPForcePlot(features) {
+      const chartDom = document.getElementById('shap-force-plot');
+      if (!chartDom) {
+        console.error('Chart container not found');
+        return;
+      }
+
+      const sortedFeatures = [...features].sort((a, b) => Math.abs(a.contribution) - Math.abs(b.contribution));
+      const neon = window.PcodeEchartNeon;
+      const th = neon ? neon.chartTheme() : null;
+      const data = sortedFeatures.map(f => ({
+        name: f.name,
+        value: f.contribution
+      }));
+      const shapLayout = neon && neon.shapContributionChartLayout ? neon.shapContributionChartLayout() : null;
+      const tipR = shapLayout && shapLayout.tipRadius != null ? shapLayout.tipRadius : 8;
+      if (neon && neon.applyXaiChartHostSizing) {
+        neon.applyXaiChartHostSizing(chartDom, sortedFeatures.length, shapLayout || {});
+      }
+      let myChart = echarts.getInstanceByDom(chartDom);
+      if (!myChart) {
+        myChart = echarts.init(chartDom, null, { renderer: 'canvas' });
+      }
+      
+      const option = {
+        backgroundColor: 'transparent',
+        textStyle: th ? { color: th.text } : undefined,
+        grid: shapLayout ? shapLayout.grid : { left: 12, right: '12%', top: 30, bottom: 40, containLabel: true },
+        tooltip: Object.assign({ 
+          trigger: 'axis', 
+          axisPointer: { type: 'shadow' },
+          formatter: function(params) {
+            if (!params || params.length === 0) return '';
+            const p = params[0];
+            const v = Number(p.value);
+            const val = Number.isFinite(v) ? v.toFixed(2) : String(p.value);
+            return `${p.marker} ${p.name}: ${val}%`;
+          }
+        }, th ? th.tooltip : {}),
+        xAxis: th ? th.axisVal({ type: 'value', name: shapLayout && shapLayout.xAxisName != null ? shapLayout.xAxisName : 'Contribution (%)', nameGap: shapLayout ? shapLayout.xAxisNameGap : 24, axisLabel: Object.assign({ formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } }, shapLayout ? shapLayout.xAxisLabel : {}) }) : { type: 'value', name: shapLayout && shapLayout.xAxisName != null ? shapLayout.xAxisName : 'Contribution (%)', nameGap: shapLayout ? shapLayout.xAxisNameGap : 24, axisLabel: Object.assign({ formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } }, shapLayout ? shapLayout.xAxisLabel : {}) },
+        yAxis: th ? th.axisCat({ 
+          type: 'category', 
+          data: data.map(d => d.name),
+          axisLabel: Object.assign({}, shapLayout ? shapLayout.yAxisLabel : {
+            width: 260,
+            overflow: 'break',
+            interval: 0,
+            fontSize: 11,
+            margin: 16,
+            padding: [0, 14, 0, 0]
+          })
+        }) : { 
+          type: 'category', 
+          data: data.map(d => d.name),
+          axisLabel: shapLayout ? shapLayout.yAxisLabel : {
+            width: 260,
+            overflow: 'break',
+            interval: 0,
+            fontSize: 11,
+            margin: 16,
+            padding: [0, 14, 0, 0]
+          }
+        },
+        series: [{
+          type: 'bar',
+          clip: false,
+          data: data.map(d => ({
+            value: d.value,
+            itemStyle: neon
+              ? neon.itemStyleBySign(d.value, { horizontal: true, tipRadius: tipR })
+              : { color: d.value > 0 ? '#EF4444' : '#3B82F6', borderRadius: d.value > 0 ? [0, tipR, tipR, 0] : [tipR, 0, 0, tipR] }
+          })),
+          barMaxWidth: shapLayout && shapLayout.barMaxWidth ? shapLayout.barMaxWidth : 22,
+          barCategoryGap: shapLayout && shapLayout.barCategoryGap ? shapLayout.barCategoryGap : '34%'
+        }]
+      };
+      
+      myChart.setOption(option);
+      myChart.resize();
+      window.addEventListener('resize', () => myChart.resize());
+    }
+
+    function createSHAPImportanceChart(features) {
+      const chartDom = document.getElementById('shap-importance-chart');
+      const sortedFeatures = features.sort((a, b) => b.importance - a.importance);
+
+      // Find max importance to normalize as percentage
+      const maxImportance = Math.max(...sortedFeatures.map(f => f.importance));
+
+      const neon = window.PcodeEchartNeon;
+      const th = neon ? neon.chartTheme() : null;
+      const importanceLayout = neon && neon.shapImportanceChartLayout ? neon.shapImportanceChartLayout() : null;
+      const tipR = importanceLayout && importanceLayout.tipRadius != null ? importanceLayout.tipRadius : 8;
+      if (neon && neon.applyXaiChartHostSizing) {
+        neon.applyXaiChartHostSizing(chartDom, sortedFeatures.length, importanceLayout || {});
+      }
+      let myChart = echarts.getInstanceByDom(chartDom);
+      if (!myChart) {
+        myChart = echarts.init(chartDom);
+      }
+      const barStyle = neon
+        ? neon.horizontalBar('clinical', { borderRadius: [0, tipR, tipR, 0] })
+        : { color: '#6B46C1', borderRadius: [0, tipR, tipR, 0] };
+
+      const option = {
+        backgroundColor: 'transparent',
+        textStyle: th ? { color: th.text } : undefined,
+        grid: importanceLayout ? importanceLayout.grid : { left: '5%', right: '15%', top: '30px', bottom: '60px', containLabel: true },
+        tooltip: Object.assign({ 
+          trigger: 'item',
+          formatter: function(params) {
+            if (!params) return '';
+            const v = Number(params.value);
+            const val = Number.isFinite(v) ? v.toFixed(2) : String(params.value);
+            return `${params.name}: ${val}%`;
+          }
+        }, th ? th.tooltip : {}),
+        xAxis: th ? th.axisVal({ 
+          type: 'value', 
+          name: importanceLayout && importanceLayout.xAxisName != null ? importanceLayout.xAxisName : 'Overall influence (%)',
+          nameLocation: 'center',
+          nameGap: importanceLayout ? importanceLayout.xAxisNameGap : 35,
+          max: 100,
+          axisLabel: Object.assign({ formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } }, importanceLayout ? importanceLayout.xAxisLabel : {})
+        }) : { 
+          type: 'value', 
+          name: importanceLayout && importanceLayout.xAxisName != null ? importanceLayout.xAxisName : 'Overall influence (%)',
+          nameLocation: 'center',
+          nameGap: importanceLayout ? importanceLayout.xAxisNameGap : 35,
+          max: 100,
+          axisLabel: Object.assign({ formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } }, importanceLayout ? importanceLayout.xAxisLabel : {})
+        },
+        yAxis: th ? th.axisCat({ 
+          type: 'category', 
+          data: sortedFeatures.map(f => f.name),
+          axisLabel: Object.assign({}, importanceLayout ? importanceLayout.yAxisLabel : {
+            width: 240,
+            overflow: 'break',
+            interval: 0,
+            fontSize: 11,
+            margin: 8
+          })
+        }) : { 
+          type: 'category', 
+          data: sortedFeatures.map(f => f.name),
+          axisLabel: importanceLayout ? importanceLayout.yAxisLabel : {
+            width: 240,
+            overflow: 'break',
+            interval: 0,
+            fontSize: 11,
+            margin: 8
+          }
+        },
+        series: [{
+          type: 'bar',
+          clip: false,
+          data: sortedFeatures.map(f => ({
+            value: parseFloat(((f.importance / maxImportance) * 100).toFixed(2)),
+            itemStyle: barStyle
+          })),
+          barMaxWidth: importanceLayout && importanceLayout.barMaxWidth ? importanceLayout.barMaxWidth : 20,
+          barCategoryGap: importanceLayout && importanceLayout.barCategoryGap ? importanceLayout.barCategoryGap : '36%'
+        }]
+      };
+      myChart.setOption(option);
+      myChart.resize();
+      window.addEventListener('resize', () => myChart.resize());
+    }
+
+    function createFeatureList(features) {
+      const container = document.getElementById('feature-list');
+      let sortedFeatures = features.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+      // Limit to exactly 10 features
+      if (sortedFeatures.length > 10) {
+        sortedFeatures = sortedFeatures.slice(0, 10);
+      }
+      const formatContributor = window.PcodeXaiClinical && window.PcodeXaiClinical.formatFeatureContributor
+        ? window.PcodeXaiClinical.formatFeatureContributor
+        : function (name, value) { return { label: name, value: value }; };
+
+      container.innerHTML = sortedFeatures.map((feature, idx) => {
+        const pctColor = feature.contribution > 0 ? 'text-red-300' : 'text-indigo-300';
+        const barColor = feature.contribution > 0 ? 'bg-red-400' : 'bg-indigo-400';
+        const formatted = formatContributor(feature.name, feature.value);
+        const safeLabel = String(formatted.label || 'Feature')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        const safeValue = String(formatted.value ?? '—')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        
+        return `<div class="p-3 pcode-xai-glass-item" style="font-size: 15px;">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1 pr-3">
+              <div class="flex items-center gap-1 mb-2 flex-wrap">
+                <p class="font-bold text-white" style="font-size: 15px; line-height: 1.4;">${idx + 1}. ${safeLabel}</p>
+              </div>
+              <p class="text-slate-300" style="font-size: 15px; line-height: 1.4;">Value: ${safeValue}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="font-bold ${pctColor}" style="font-size: 15px; line-height: 1.4;">${feature.contribution > 0 ? '+' : ''}${feature.contribution.toFixed(2)}%</p>
+              <p class="text-slate-400" style="font-size: 15px; line-height: 1.4;">Impact</p>
+            </div>
+          </div>
+          <div class="w-full bg-white/10 rounded-full h-1.5">
+            <div class="${barColor} rounded-full h-1.5 transition-all" style="width: ${Math.min(100, Math.abs(feature.contribution) * 3)}%"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName = 'Patient', viewMode = 'self') {
+      const isClinician = viewMode === 'clinician';
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function fmtPct(n) {
+        const v = Number(n);
+        if (!Number.isFinite(v)) return '0.00';
+        const pct = v >= 0 && v <= 1 ? v * 100 : v;
+        return pct.toFixed(2);
+      }
+
+      function friendlyFactorName(raw) {
+        if (window.PcodeXaiClinical && typeof window.PcodeXaiClinical.cleanFeatureLabel === 'function') {
+          return window.PcodeXaiClinical.cleanFeatureLabel(raw) || 'Key factor';
+        }
+        const cleaned = String(raw || 'Key factor')
+          .replace(/\s*\(y\/n\)\s*/gi, '')
+          .replace(/\s*\(yes\/no\)\s*/gi, '')
+          .replace(/\s*\(yrs?\)\s*/gi, '')
+          .replace(/_/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!cleaned) return 'Key factor';
+        const acronyms = new Set(['BMI', 'LH', 'FSH', 'AMH', 'TSH', 'RBS', 'HCG', 'PMOS', 'Hb']);
+        return cleaned
+          .split(' ')
+          .map(function (word) {
+            const upper = word.toUpperCase();
+            if (acronyms.has(upper)) return upper;
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          })
+          .join(' ');
+      }
+
+      function PMOSRiskLevel(diagnosis, score) {
+        const pct = Number(fmtPct(score));
+        if (diagnosis === 'negative') return 'Low';
+        if (diagnosis === 'borderline') return 'Moderate';
+        if (diagnosis === 'positive') {
+          if (pct >= 65) return 'High';
+          if (pct >= 35) return 'Moderate';
+          return 'Low';
+        }
+        if (pct >= 65) return 'High';
+        if (pct >= 35) return 'Moderate';
+        return 'Low';
+      }
+
+      if (!features || features.length === 0) {
+        if (isClinician) {
+          return '<p>Feature-level detail is not available for this case yet. Re-run the analysis for the selected patient, or confirm that interpretability data was generated for this visit.</p>';
+        }
+        return '<p>A plain-language summary could not be built from the available feature list. Save your screening on Detect, then reopen <strong>XAI Insights</strong>, or confirm the analysis completed without errors.</p>';
+      }
+
+      const ranked = [...features].sort(function (a, b) {
+        return Math.abs(Number(b.contribution)) - Math.abs(Number(a.contribution));
+      });
+      const topFeature = ranked[0] || {};
+      const secondFeature = ranked.length > 1 ? ranked[1] : null;
+
+      const confidencePct = fmtPct(overallScore);
+      const riskLevel = PMOSRiskLevel(overallDiagnosis, overallScore);
+      const topName = escapeHtml(friendlyFactorName(topFeature.name));
+      const secondName = secondFeature ? escapeHtml(friendlyFactorName(secondFeature.name)) : '';
+      const topImpact = fmtPct(Math.abs(Number(topFeature.contribution)));
+      const topDirection =
+        Number(topFeature.contribution) >= 0
+          ? 'driving the model\'s indicators up by <strong>' + topImpact + '%</strong>'
+          : 'moderating risk signals, pulling indicators down by <strong>' + topImpact + '%</strong>';
+
+      const introSubject = isClinician
+        ? 'Based on the patient\'s combined data'
+        : 'Based on your combined screening data';
+
+      const factorOne =
+        '<li><strong>' +
+        topName +
+        '</strong>: This parameter acted as the most significant contributor, ' +
+        topDirection +
+        '.</li>';
+
+      const factorTwo = secondName
+        ? '<li><strong>' +
+          secondName +
+          '</strong>: Followed closely as a secondary contributing factor to the overall risk evaluation profile.</li>'
+        : '';
+
+      return (
+        '<p><strong>Clinical Interpretation Insights</strong></p>' +
+        '<p>' +
+        introSubject +
+        ', the system flags a <strong>' +
+        escapeHtml(riskLevel) +
+        '</strong> probability of PMOS, with an overall evaluation confidence of <strong>' +
+        escapeHtml(confidencePct) +
+        '%</strong>.</p>' +
+        '<p><strong>Primary Influencing Factors:</strong></p>' +
+        '<ul class="list-disc pl-5 space-y-2">' +
+        factorOne +
+        factorTwo +
+        '</ul>' +
+        '<p class="text-sm text-slate-400 italic"><em>Clinical Reminder: These AI model insights describe behavior patterns and should be cross-checked alongside physical case documentation, patient history, and definitive diagnostic criteria.</em></p>'
+      );
+    }
+
+    function resolveConsensusScore(overallScore, clinicalScore, imagingScore, avail) {
+      const overall = Number(overallScore);
+      if (Number.isFinite(overall)) {
+        return Math.max(0, Math.min(100, overall));
+      }
+      if (avail && avail.clinical && avail.imaging) {
+        return Math.max(0, Math.min(100, clinicalScore * 0.5 + imagingScore * 0.5));
+      }
+      if (avail && avail.clinical) return Math.max(0, Math.min(100, Number(clinicalScore) || 0));
+      if (avail && avail.imaging) return Math.max(0, Math.min(100, Number(imagingScore) || 0));
+      return 0;
+    }
+
+    function createConsensusChart(clinicalScore, imagingScore, avail, overallDiagnosis, overallScore) {
+      const chartDom = document.getElementById('consensus-chart');
+      if (!chartDom) return;
+
+      const L = (window.PcodeXaiClinical && window.PcodeXaiClinical.LABELS) || {
+        clinicalSeries: 'Clinical & Lab Metrics',
+        imagingSeries: 'Ultrasound Morphology',
+        integratedSeries: 'Integrated Diagnostic Risk',
+        axisClinical: 'Clinical & Lab Metrics',
+        axisImaging: 'Ultrasound Morphology',
+        axisIntegrated: 'Integrated Diagnostic Risk'
+      };
+
+      avail = avail || { clinical: true, imaging: true, overall: true };
+      const combinedValue = resolveConsensusScore(overallScore, clinicalScore, imagingScore, avail);
+      const showConsensus = !!(avail.overall || (avail.clinical && avail.imaging));
+
+      chartDom.dataset.pcodeDiagnosis = String(overallDiagnosis || '');
+      chartDom.dataset.pcodeOverallScore = String(combinedValue);
+
+      let myChart = echarts.getInstanceByDom(chartDom);
+      if (!myChart) {
+        myChart = echarts.init(chartDom, null, { renderer: 'canvas' });
+      }
+
+      const neon = window.PcodeEchartNeon;
+      const th = neon ? neon.chartTheme() : null;
+      const consensusStyle = neon
+        ? neon.consensusBarByDiagnosis(overallDiagnosis)
+        : { color: '#d97706', borderRadius: [8, 8, 0, 0] };
+      const consensusColor = neon ? neon.consensusLegendColor(overallDiagnosis) : '#d97706';
+      const axisCategories = [L.axisClinical, L.axisImaging, L.axisIntegrated];
+      const consensusLayout = neon && neon.consensusChartLayout ? neon.consensusChartLayout(axisCategories) : null;
+      const displayCategories = consensusLayout ? consensusLayout.axisCategories : axisCategories;
+
+      const legendData = [];
+      if (avail.clinical) {
+        legendData.push({
+          name: L.clinicalSeries,
+          itemStyle: { color: neon ? neon.legendColor('clinical') : '#a78bfa' }
+        });
+      }
+      if (avail.imaging) {
+        legendData.push({
+          name: L.imagingSeries,
+          itemStyle: { color: neon ? neon.legendColor('imaging') : '#3B82F6' }
+        });
+      }
+      if (showConsensus) {
+        legendData.push({
+          name: L.integratedSeries,
+          itemStyle: { color: consensusColor }
+        });
+      }
+
+      const series = [];
+      if (avail.clinical) {
+        series.push({
+          name: L.clinicalSeries,
+          type: 'bar',
+          clip: false,
+          color: neon ? neon.legendColor('clinical') : '#a78bfa',
+          data: [clinicalScore, null, null],
+          itemStyle: neon ? neon.verticalBar('clinical') : { color: '#a78bfa', borderRadius: [8, 8, 0, 0] },
+          barMaxWidth: consensusLayout ? consensusLayout.barMaxWidth : 56,
+          barCategoryGap: consensusLayout ? consensusLayout.barCategoryGap : '30%'
+        });
+      }
+      if (avail.imaging) {
+        series.push({
+          name: L.imagingSeries,
+          type: 'bar',
+          clip: false,
+          color: neon ? neon.legendColor('imaging') : '#3B82F6',
+          data: [null, imagingScore, null],
+          itemStyle: neon ? neon.verticalBar('imaging') : { color: '#3B82F6', borderRadius: [8, 8, 0, 0] },
+          barMaxWidth: consensusLayout ? consensusLayout.barMaxWidth : 56,
+          barCategoryGap: consensusLayout ? consensusLayout.barCategoryGap : '30%'
+        });
+      }
+      if (showConsensus) {
+        series.push({
+          name: L.integratedSeries,
+          type: 'bar',
+          clip: false,
+          color: consensusColor,
+          data: [null, null, { value: combinedValue, itemStyle: consensusStyle }],
+          itemStyle: consensusStyle,
+          barMaxWidth: consensusLayout ? consensusLayout.barMaxWidth : 56,
+          barCategoryGap: consensusLayout ? consensusLayout.barCategoryGap : '30%'
+        });
+      }
+
+      const consensusGrid = consensusLayout
+        ? consensusLayout.grid
+        : neon && neon.consensusChartGrid
+          ? neon.consensusChartGrid()
+          : { left: '15%', right: '15%', top: '40px', bottom: '50px', containLabel: true };
+      const chartH = consensusLayout ? consensusLayout.chartHeight : (neon && neon.isNarrowChartViewport && neon.isNarrowChartViewport() ? 280 : 320);
+      chartDom.style.height = chartH + 'px';
+      chartDom.style.minHeight = '240px';
+      chartDom.style.maxHeight = 'none';
+
+      const option = {
+        backgroundColor: 'transparent',
+        textStyle: th ? { color: th.text } : undefined,
+        grid: consensusGrid,
+        tooltip: Object.assign({
+          trigger: 'axis',
+          formatter: function (params) {
+            if (!params || !params.length) return '';
+            let html = '<strong>' + params[0].axisValue + '</strong><br/>';
+            params.forEach(function (p) {
+              if (p.value === null || p.value === undefined || p.value === '') return;
+              const v = Number(p.value);
+              const label = Number.isFinite(v) ? v.toFixed(2) + '%' : String(p.value);
+              html += p.marker + ' ' + p.seriesName + ': ' + label + '<br/>';
+            });
+            return html;
+          }
+        }, th ? th.tooltip : {}),
+        legend: Object.assign({ data: legendData }, consensusLayout ? consensusLayout.legend : {}, th ? th.legend : {}),
+        xAxis: th ? th.axisCat({ type: 'category', data: displayCategories, axisLabel: consensusLayout ? consensusLayout.xAxisLabel : { interval: 0 } }) : { type: 'category', data: displayCategories, axisLabel: consensusLayout ? consensusLayout.xAxisLabel : { interval: 0 } },
+        yAxis: th ? th.axisVal({ type: 'value', min: 0, max: 100, axisLabel: { formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } } }) : { type: 'value', min: 0, max: 100, axisLabel: { formatter: function(value) { return (Math.floor(Number(value) * 100) / 100).toFixed(2) + '%'; } } },
+        series
+      };
+      myChart.setOption(option, true);
+      myChart.resize();
+    }
+
+    function loadMostRecentPrediction() {
+      const storedResult = sessionStorage.getItem('lastPredictionResult');
+      if (storedResult) {
+        try {
+          const result = JSON.parse(storedResult);
+          if (result && result.shap_explanation && result.shap_explanation.top_contributions) {
+            if (allPatients.length > 0) {
+              loadRealtimePredictionData(result, allPatients[0]);
+            }
+          }
+        } catch(e) {
+          console.log('No recent prediction data available:', e);
+        }
+      }
+    }
+
+    // Grad-CAM++ Visualization Functions
+    const GRADCAM_POSITIVE_THRESHOLD = 75;
+
+    function resolveCnnImagingScore(result, fallbackScore) {
+      const fromApi = Number(result && result.probability_percentage);
+      if (Number.isFinite(fromApi)) return fromApi;
+      const fallback = Number(fallbackScore);
+      return Number.isFinite(fallback) ? fallback : null;
+    }
+
+    function resolveImagingClassificationLabel(classification, imagingScore) {
+      if (classification) return String(classification);
+      const score = Number(imagingScore);
+      if (!Number.isFinite(score)) return null;
+      return score >= GRADCAM_POSITIVE_THRESHOLD ? 'Positive' : 'Negative';
+    }
+
+    function imagingClassificationClass(label, pending) {
+      if (pending) return 'text-sm font-medium text-violet-300/70 italic';
+      if (label === 'Positive') return 'text-sm font-semibold text-red-400';
+      if (label === 'Negative') return 'text-sm font-semibold text-fuchsia-200';
+      if (label === 'Borderline') return 'text-sm font-semibold text-amber-300';
+      return 'text-sm font-semibold text-violet-200';
+    }
+
+    function renderImagingPredictionStats(mode, options) {
+      const container = document.getElementById('imaging-prediction-stats');
+      if (!container) return;
+      options = options || {};
+
+      if (mode === 'pending') {
+        const scoreText = Number.isFinite(Number(options.imagingScore))
+          ? Number(options.imagingScore).toFixed(2) + '%'
+          : '—';
+        container.innerHTML = `
+          <div class="p-4 bento-callout bento-callout--info rounded-xl">
+            <p class="text-sm font-semibold text-white">Imaging Prediction Results</p>
+            <div class="mt-3 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-violet-200/85">Imaging Score</span>
+                <span class="text-lg font-bold text-sky-200">${scoreText}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-violet-200/85">Classification</span>
+                <span id="imaging-classification-value" class="text-sm font-medium text-violet-300/70 italic">Processing image...</span>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (mode === 'ready') {
+        const cnnScore = resolveCnnImagingScore(options.result, options.imagingScore);
+        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—';
+        const classification = resolveImagingClassificationLabel(
+          options.result && options.result.classification,
+          cnnScore
+        ) || 'Unknown';
+        const ultrasoundCheckOk = options.ultrasoundCheckOk;
+        const ultrasoundImageLabel = ultrasoundCheckOk === true ? 'Yes' : (ultrasoundCheckOk === false ? 'No' : 'Unknown');
+        const ultrasoundImageLabelClass = ultrasoundCheckOk === true ? 'text-fuchsia-100' : (ultrasoundCheckOk === false ? 'text-red-400' : 'text-violet-200');
+        container.innerHTML = `
+          <div class="p-4 bento-callout bento-callout--info rounded-xl">
+            <p class="text-sm font-semibold text-white">Imaging Prediction Results</p>
+            <div class="mt-3 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-violet-200/85">Imaging Score</span>
+                <span class="text-lg font-bold text-sky-200">${scoreText}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-violet-200/85">Classification</span>
+                <span id="imaging-classification-value" class="${imagingClassificationClass(classification, false)}">${classification}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-violet-200/85">Ultrasound Image</span>
+                <span class="text-sm font-semibold ${ultrasoundImageLabelClass}">${ultrasoundImageLabel}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function resolveGradcamColormapMeta(imagingScore, result) {
+      const score = Number(imagingScore);
+      const classification = (result && result.classification)
+        ? String(result.classification)
+        : (Number.isFinite(score) && score >= GRADCAM_POSITIVE_THRESHOLD ? 'Positive' : 'Negative');
+      const profile = (result && result.gradcam_colormap_profile)
+        || (classification === 'Positive' ? 'hot_red' : 'cool_blue');
+      return { classification, profile, threshold: GRADCAM_POSITIVE_THRESHOLD };
+    }
+
+    function updateGradcamHeatmapCaption(meta) {
+      const caption = document.getElementById('gradcam-heatmap-caption');
+      if (!caption) return;
+      caption.innerHTML = window.PcodeXaiClinical
+        ? PcodeXaiClinical.gradcamHeatmapCaptionHtml('user')
+        : '<span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap — <strong class="text-white">Red</strong> highest AI model attribution.';
+    }
+
+    function buildGradcamInterpretationHtml(imagingScore, meta) {
+      if (window.PcodeXaiClinical && PcodeXaiClinical.buildGradcamInterpretationHtml) {
+        return PcodeXaiClinical.buildGradcamInterpretationHtml(imagingScore, meta, 'user');
+      }
+      return '<p>AI heatmap interpretation is loading.</p>';
+    }
+
+    function loadGradCAMVisualization(patientData, imagingScore) {
+      if (!patientData || typeof patientData !== 'object') {
+        console.warn('[XAI] Skipping Grad-CAM: missing patient data.');
+        return;
+      }
+
+      // If no ultrasound image, hide the entire card and do nothing.
+      const imgVal = patientData.ultrasound_image || patientData.Ultrasound_image || null;
+      if (!imgVal) {
+        const gradcamCard = document.getElementById('gradcam-results-card');
+        if (gradcamCard) gradcamCard.style.display = 'none';
+        return;
+      }
+
+      console.log('Loading Grad-CAM++ visualization for patient:', patientData.patient_id || patientData.id || '(no id)');
+      
+      // Show the gradcam card since we're attempting to load
+      const gradcamCard = document.getElementById('gradcam-results-card');
+      if (gradcamCard) {
+        gradcamCard.style.display = 'block';
+      }
+
+      renderImagingPredictionStats('pending', { imagingScore });
+      
+      // Reset and show spinners FIRST
+      const heatmapContainer = document.getElementById('gradcam-heatmap-container');
+      const heatmapSpinner = document.getElementById('gradcam-loading-spinner');
+      
+      if (heatmapSpinner) {
+        heatmapSpinner.style.display = 'block';
+      }
+      if (heatmapContainer) {
+        heatmapContainer.innerHTML = `
+          <div id="gradcam-loading-spinner" class="text-center">
+            <div class="spinner-circle mx-auto mb-4" style="width: 40px; height: 40px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></div>
+            <p class="text-violet-300/80">Generating AI Heatmap Image Interpretation...</p>
+          </div>
+        `;
+      }
+      
+      // Display original ultrasound image immediately (no need to wait for API)
+      const originalContainer = document.getElementById('gradcam-original-container');
+      const originalSpinner = document.getElementById('original-loading-spinner');
+      
+      if (patientData.ultrasound_image) {
+        const img = new Image();
+        img.src = patientData.ultrasound_image;
+        img.alt = 'Ultrasound Image';
+        img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
+        
+        img.onload = function() {
+          if (originalSpinner) originalSpinner.style.display = 'none';
+          originalContainer.innerHTML = '';
+          originalContainer.appendChild(img);
+        };
+        
+        img.onerror = function() {
+          if (originalSpinner) {
+            originalSpinner.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">Failed to load ultrasound image</p></div>';
+          }
+        };
+      } else {
+        if (originalSpinner) {
+          originalSpinner.innerHTML = `
+            <div class="text-center p-6">
+              <p class="text-violet-300/80">No ultrasound image available</p>
+            </div>
+          `;
+        }
+      }
+      
+      // Fetch Grad-CAM++ visualization from CNN model
+      const requestData = {
+        patient_id: patientData.patient_id || patientData.id,
+        image: patientData.ultrasound_image || patientData.Ultrasound_image || null  // Handle both formats
+      };
+      
+      console.log('🔍 Grad-CAM Request Data:', requestData);
+      
+      fetch('api/predict_cnn_gradcam.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log('Grad-CAM++ result:', result);
+        
+        // Check if there's an error in the result
+        if (result.error) {
+          console.warn('Grad-CAM++ warning:', result.error);
+          displayGradCAMError(result.error);
+        } else if (result.success === false) {
+          console.error('Grad-CAM++ error:', result.error);
+          displayGradCAMError(result.error || 'Unknown error');
+        } else {
+          // Display even if some processing failed - show what we have
+          displayGradCAMHeatmap(result, imagingScore);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching Grad-CAM++ visualization:', error);
+        displayGradCAMError('Failed to load AI Heatmap Image Interpretation: ' + error.message);
+      });
+    }
+    
+    function displayGradCAMHeatmap(result, imagingScore) {
+      console.log('Displaying Grad-CAM++ heatmap...');
+      if (result.gradcam_matrix_stats) {
+        console.log('[Grad-CAM] API matrix stats:', result.gradcam_matrix_stats);
+      }
+      const ultrasoundCheckOk = result && result.ultrasound_check && typeof result.ultrasound_check.ok !== 'undefined'
+        ? result.ultrasound_check.ok
+        : null;
+
+      const exportSection = document.getElementById('export-section');
+      const loadingNotice = document.getElementById('gradcam-loading-notice');
+      if (exportSection) exportSection.classList.remove('hidden');
+      if (loadingNotice) loadingNotice.classList.add('hidden');
+
+      const heatmapContainer = document.getElementById('gradcam-heatmap-container');
+      if (heatmapContainer) heatmapContainer.innerHTML = '';
+
+      const ultrasoundSrc = currentPatient
+        ? (currentPatient.ultrasound_image || currentPatient.Ultrasound_image)
+        : null;
+
+      function showImage(src) {
+        const img = new Image();
+        img.src = src;
+        img.alt = 'AI Heatmap Image Interpretation';
+        img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
+        img.onload = function () {
+          heatmapContainer.innerHTML = '';
+          heatmapContainer.appendChild(img);
+        };
+        img.onerror = function () {
+          heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">Failed to generate visualization</p></div>';
+        };
+      }
+
+      function showCanvas(canvas) {
+        canvas.alt = 'AI Heatmap Image Interpretation';
+        canvas.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
+        heatmapContainer.appendChild(canvas);
+      }
+
+      const canCanvas = result.gradcam_activation_matrix
+        && ultrasoundSrc
+        && window.PcodeGradcamCanvas
+        && typeof window.PcodeGradcamCanvas.renderGradcamCanvasOverlay === 'function';
+
+      const cnnScore = resolveCnnImagingScore(result, imagingScore);
+
+      if (canCanvas) {
+        window.PcodeGradcamCanvas.renderGradcamCanvasOverlay(
+          result.gradcam_activation_matrix,
+          ultrasoundSrc,
+          { cnnScorePct: cnnScore }
+        )
+          .then(showCanvas)
+          .catch(function (err) {
+            console.warn('[Grad-CAM] Canvas render failed, falling back to server PNG:', err);
+            if (result.gradcam_visualization) showImage(result.gradcam_visualization);
+            else heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">AI Heatmap Image Interpretation not generated</p></div>';
+          });
+      } else if (result.gradcam_visualization) {
+        showImage(result.gradcam_visualization);
+      } else {
+        heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">AI Heatmap Image Interpretation not generated</p></div>';
+      }
+
+      renderImagingPredictionStats('ready', {
+        result,
+        imagingScore,
+        ultrasoundCheckOk
+      });
+
+      const gradcamMeta = resolveGradcamColormapMeta(cnnScore, result);
+      const interpretationText = document.getElementById('gradcam-text');
+      updateGradcamHeatmapCaption(gradcamMeta);
+      if (interpretationText) {
+        interpretationText.innerHTML = buildGradcamInterpretationHtml(cnnScore, gradcamMeta);
+      }
+    }
+
+    function displayGradCAMError(errorMessage) {
+      console.warn('Grad-CAM++ Warning:', errorMessage);
+      
+      // Hide the gradcam-results-card when there are no CNN prediction results
+      const gradcamCard = document.getElementById('gradcam-results-card');
+      if (gradcamCard) {
+        gradcamCard.style.display = 'none';
+      }
+      
+      // Keep loading notice visible and hide export section on error
+      const exportSection = document.getElementById('export-section');
+      const loadingNotice = document.getElementById('gradcam-loading-notice');
+      if (exportSection) {
+        exportSection.classList.add('hidden');
+      }
+      if (loadingNotice) {
+        loadingNotice.classList.remove('hidden');
+      }
+      
+      // Display graceful fallback messages instead of error boxes
+      const originalContainer = document.getElementById('gradcam-original-container');
+      const heatmapContainer = document.getElementById('gradcam-heatmap-container');
+      
+      const fallbackHtml = `
+        <div class="text-center p-6 text-violet-100/90">
+          <svg class="w-12 h-12 mx-auto mb-3 text-violet-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-sm font-medium text-white">Visualization Unavailable</p>
+          <p class="text-xs text-violet-300/70 mt-1">${errorMessage}</p>
+        </div>
+      `;
+      
+      originalContainer.innerHTML = fallbackHtml;
+      heatmapContainer.innerHTML = fallbackHtml;
+      
+      // Update interpretation text with helpful message
+      document.getElementById('gradcam-text').innerHTML = `
+        <span class="text-violet-100/90">The AI Heatmap Image Interpretation could not be generated:</span> <span class="text-violet-300/80">${errorMessage}</span>
+        <br><br>
+        <span class="text-sm text-violet-300/75">This may occur if: no ultrasound image is available for this patient, the AI model is not accessible, or there is an issue with the imaging analysis.</span>
+      `;
+    }
+
+    function displayGradCAMForGuest(gradcamVisualization, imagingScore) {
+      console.log('🎯 Displaying stored Grad-CAM visualization for guest patient');
+      
+      // Show export section and hide loading notice
+      const exportSection = document.getElementById('export-section');
+      const loadingNotice = document.getElementById('gradcam-loading-notice');
+      if (exportSection) {
+        exportSection.classList.remove('hidden');
+      }
+      if (loadingNotice) {
+        loadingNotice.classList.add('hidden');
+      }
+      
+      // Hide spinners
+      const heatmapSpinner = document.getElementById('gradcam-loading-spinner');
+      const originalSpinner = document.getElementById('original-loading-spinner');
+      if (heatmapSpinner) {
+        heatmapSpinner.style.display = 'none';
+      }
+      if (originalSpinner) {
+        originalSpinner.style.display = 'none';
+      }
+      
+      // Display the stored Grad-CAM heatmap visualization
+      const heatmapContainer = document.getElementById('gradcam-heatmap-container');
+      if (heatmapContainer && gradcamVisualization) {
+        const img = new Image();
+        img.src = gradcamVisualization;
+        img.alt = 'AI Heatmap Image Interpretation';
+        img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
+        
+        img.onload = function() {
+          heatmapContainer.innerHTML = '';
+          heatmapContainer.appendChild(img);
+        };
+        
+        img.onerror = function() {
+          heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">Failed to display AI Heatmap Image Interpretation</p></div>';
+        };
+      }
+      
+      const guestClassification = resolveImagingClassificationLabel(null, imagingScore);
+      renderImagingPredictionStats('ready', {
+        result: { classification: guestClassification, probability_percentage: imagingScore },
+        imagingScore
+      });
+      
+      const textElement = document.getElementById('gradcam-text');
+      if (textElement) {
+        const gradcamMeta = resolveGradcamColormapMeta(imagingScore, {
+          classification: guestClassification,
+          gradcam_colormap_profile: imagingScore >= GRADCAM_POSITIVE_THRESHOLD ? 'hot_red' : 'cool_blue'
+        });
+        updateGradcamHeatmapCaption(gradcamMeta);
+        textElement.innerHTML = buildGradcamInterpretationHtml(imagingScore, gradcamMeta);
+      }
+    }
+
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuIcon = document.getElementById('menu-icon');
+      const overlay = document.getElementById('menu-overlay');
+      const menuBtn = document.getElementById('mobile-menu-btn');
+
+      if (!mobileMenu) return;
+      const willOpen = !mobileMenu.classList.contains('active');
+      if (willOpen) {
+        mobileMenu.classList.add('active');
+        if (overlay) overlay.classList.add('active');
+        document.body.classList.add('pcode-mobile-nav-open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        closeMobileMenu();
+      }
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (menuIcon) menuIcon.classList.remove('hidden');
+    }
+
+    function closeMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuIcon = document.getElementById('menu-icon');
+      const overlay = document.getElementById('menu-overlay');
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      
+      if (mobileMenu) mobileMenu.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+      document.body.classList.remove('pcode-mobile-nav-open');
+      document.body.style.overflow = '';
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+      if (menuIcon) menuIcon.classList.remove('hidden');
+    }
+
+    // Note: in “desktop site” mode we keep hamburger + profile actions,
+    // but hide the sidebar navigation link list via CSS.
+
+    // Guest registration modal functions for XAI features
+    function showGuestRegistrationModalXAI() {
+      document.getElementById('guest-registration-modal-xai').classList.add('show');
+    }
+
+    function closeGuestRegistrationModalXAI() {
+      document.getElementById('guest-registration-modal-xai').classList.remove('show');
+    }
+
+    function goToRegisterFromXAI() {
+      console.log('[XAI] Guest redirecting to register page');
+      auth.logout();
+      window.location.href = 'login-new.html?tab=register';
+    }
+
+    /**
+     * Export current patient analysis to PDF with XAI insights
+     * PDF export is disabled
+     */
+    function exportReportToPDF() {
+      // PDF export is disabled
+      return;
+    }
+
+    /**
+     * Center-screen alert (uses pcodeShowCenterAlert from auth.js)
+     */
+    function showToast(message, type = 'info') {
+      if (typeof window.pcodeShowCenterAlert === 'function') {
+        window.pcodeShowCenterAlert(message, type);
+      }
+    }
+  </script>
+      <script>
+        // Apply adaptive border colors to metric cards
+        document.addEventListener('DOMContentLoaded', function() {
+          const metricCards = document.querySelectorAll('.metric-card');
+          const colorMap = {
+            'text-purple-600': 'rgba(233, 213, 254, 0.42)',
+            'text-blue-600': 'rgba(59, 130, 246, 0.35)',
+            'text-green-600': 'rgba(16, 185, 129, 0.35)',
+            'text-red-600': 'rgba(239, 68, 68, 0.35)',
+            'text-orange-600': 'rgba(251, 146, 60, 0.35)',
+            'text-indigo-600': 'rgba(99, 102, 241, 0.35)',
+            'text-pink-600': 'rgba(236, 72, 153, 0.35)',
+            'text-teal-600': 'rgba(20, 184, 166, 0.35)',
+            'text-cyan-600': 'rgba(34, 211, 238, 0.35)',
+            'text-yellow-600': 'rgba(250, 204, 21, 0.35)'
+          };
+
+          metricCards.forEach(card => {
+            let foundColor = null;
+            for (const [colorClass, colorValue] of Object.entries(colorMap)) {
+              if (card.innerHTML.includes(colorClass)) {
+                foundColor = colorValue;
+                break;
+              }
+            }
+            if (foundColor) {
+              card.style.borderColor = foundColor;
+              card.style.borderWidth = '2.5px';
+            }
+          });
+
+        });
+      </script>
+</html>

@@ -1,0 +1,149 @@
+/**
+ * Light mode — final override: no purple card hover glow / lift.
+ * Load last so earlier design-system / dark / theme rules cannot win.
+ * Keep solid black outlines on hover (do not fade border to translucent grey).
+ */
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card::after,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .metric-card::after,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card::after,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card::after,
+html.pcode-app-bento-root:not(.dark) .bento-card::after,
+html.pcode-app-bento-root:not(.dark) .detection-card::after,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento::after,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card::after,
+html.pcode-app-bento-root:not(.dark) #quick-actions-section::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg::after,
+html.pcode-app-bento-root:not(.dark) .pcode-sdg-item::after,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card::after,
+html.pcode-app-bento-root:not(.dark) .pcode-user-step::after,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar::after,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason::after,
+html.pcode-app-bento-root:not(.dark) .tech-card::after,
+html[data-pcode-theme="light"] .pcode-bento-card::after,
+html[data-pcode-theme="light"] .pcode-bento-card:hover::after,
+html[data-pcode-theme="light"] .metric-card::after,
+html[data-pcode-theme="light"] .pcode-user-step::after,
+html[data-pcode-theme="light"] .pcode-sdg-item::after {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* How-to / PMOS / SDG inner tiles — no nested borders inside outer cards */
+html.pcode-app-bento-root:not(.dark) .pcode-user-step,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason,
+html.pcode-app-bento-root:not(.dark) .pcode-sdg-item,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-acronym > div,
+html[data-pcode-theme="light"] .pcode-user-step,
+html[data-pcode-theme="light"] .pcode-pmos-pillar,
+html[data-pcode-theme="light"] .pcode-pmos-reason,
+html[data-pcode-theme="light"] .pcode-sdg-item,
+html[data-pcode-theme="light"] .pcode-pmos-acronym > div {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  translate: none !important;
+  transition: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-card-static:hover,
+html.pcode-app-bento-root:not(.dark) .mobile-card:hover,
+html.pcode-app-bento-root:not(.dark) #user-quickstart:hover,
+html.pcode-app-bento-root:not(.dark) #pmos-learn:hover,
+html.pcode-app-bento-root:not(.dark) #pcode-sdgs,
+html.pcode-app-bento-root:not(.dark) #pcode-sdgs:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-sdg-item:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-user-step:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card:hover,
+html.pcode-app-bento-root:not(.dark) .tech-card,
+html.pcode-app-bento-root:not(.dark) .tech-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-card,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-card,
+html[data-pcode-theme="light"] .pcode-bento-card:hover,
+html[data-pcode-theme="light"] #user-quickstart:hover,
+html[data-pcode-theme="light"] .pcode-user-step:hover,
+html[data-pcode-theme="light"] .pcode-sdg-item:hover {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+}
+
+/* Inner tiles stay borderless even on hover (do not inherit outer black outline) */
+html.pcode-app-bento-root:not(.dark) .pcode-user-step,
+html.pcode-app-bento-root:not(.dark) .pcode-user-step:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-sdg-item,
+html.pcode-app-bento-root:not(.dark) .pcode-sdg-item:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-pmos-acronym > div,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card:hover,
+html[data-pcode-theme="light"] .pcode-user-step,
+html[data-pcode-theme="light"] .pcode-user-step:hover,
+html[data-pcode-theme="light"] .pcode-sdg-item,
+html[data-pcode-theme="light"] .pcode-sdg-item:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Home dashboard — freeze card geometry on hover (no lift / jump) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #user-quickstart,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #user-quickstart:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-history-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-history-card:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card .metric-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card .pcode-screening-metric-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-screening-card .pcode-screening-metric-card:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-screening-card .metric-card,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-screening-card .metric-card:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-screening-card .pcode-screening-metric-card,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-screening-card .pcode-screening-metric-card:hover {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  top: unset !important;
+  bottom: unset !important;
+  filter: none !important;
+  box-shadow: none !important;
+}

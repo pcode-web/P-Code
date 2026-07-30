@@ -1,0 +1,807 @@
+/* P-Code — Diagnosis History step panel (OB-GYN patient modal) */
+
+.pcode-history-panel {
+  margin-top: 0;
+  padding: 1.1rem 1rem 1rem;
+  border-radius: 1rem;
+  background: #121214;
+  border: 1px solid rgba(106, 75, 201, 0.28);
+  box-shadow: 0 18px 48px -28px rgba(0, 0, 0, 0.75);
+}
+
+.pcode-history-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pcode-history-panel__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f4f4f5;
+  letter-spacing: -0.01em;
+}
+
+.pcode-history-panel__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(161, 161, 170, 0.9);
+  line-height: 1.45;
+}
+
+.pcode-history-panel__count {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  background: rgba(106, 75, 201, 0.16);
+  border: 1px solid rgba(106, 75, 201, 0.35);
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+}
+
+.pcode-history-state {
+  border-radius: 0.85rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  color: rgba(212, 212, 216, 0.85);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  font-size: 0.88rem;
+}
+
+.pcode-history-state--error {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+.pcode-history-state--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.pcode-history-state__spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(196, 181, 253, 0.35);
+  border-top-color: #a78bfa;
+  animation: pcode-history-spin 0.7s linear infinite;
+}
+
+/* Timeline */
+.pcode-history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pcode-history-entry {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.pcode-history-entry__rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.pcode-history-entry__dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-top: 0.45rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  flex-shrink: 0;
+}
+
+.pcode-history-entry:not(:last-child) .pcode-history-entry__rail::after {
+  content: '';
+  position: absolute;
+  top: 1.15rem;
+  bottom: -0.85rem;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.55), rgba(255, 255, 255, 0.08));
+}
+
+.pcode-history-entry__body {
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(106, 75, 201, 0.22);
+}
+
+.pcode-history-entry__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.pcode-history-entry__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pcode-history-date {
+  display: block;
+  font-weight: 600;
+  color: #f4f4f5;
+  font-size: 0.88rem;
+}
+
+.pcode-history-date__time {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: rgba(161, 161, 170, 0.9);
+}
+
+.pcode-history-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.pcode-history-status--detected {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.pcode-history-status--clear {
+  color: #bbf7d0;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.32);
+}
+
+.pcode-history-status--borderline {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.pcode-history-origin--physician {
+  color: #ddd6fe;
+  background: rgba(106, 75, 201, 0.22);
+  border: 1px solid rgba(139, 92, 246, 0.42);
+}
+
+.pcode-history-origin--patient {
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(96, 165, 250, 0.32);
+}
+
+.pcode-history-entry__score-row {
+  margin-top: 0.75rem;
+}
+
+.pcode-history-entry__score-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(161, 161, 170, 0.95);
+}
+
+.pcode-history-score {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.pcode-history-score__track {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.pcode-history-score__fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+.pcode-history-score__fill--positive {
+  background: linear-gradient(90deg, #f43f5e, #fb7185);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.35);
+}
+
+.pcode-history-score__fill--negative {
+  background: linear-gradient(90deg, #10b981, #34d399);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.28);
+}
+
+.pcode-history-score__fill--pending {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.pcode-history-score__value {
+  flex-shrink: 0;
+  min-width: 3rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f4f4f5;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pcode-history-snapshot-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(106, 75, 201, 0.28);
+  background: rgba(106, 75, 201, 0.1);
+  color: #ddd6fe;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pcode-history-snapshot-toggle:hover {
+  background: rgba(106, 75, 201, 0.18);
+  border-color: rgba(167, 139, 250, 0.45);
+}
+
+.pcode-history-snapshot-toggle__chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.pcode-history-snapshot-toggle__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.pcode-history-detail {
+  margin-top: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.75rem;
+  background: rgba(18, 18, 20, 0.92);
+  border: 1px solid rgba(106, 75, 201, 0.18);
+}
+
+.pcode-history-detail__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e9d5ff;
+}
+
+.pcode-history-detail__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(161, 161, 170, 0.9);
+}
+
+.pcode-history-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.55rem;
+}
+
+.pcode-history-metrics--key {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pcode-history-metric--full {
+  grid-column: 1 / -1;
+}
+
+.pcode-history-metric__value--mono {
+  font-size: 0.72rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+/* Patients table — name + last tested */
+.pcode-patient-name-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.pcode-patient-name-cell__name {
+  font-weight: 600;
+  color: #f4f4f5;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-name-cell__name,
+html[data-pcode-theme="light"] .pcode-patient-name-cell__name {
+  color: #000000;
+}
+
+.pcode-patient-name-cell__tested {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #c4b5fd;
+  line-height: 1.25;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-name-cell__tested,
+html[data-pcode-theme="light"] .pcode-patient-name-cell__tested {
+  color: #000000;
+}
+
+.pcode-patient-name-cell__tested--none {
+  color: rgba(161, 161, 170, 0.85);
+}
+
+.pcode-patient-card__tested {
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  color: #c4b5fd;
+  line-height: 1.25;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card__tested,
+html[data-pcode-theme="light"] .pcode-patient-card__tested {
+  color: #000000;
+}
+
+.pcode-patient-card__tested--none {
+  color: rgba(161, 161, 170, 0.85);
+}
+
+.pcode-history-metric {
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.65rem;
+  background: #121214;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pcode-history-metric__label {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(161, 161, 170, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pcode-history-metric__value {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #f4f4f5;
+}
+
+/* Patients table — latest screening column */
+.pcode-latest-screening {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pcode-latest-screening--compact {
+  gap: 0.35rem;
+  max-width: 11rem;
+  margin: 0 auto;
+}
+
+.pcode-latest-screening__date {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  line-height: 1.35;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__date,
+html[data-pcode-theme="light"] .pcode-latest-screening__date {
+  color: #000000;
+}
+
+.pcode-latest-screening__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.pcode-latest-screening__runs {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: rgba(167, 139, 250, 0.9);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__runs,
+html[data-pcode-theme="light"] .pcode-latest-screening__runs {
+  color: #000000;
+}
+
+.pcode-latest-screening__empty {
+  font-size: 0.75rem;
+  color: rgba(161, 161, 170, 0.85);
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__empty,
+html[data-pcode-theme="light"] .pcode-latest-screening__empty {
+  color: #000000;
+}
+
+.pcode-history-badge--compact {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+/* Patients table — action buttons */
+.pcode-actions-toolbar--grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 6.1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.pcode-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pcode-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pcode-action-btn--edit { color: #93c5fd; }
+.pcode-action-btn--history { color: #c4b5fd; }
+.pcode-action-btn--detect { color: #86efac; }
+.pcode-action-btn--export { color: #d8b4fe; }
+.pcode-action-btn--delete { color: #fca5a5; }
+
+.pcode-action-btn--edit:hover { border-color: rgba(147, 197, 253, 0.45); }
+.pcode-action-btn--history:hover { border-color: rgba(196, 181, 253, 0.45); }
+.pcode-action-btn--detect:hover { border-color: rgba(134, 239, 172, 0.45); }
+.pcode-action-btn--export:hover { border-color: rgba(216, 180, 254, 0.45); }
+.pcode-action-btn--delete:hover { border-color: rgba(252, 165, 165, 0.45); }
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn,
+html[data-pcode-theme="light"] .pcode-action-btn {
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn svg,
+html[data-pcode-theme="light"] .pcode-action-btn svg {
+  stroke: #ffffff;
+  color: #ffffff;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--edit,
+html[data-pcode-theme="light"] .pcode-action-btn--edit {
+  color: #ffffff;
+  background: #1d4ed8;
+  border-color: #1e40af;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--history,
+html[data-pcode-theme="light"] .pcode-action-btn--history {
+  color: #ffffff;
+  background: #6d28d9;
+  border-color: #5b21b6;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--detect,
+html[data-pcode-theme="light"] .pcode-action-btn--detect {
+  color: #ffffff;
+  background: #047857;
+  border-color: #065f46;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--export,
+html[data-pcode-theme="light"] .pcode-action-btn--export {
+  color: #ffffff;
+  background: #7c3aed;
+  border-color: #6d28d9;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--delete,
+html[data-pcode-theme="light"] .pcode-action-btn--delete {
+  color: #ffffff;
+  background: #b91c1c;
+  border-color: #991b1b;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--edit:hover,
+html[data-pcode-theme="light"] .pcode-action-btn--edit:hover {
+  background: #1e40af;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--history:hover,
+html[data-pcode-theme="light"] .pcode-action-btn--history:hover {
+  background: #5b21b6;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--detect:hover,
+html[data-pcode-theme="light"] .pcode-action-btn--detect:hover {
+  background: #065f46;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--export:hover,
+html[data-pcode-theme="light"] .pcode-action-btn--export:hover {
+  background: #6d28d9;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-btn--delete:hover,
+html[data-pcode-theme="light"] .pcode-action-btn--delete:hover {
+  background: #991b1b;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-status--borderline,
+html[data-pcode-theme="light"] .pcode-history-status--borderline {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-status--detected,
+html[data-pcode-theme="light"] .pcode-history-status--detected {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+/* Origin + Negative badges — dark text on pastel (readable in light mode) */
+html.pcode-app-bento-root:not(.dark) .pcode-history-origin--patient,
+html[data-pcode-theme="light"] .pcode-history-origin--patient {
+  color: #1e3a8a !important;
+  -webkit-text-fill-color: #1e3a8a !important;
+  background: #dbeafe !important;
+  border: 1px solid #93c5fd !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-origin--physician,
+html[data-pcode-theme="light"] .pcode-history-origin--physician {
+  color: #5b21b6 !important;
+  -webkit-text-fill-color: #5b21b6 !important;
+  background: #ede9fe !important;
+  border: 1px solid #c4b5fd !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-status--clear,
+html[data-pcode-theme="light"] .pcode-history-status--clear {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+  background: #d1fae5 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening .pcode-history-badge,
+html[data-pcode-theme="light"] .pcode-latest-screening .pcode-history-badge {
+  color: #000000;
+  background: #ffffff;
+  border: 1px solid #000000;
+}
+
+.pcode-patient-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.pcode-patient-card__actions .pcode-action-btn {
+  width: 2rem;
+  height: 2rem;
+}
+
+@keyframes pcode-history-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .pcode-history-panel {
+    padding: 1rem 0.85rem;
+  }
+
+  .pcode-history-metrics--key {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcode-history-state__spinner {
+    animation: none;
+  }
+
+  .pcode-history-score__fill,
+  .pcode-history-snapshot-toggle__chevron {
+    transition: none;
+  }
+}
+
+/* Light mode — history panel on Regular User dashboard (and shared) */
+html.pcode-app-bento-root:not(.dark) .pcode-history-panel,
+html[data-pcode-theme="light"] .pcode-history-panel,
+html.pcode-app-bento-root:not(.dark) .pcode-history-panel--user,
+html[data-pcode-theme="light"] .pcode-history-panel--user {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-panel__title,
+html[data-pcode-theme="light"] .pcode-history-panel__title {
+  color: #0f172a;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-panel__subtitle,
+html[data-pcode-theme="light"] .pcode-history-panel__subtitle {
+  color: #475569;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-panel__count,
+html[data-pcode-theme="light"] .pcode-history-panel__count {
+  color: #5b21b6;
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-state,
+html[data-pcode-theme="light"] .pcode-history-state {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-state--error,
+html[data-pcode-theme="light"] .pcode-history-state--error {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-entry__body,
+html[data-pcode-theme="light"] .pcode-history-entry__body {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-date,
+html[data-pcode-theme="light"] .pcode-history-date {
+  color: #0f172a;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-date__time,
+html.pcode-app-bento-root:not(.dark) .pcode-history-entry__score-label,
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric__label,
+html.pcode-app-bento-root:not(.dark) .pcode-history-detail__title,
+html.pcode-app-bento-root:not(.dark) .pcode-history-detail__empty,
+html.pcode-app-bento-root:not(.dark) .pcode-history-snapshot-toggle,
+html[data-pcode-theme="light"] .pcode-history-date__time,
+html[data-pcode-theme="light"] .pcode-history-entry__score-label,
+html[data-pcode-theme="light"] .pcode-history-metric__label,
+html[data-pcode-theme="light"] .pcode-history-detail__title,
+html[data-pcode-theme="light"] .pcode-history-detail__empty,
+html[data-pcode-theme="light"] .pcode-history-snapshot-toggle {
+  color: #475569;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric__value,
+html.pcode-app-bento-root:not(.dark) .pcode-history-score__value,
+html[data-pcode-theme="light"] .pcode-history-metric__value,
+html[data-pcode-theme="light"] .pcode-history-score__value {
+  color: #0f172a;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-score__track,
+html[data-pcode-theme="light"] .pcode-history-score__track {
+  background: #e2e8f0;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-snapshot-toggle,
+html[data-pcode-theme="light"] .pcode-history-snapshot-toggle {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+/* Expanded “recorded inputs” block — was near-black in light mode */
+html.pcode-app-bento-root:not(.dark) .pcode-history-detail,
+html[data-pcode-theme="light"] .pcode-history-detail {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-detail__title,
+html[data-pcode-theme="light"] .pcode-history-detail__title {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-detail__empty,
+html[data-pcode-theme="light"] .pcode-history-detail__empty {
+  color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-metrics,
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric,
+html[data-pcode-theme="light"] .pcode-history-metrics,
+html[data-pcode-theme="light"] .pcode-history-metric {
+  color: #0f172a;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric,
+html[data-pcode-theme="light"] .pcode-history-metric {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric__label,
+html[data-pcode-theme="light"] .pcode-history-metric__label {
+  color: #64748b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-metric__value,
+html[data-pcode-theme="light"] .pcode-history-metric__value {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-history-entry:not(:last-child) .pcode-history-entry__rail::after,
+html[data-pcode-theme="light"] .pcode-history-entry:not(:last-child) .pcode-history-entry__rail::after {
+  background: linear-gradient(180deg, rgba(109, 40, 217, 0.45), rgba(148, 163, 184, 0.2));
+}
+
+/* Light mode — black meta under patient names (dark palette above untouched) */
+html.pcode-app-bento-root:not(.dark) .pcode-patient-name-cell__name,
+html[data-pcode-theme="light"] .pcode-patient-name-cell__name {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-name-cell__tested,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card__tested,
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__date,
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__runs,
+html.pcode-app-bento-root:not(.dark) .pcode-latest-screening__empty,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-name-cell__tested--none,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card__tested--none,
+html[data-pcode-theme="light"] .pcode-patient-name-cell__tested,
+html[data-pcode-theme="light"] .pcode-patient-card__tested {
+  color: #000000 !important;
+}

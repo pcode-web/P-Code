@@ -1,0 +1,22 @@
+# Python / Render ML API
+runtime.txt
+.python-version
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Dependencies
+node_modules/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+config/jwt_secret.key
+
+# Logs & editor
+logs/
+*.log
+.cursor/
+.vscode/

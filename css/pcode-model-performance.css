@@ -1,0 +1,150 @@
+/**
+ * Model Performance — mobile layout & card density
+ */
+
+/* Hero */
+body.pcode-mp-page .gradient-bg {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+body.pcode-mp-page .pcode-mp-hero-desc {
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Top + CNN summary metric rows — full-width cards on phone */
+@media (max-width: 639px) {
+  body.pcode-mp-page .pcode-bento-metrics-grid--fluid {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.pcode-mp-page .pcode-bento-metrics-grid--fluid > .metric-card {
+    padding: 1rem 1.125rem !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+  }
+
+  body.pcode-mp-page .pcode-mp-stat-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-mp-page .pcode-mp-stat-grid .col-span-2 {
+    grid-column: span 1 / span 1 !important;
+  }
+
+  body.pcode-mp-page .pcode-mp-split-cols {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  body.pcode-mp-page .mp-test-set-shell,
+  body.pcode-mp-page .bento-glass-card {
+    padding: 1rem !important;
+  }
+
+  body.pcode-mp-page .pcode-bento-card {
+    padding: 1rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  body.pcode-mp-page .pcode-bento-card h2 {
+    font-size: 1.125rem !important;
+    margin-bottom: 0.875rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body.pcode-mp-page .pcode-bento-card h3 {
+    font-size: 1rem !important;
+  }
+
+  body.pcode-mp-page .pcode-bento-card .p-4.bg-blue-50,
+  body.pcode-mp-page .pcode-bento-card .mp-glass-inset {
+    padding: 0.875rem !important;
+  }
+
+  body.pcode-mp-page .mp-metric-tile,
+  body.pcode-mp-page .mp-test-set-tile {
+    padding: 0.875rem !important;
+  }
+
+  body.pcode-mp-page .mp-metric-value,
+  body.pcode-mp-page .mp-test-set-value {
+    font-size: 1.5rem !important;
+  }
+
+  body.pcode-mp-page .mp-metric-desc,
+  body.pcode-mp-page .mp-test-set-desc {
+    font-size: 0.8125rem !important;
+    line-height: 1.45 !important;
+  }
+}
+
+/* Stacked hero metrics — readable titles, no mid-word breaks */
+body.pcode-mp-page .pcode-metric-tile--stacked .pcode-metric-label {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 0.8125rem !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+@media (min-width: 640px) {
+  body.pcode-mp-page .pcode-metric-tile--stacked .pcode-metric-label {
+    font-size: 0.875rem !important;
+  }
+}
+
+body.pcode-mp-page .pcode-metric-tile--stacked .pcode-metric-value {
+  font-size: clamp(1.5rem, 6vw, 1.875rem) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  margin-top: 0.125rem;
+}
+
+body.pcode-mp-page .pcode-mp-footnote {
+  font-size: 0.75rem !important;
+  line-height: 1.45 !important;
+  font-weight: 400 !important;
+  margin-top: 0.25rem;
+}
+
+body.pcode-mp-page .pcode-metric-tile--stacked .pcode-metric-tile__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.pcode-mp-page .pcode-metric-tile--stacked .pcode-metric-tile__copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+body.pcode-mp-page .pcode-metric-tile.pcode-metric-tile--stacked {
+  display: flex !important;
+  flex-direction: column !important;
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  grid-template-areas: none !important;
+}

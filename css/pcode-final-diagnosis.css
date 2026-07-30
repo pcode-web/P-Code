@@ -1,0 +1,386 @@
+/* P-Code — Final Combined Diagnosis (horizontal bar layout)
+   Clinical/imaging comparison bars + combined verdict meter below. */
+
+.pcode-final-diagnosis {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* ---- Comparison bars (clinical + imaging) ---- */
+.pcode-final-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pcode-final-bar {
+  display: grid;
+  grid-template-columns: minmax(9rem, 12rem) 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.pcode-final-bar__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d1d1d6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pcode-final-bar__label small {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #8a8a93;
+  letter-spacing: 0.02em;
+}
+
+.pcode-final-bar__track {
+  position: relative;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.pcode-final-bar__track--verdict {
+  height: 0.75rem;
+  margin-top: 0;
+}
+
+.pcode-final-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #c4b5fd);
+  transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pcode-final-bar__fill--clinical {
+  background: linear-gradient(90deg, #7c3aed, #c4b5fd);
+}
+
+.pcode-final-bar__fill--imaging {
+  background: linear-gradient(90deg, #2563eb, #38bdf8);
+}
+
+.pcode-final-bar__fill--combined {
+  background: linear-gradient(90deg, #6a4bc9, #c084fc);
+}
+
+.pcode-final-bar__fill[data-tone="positive"] {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+}
+
+.pcode-final-bar__fill[data-tone="borderline"] {
+  background: linear-gradient(90deg, #ca8a04, #facc15);
+}
+
+.pcode-final-bar__fill[data-tone="negative"] {
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+}
+
+.pcode-final-bar__track.is-analyzing .pcode-final-bar__fill {
+  width: 40% !important;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.15), rgba(196, 181, 253, 0.55), rgba(124, 58, 237, 0.15));
+  animation: pcode-final-bar-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes pcode-final-bar-indeterminate {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+.pcode-final-bar__value {
+  min-width: 4.25rem;
+  text-align: right;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f5f5f7;
+  font-variant-numeric: tabular-nums;
+}
+
+.pcode-final-bar__value.is-muted {
+  color: #7a7a83;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* ---- Combined verdict (confidence meter pattern) ---- */
+.pcode-confidence-meter--verdict {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.pcode-final-verdict .pcode-confidence-meter--verdict {
+  margin-top: 0.15rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.pcode-final-verdict__percent {
+  color: #f5f5f7;
+}
+
+.pcode-final-verdict__percent.is-muted {
+  color: #7a7a83;
+}
+
+.pcode-final-verdict__risk {
+  align-items: center;
+}
+
+.pcode-final-verdict__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: auto;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1.5px solid #94a3b8;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Light defaults when data-tone is set (dark tones scoped below) */
+.pcode-final-verdict__badge[data-tone="positive"] {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #dc2626;
+}
+
+.pcode-final-verdict__badge[data-tone="borderline"] {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #d97706;
+}
+
+.pcode-final-verdict__badge[data-tone="negative"] {
+  color: #065f46;
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+.pcode-final-verdict__badge[data-tone="pending"] {
+  color: #334155;
+  background: #f1f5f9;
+  border-color: #64748b;
+}
+
+/* Dark-only pale tones — never apply on light paper cards */
+html.dark .pcode-final-verdict__badge {
+  color: #e5e7eb;
+  background: rgba(75, 85, 99, 0.28);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+html.dark .pcode-final-verdict__badge[data-tone="positive"] {
+  color: #fecaca;
+  background: rgba(220, 38, 38, 0.18);
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+html.dark .pcode-final-verdict__badge[data-tone="borderline"] {
+  color: #fde68a;
+  background: rgba(202, 138, 4, 0.18);
+  border-color: rgba(250, 204, 21, 0.5);
+}
+
+html.dark .pcode-final-verdict__badge[data-tone="negative"] {
+  color: #bbf7d0;
+  background: rgba(22, 163, 74, 0.18);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+html.dark .pcode-final-verdict__badge[data-tone="pending"] {
+  color: #cbd5e1;
+  background: rgba(71, 85, 105, 0.28);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+@media (max-width: 640px) {
+  .pcode-final-bar {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "label value"
+      "track track";
+    row-gap: 0.4rem;
+  }
+
+  .pcode-final-bar__label { grid-area: label; }
+  .pcode-final-bar__value { grid-area: value; }
+  .pcode-final-bar__track { grid-area: track; }
+
+  .pcode-final-verdict .pcode-confidence-meter__value {
+    min-width: 3.85rem;
+    font-size: 1.35rem;
+  }
+}
+
+/* Detect results — no extra dark footer strip; actions live inside Final Diagnosis card */
+body.pcode-app-bento #analysis-results-panel.pcode-diagnostic-results-panel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+body.pcode-app-bento #combined-results .pcode-results-actions-inline {
+  margin-top: 1.25rem;
+  padding-top: 0.25rem;
+  border-top: none;
+  background: transparent !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light mode — readable labels & percents on white diagnosis card            */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-bar__label,
+html[data-pcode-theme="light"] .pcode-final-bar__label {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-bar__label small,
+html[data-pcode-theme="light"] .pcode-final-bar__label small {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-bar__value,
+html[data-pcode-theme="light"] .pcode-final-bar__value {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-bar__value.is-muted,
+html[data-pcode-theme="light"] .pcode-final-bar__value.is-muted {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-bar__track,
+html[data-pcode-theme="light"] .pcode-final-bar__track {
+  background: #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__percent,
+html[data-pcode-theme="light"] .pcode-final-verdict__percent,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__value,
+html[data-pcode-theme="light"] .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) #clinical-probability,
+html.pcode-app-bento-root:not(.dark) #image-probability,
+html.pcode-app-bento-root:not(.dark) #final-combined-percent,
+html[data-pcode-theme="light"] #clinical-probability,
+html[data-pcode-theme="light"] #image-probability,
+html[data-pcode-theme="light"] #final-combined-percent {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__percent.is-muted,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__value.is-muted,
+html[data-pcode-theme="light"] .pcode-confidence-meter__value.is-muted {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict .pcode-confidence-meter--verdict,
+html[data-pcode-theme="light"] .pcode-final-verdict .pcode-confidence-meter--verdict {
+  border-top-color: #cbd5e1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-kv-label,
+html[data-pcode-theme="light"] .pcode-kv-label {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-kv-value:not(.pcode-xai-summary-value),
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-kv-value,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-kv-value,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-kv-value,
+html[data-pcode-theme="light"] .pcode-kv-value:not(.pcode-xai-summary-value) {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #combined-results .gauge-sublabel,
+html[data-pcode-theme="light"] #combined-results .gauge-sublabel {
+  color: #334155 !important;
+}
+
+/* Light mode — verdict badges (POSITIVE was pale pink-on-pink) */
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__badge,
+html.pcode-app-bento-root:not(.dark) #final-combined-score.pcode-final-verdict__badge,
+html[data-pcode-theme="light"] .pcode-final-verdict__badge,
+html[data-pcode-theme="light"] #final-combined-score {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background: #f1f5f9 !important;
+  border: 1.5px solid #94a3b8 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__badge[data-tone="positive"],
+html.pcode-app-bento-root:not(.dark) #final-combined-score[data-tone="positive"],
+html[data-pcode-theme="light"] .pcode-final-verdict__badge[data-tone="positive"],
+html[data-pcode-theme="light"] #final-combined-score[data-tone="positive"] {
+  color: #991b1b !important;
+  -webkit-text-fill-color: #991b1b !important;
+  background: #fee2e2 !important;
+  border-color: #dc2626 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__badge[data-tone="borderline"],
+html.pcode-app-bento-root:not(.dark) #final-combined-score[data-tone="borderline"],
+html[data-pcode-theme="light"] .pcode-final-verdict__badge[data-tone="borderline"],
+html[data-pcode-theme="light"] #final-combined-score[data-tone="borderline"] {
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
+  background: #fef3c7 !important;
+  border-color: #d97706 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__badge[data-tone="negative"],
+html.pcode-app-bento-root:not(.dark) #final-combined-score[data-tone="negative"],
+html[data-pcode-theme="light"] .pcode-final-verdict__badge[data-tone="negative"],
+html[data-pcode-theme="light"] #final-combined-score[data-tone="negative"] {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+  background: #d1fae5 !important;
+  border-color: #059669 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__badge[data-tone="pending"],
+html.pcode-app-bento-root:not(.dark) #final-combined-score[data-tone="pending"],
+html[data-pcode-theme="light"] .pcode-final-verdict__badge[data-tone="pending"],
+html[data-pcode-theme="light"] #final-combined-score[data-tone="pending"] {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+  background: #f1f5f9 !important;
+  border-color: #64748b !important;
+}
+

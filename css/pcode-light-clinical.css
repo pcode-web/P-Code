@@ -1,0 +1,2735 @@
+/**
+ * P-Code ? Light mode clinical legibility (high-contrast black typography,
+ * solid card outlines, opaque badges, defined progress tracks).
+ * Load after pcode-theme.css + pcode-app-bento-dark.css
+ */
+
+/* ========================================================================== */
+/* 1. Ultra-high contrast typography                                          */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark),
+html.login-bento-page:not(.dark) {
+  --pcb-text-title: #000000;
+  --pcb-text-muted: #000000;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-label: #0f172a;
+}
+
+/* Kill faint / transparent text utilities in light mode */
+html.pcode-app-bento-root:not(.dark) [class*='text-white/'],
+html.pcode-app-bento-root:not(.dark) [class*='text-slate-300'],
+html.pcode-app-bento-root:not(.dark) [class*='text-slate-400'],
+html.pcode-app-bento-root:not(.dark) [class*='text-zinc-300'],
+html.pcode-app-bento-root:not(.dark) [class*='text-zinc-400'],
+html.pcode-app-bento-root:not(.dark) [class*='text-gray-300'],
+html.pcode-app-bento-root:not(.dark) [class*='text-gray-400'],
+html.pcode-app-bento-root:not(.dark) [class*='text-violet-200'],
+html.pcode-app-bento-root:not(.dark) [class*='opacity-'],
+html.login-bento-page:not(.dark) [class*='text-white/'],
+html.login-bento-page:not(.dark) [class*='opacity-'] {
+  opacity: 1 !important;
+}
+
+/* Primary headings & hero ? color only (keep theme font sizes / weights) */
+html.pcode-app-bento-root:not(.dark) .hero-title,
+html.pcode-app-bento-root:not(.dark) .pcode-dashboard-greeting,
+html.pcode-app-bento-root:not(.dark) .pcode-hero-title,
+html.pcode-app-bento-root:not(.dark) h1.pcode-hero-title,
+html.pcode-app-bento-root:not(.dark) h1,
+html.pcode-app-bento-root:not(.dark) h2,
+html.pcode-app-bento-root:not(.dark) .pcode-card-title,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card > h2,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card > h3,
+html.pcode-app-bento-root:not(.dark) .metric-card .pcode-metric-figure,
+html.pcode-app-bento-root:not(.dark) #typed-text,
+html.login-bento-page:not(.dark) .auth-main-card h1,
+html.login-bento-page:not(.dark) .auth-main-card h2,
+html.login-bento-page:not(.dark) .entry-selection-card .right-entry-hint h3 {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+/* Secondary subtext ? color only (do not flatten font-weight / size) */
+html.pcode-app-bento-root:not(.dark) p:not(.pcode-xai-summary-value),
+html.pcode-app-bento-root:not(.dark) li,
+html.pcode-app-bento-root:not(.dark) .hero-lead,
+html.pcode-app-bento-root:not(.dark) .pcode-dashboard-lead,
+html.pcode-app-bento-root:not(.dark) .text-gray-600,
+html.pcode-app-bento-root:not(.dark) .text-gray-500,
+html.pcode-app-bento-root:not(.dark) .text-gray-700,
+html.pcode-app-bento-root:not(.dark) .text-slate-600,
+html.pcode-app-bento-root:not(.dark) .text-slate-500,
+html.login-bento-page:not(.dark) .entry-card-desc,
+html.login-bento-page:not(.dark) .entry-selection-card .right-entry-hint p {
+  color: #000000 !important;
+}
+
+/* Form labels & captions ? color only */
+html.pcode-app-bento-root:not(.dark) label,
+html.pcode-app-bento-root:not(.dark) .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) .text-sm.font-medium,
+html.pcode-app-bento-root:not(.dark) .metric-card p.text-sm,
+html.login-bento-page:not(.dark) label,
+html.login-bento-page:not(.dark) .auth-main-card label {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .text-gray-800,
+html.pcode-app-bento-root:not(.dark) .text-gray-900,
+html.pcode-app-bento-root:not(.dark) .text-slate-800,
+html.pcode-app-bento-root:not(.dark) .text-slate-900 {
+  color: #000000 !important;
+}
+
+/* ========================================================================== */
+/* 2. Solid card outlines & backgrounds (override dark glass bleed)           */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) .metric-card,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card,
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) .pcode-obsidian-data-shell,
+html.pcode-app-bento-root:not(.dark) .pcode-obsidian-data-card,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card,
+html.pcode-app-bento-root:not(.dark) .pcode-patients-table-wrap,
+html.pcode-app-bento-root:not(.dark) #patient-modal .modal-content,
+html.pcode-app-bento-root:not(.dark) .max-w-7xl .bg-white.rounded-xl,
+html.pcode-app-bento-root:not(.dark) .mobile-card {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #000000 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Mobile patient cards ? kill grey glass panels / stretched empty regions */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card::before,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card::after,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card::before,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__scores,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__scores {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__name,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__id,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__meta,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__score-row,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__score-row > span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card .pcode-score-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card .text-gray-300,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card [class*='text-gray-'],
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__name,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__score-row {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__id,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__meta,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__id {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card .pcode-patient-score-track,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card .pcode-patient-score-track {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 0.5rem !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card .pcode-patient-score-fill,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card .pcode-patient-score-fill {
+  background: #6d28d9 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card:hover {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) #patient-selection-card,
+html[data-pcode-theme="light"] .detection-card,
+html[data-pcode-theme="light"] .pcode-diagnostic-bento,
+html[data-pcode-theme="light"] #patient-selection-card {
+  border: 1px solid #000000 !important;
+  border-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-card:hover,
+html[data-pcode-theme="light"] .metric-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-inner-card:hover {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-bento-card::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .metric-card::after,
+html[data-pcode-theme="light"] .pcode-bento-card::after,
+html[data-pcode-theme="light"] .metric-card::after {
+  opacity: 0 !important;
+  background: none !important;
+}
+
+/* Screening metric cards ? undo dark glass from pcode-app-bento-dark.css */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-screening-metric-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-screening-metric-card:hover {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  translate: none !important;
+  filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--positive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--negative,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--pending,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--borderline,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--cnn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--xg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--positive:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--negative:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--pending:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--borderline:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--cnn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card--xg:hover {
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  translate: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card #my-screening-cnn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card #my-screening-xg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card #my-screening-overall {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card .text-gray-500 {
+  color: #000000 !important;
+}
+
+/* Login entry / selection cards */
+html.login-bento-page:not(.dark) button.entry-card {
+  background-color: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 2rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: none !important;
+}
+
+html.login-bento-page:not(.dark) button.entry-card:hover,
+html.login-bento-page:not(.dark) button.entry-card:focus-visible {
+  border-color: #000000 !important;
+  background-color: rgba(250, 245, 255, 0.72) !important;
+  transform: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.login-bento-page:not(.dark) button.entry-card[aria-pressed='true'],
+html.login-bento-page:not(.dark) button.entry-card.is-selected {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.login-bento-page:not(.dark) .auth-main-card {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 2.5rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ========================================================================== */
+/* 3. Clinical status badges (deeper opaque tints)                            */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .bg-red-100.text-red-800,
+html.pcode-app-bento-root:not(.dark) .bg-rose-100,
+html.pcode-app-bento-root:not(.dark) [class*='bg-red-100'] {
+  background-color: #fecaca !important;
+  color: #7f1d1d !important;
+  border: 1px solid #f87171 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .bg-green-100.text-green-800,
+html.pcode-app-bento-root:not(.dark) .bg-emerald-100,
+html.pcode-app-bento-root:not(.dark) [class*='bg-green-100'] {
+  background-color: #86efac !important;
+  color: #064e3b !important;
+  border: 1px solid #22c55e !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .bg-yellow-100.text-yellow-800,
+html.pcode-app-bento-root:not(.dark) .bg-amber-100,
+html.pcode-app-bento-root:not(.dark) [class*='bg-yellow-100'],
+html.pcode-app-bento-root:not(.dark) [class*='bg-orange-100'] {
+  background-color: #fcd34d !important;
+  color: #78350f !important;
+  border: 1px solid #f59e0b !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-clinical-badge--positive,
+html.pcode-app-bento-root:not(.dark) .pcode-badge-positive {
+  background-color: #fecaca !important;
+  color: #7f1d1d !important;
+  border: 1px solid #f87171 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-clinical-badge--negative,
+html.pcode-app-bento-root:not(.dark) .pcode-badge-negative {
+  background-color: #86efac !important;
+  color: #064e3b !important;
+  border: 1px solid #22c55e !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-clinical-badge--pending,
+html.pcode-app-bento-root:not(.dark) .pcode-badge-pending,
+html.pcode-app-bento-root:not(.dark) .pcode-clinical-badge--borderline,
+html.pcode-app-bento-root:not(.dark) .pcode-badge-borderline {
+  background-color: #fcd34d !important;
+  color: #78350f !important;
+  border: 1px solid #f59e0b !important;
+}
+
+/* ========================================================================== */
+/* 4. Progress bar tracks (XGBoost / CNN calibration)                         */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-track,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-track,
+html.pcode-app-bento-root:not(.dark) #my-screening-overall-track,
+html.pcode-app-bento-root:not(.dark) .bg-gray-200.rounded-full,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card .bg-gray-200 {
+  background-color: #ede9fe !important;
+  border: 1px solid rgba(109, 40, 217, 0.18) !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #clinical-progress,
+html.pcode-app-bento-root:not(.dark) #image-progress,
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill--clinical,
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill--imaging,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--cnn,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--xg,
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill--pending,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--overall-pending {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill--pending,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--overall-pending {
+  background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%) !important;
+}
+
+/* Provider dashboard metric strip labels */
+html.pcode-app-bento-root:not(.dark) #metrics-grid .metric-card p.text-sm.font-semibold,
+html.pcode-app-bento-root:not(.dark) #metrics-grid .metric-card p.text-sm.font-medium,
+html.pcode-app-bento-root:not(.dark) #metrics-grid .metric-card .pcode-metric-label,
+html.pcode-app-bento-root:not(.dark) #metrics-grid .metric-card .pcode-metric-figure,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-metric-label,
+html[data-pcode-theme="light"] #metrics-grid .pcode-metric-label,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-metric-label {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #metrics-grid .metric-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell > .pcode-bento-card,
+html[data-pcode-theme="light"] body.pcode-app-bento #metrics-grid .metric-card,
+html[data-pcode-theme="light"] body.pcode-app-bento #quick-actions-section {
+  border: 1px solid #000000 !important;
+  border-color: #000000 !important;
+  border-radius: 1rem !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section h2,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .pcode-bento-card h2,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .pcode-bento-card p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-page-shell .text-gray-500,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-page-shell h2 {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Nav brand on light top bar */
+html.pcode-app-bento-root:not(.dark) .pcode-nav-brand {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Disclaimer / inset panels — soft purple, brand-aligned */
+html.pcode-app-bento-root:not(.dark) .pcode-screening-disclaimer,
+html.pcode-app-bento-root:not(.dark) .mp-glass-inset,
+html.pcode-app-bento-root:not(.dark) .bg-blue-50 {
+  background-color: #f5f3ff !important;
+  border: 1px solid rgba(109, 40, 217, 0.28) !important;
+  color: #1e1b4b !important;
+}
+
+/* ========================================================================== */
+/* 5. White / near-white copy ? black (override dark-theme bleed)             */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-gray-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .dark\:text-white,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-metric-figure,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dashboard-greeting,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-bento-card > h2,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-bento-card > h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl h2.text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card h2,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card h2,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-800 {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-gray-500,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-500,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-slate-400,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-zinc-400,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-zinc-500,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-500,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-500 {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a.text-purple-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a.text-purple-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-purple-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page a.text-purple-600,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page a.text-purple-800 {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a.text-purple-600:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a.text-purple-800:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a[class*='text-purple-']:hover {
+  color: #000000 !important;
+}
+
+/* ========================================================================== */
+/* 6. Grey chrome ? purple (borders / fills), excluding forms                 */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='border-slate-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='border-slate-'] {
+  border-color: rgba(109, 40, 217, 0.28) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-gray-100,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-slate-50,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-slate-100,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .bg-gray-50\/50 {
+  background: #f8fafc !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection.pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection.mobile-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #pcode-nearby-map {
+  background: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-gray-200,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-slate-200 {
+  background-color: #ede9fe !important;
+}
+
+html.pcode-app-bento-root:not(.dark) footer,
+html.pcode-app-bento-root:not(.dark) footer p,
+html.pcode-app-bento-root:not(.dark) footer [class*='text-slate-'],
+html.pcode-app-bento-root:not(.dark) footer [class*='text-gray-'] {
+  color: #000000 !important;
+}
+
+/* ========================================================================== */
+/* 7. Forms ? keep neutral greys (exempt from purple branding)                  */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) form label,
+html.pcode-app-bento-root:not(.dark) #add-patient-form label,
+html.pcode-app-bento-root:not(.dark) #clinical-form label,
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form label,
+html.pcode-app-bento-root:not(.dark) #patient-modal .step-content label,
+html.pcode-app-bento-root:not(.dark) .detection-card #clinical-form label,
+html.pcode-app-bento-root:not(.dark) .input-medical + label,
+html.login-bento-page:not(.dark) .auth-main-card form label {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) form h3,
+html.pcode-app-bento-root:not(.dark) #add-patient-form h3,
+html.pcode-app-bento-root:not(.dark) #clinical-form h3,
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form h3,
+html.pcode-app-bento-root:not(.dark) form .text-gray-800,
+html.pcode-app-bento-root:not(.dark) #add-patient-form .text-gray-800,
+html.pcode-app-bento-root:not(.dark) #clinical-form .text-gray-800,
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form .text-gray-800 {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) form [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) #add-patient-form [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) #clinical-form [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) #patient-modal .step-content [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) #patient-modal .step-content p,
+html.pcode-app-bento-root:not(.dark) form .text-sm,
+html.pcode-app-bento-root:not(.dark) #add-patient-form .text-sm {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) form [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) #add-patient-form [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) #clinical-form [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) #patient-modal .step-content [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) form [class*='border-slate-'],
+html.pcode-app-bento-root:not(.dark) #add-patient-form [class*='border-slate-'] {
+  border-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) form .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) #add-patient-form .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) #clinical-form .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) #patient-modal #add-patient-form .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) #patient-modal .step-content .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) form .bg-gray-100,
+html.pcode-app-bento-root:not(.dark) #add-patient-form .bg-gray-100 {
+  background-color: #f9fafb !important;
+}
+
+html.pcode-app-bento-root:not(.dark) form input::placeholder,
+html.pcode-app-bento-root:not(.dark) form textarea::placeholder,
+html.pcode-app-bento-root:not(.dark) #add-patient-form input::placeholder,
+html.pcode-app-bento-root:not(.dark) #add-patient-form textarea::placeholder,
+html.pcode-app-bento-root:not(.dark) #clinical-form input::placeholder,
+html.pcode-app-bento-root:not(.dark) #clinical-form textarea::placeholder {
+  color: #334155 !important;
+  opacity: 1 !important;
+}
+
+/* Patient modal shell (non-form chrome) stays on-brand */
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-modal-header,
+html.pcode-app-bento-root:not(.dark) #patient-modal #modal-footer-section,
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-footer-step {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #patient-modal .pcode-patient-modal-header h2,
+html.pcode-app-bento-root:not(.dark) #patient-modal #modal-title {
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #modal-footer-section.clinical-stepper-footer,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-footer {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label--active,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label--inactive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal #footer-step-info {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.inactive-step {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal input:not([type='checkbox']):not([type='radio']):not([type='file']),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal select,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal textarea {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+
+
+/* ========================================================================== */
+/* 8. Light-mode readability polish (2026-07-22)                              */
+/* Scoped: html:not(.dark) / [data-pcode-theme="light"] ? dark mode untouched */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark),
+html[data-pcode-theme="light"].pcode-app-bento-root {
+  --pcb-card-border: #e2e8f0;
+  --pcb-card-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+/* ---- Patients table header + body ---------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento table.patients-data-table thead.patients-table-thead tr,
+html[data-pcode-theme="light"] body.pcode-app-bento table.patients-data-table thead.patients-table-thead tr {
+  background: #f1f5f9 !important;
+  background-image: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento table.patients-data-table thead.patients-table-thead th,
+html[data-pcode-theme="light"] body.pcode-app-bento table.patients-data-table thead.patients-table-thead th {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border-bottom: 1px solid #000000 !important;
+  background: #f1f5f9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body tr,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body tr {
+  border-bottom: 1px solid #000000 !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body tr:nth-child(even),
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body tr:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body tr:hover {
+  background: #f1f5f9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body td,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body .text-gray-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body .pcode-patient-name-cell__name,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body [class*='text-gray-'],
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body td {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-name-cell__tested,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__tested,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__date,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__runs,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__empty,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-name-cell__tested--none,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__tested--none,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-name-cell__tested,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__tested {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* ---- Search / filter toolbar --------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar__control:not(button),
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis {
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar__btn,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar .btn-purple-glass {
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input::placeholder,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input::placeholder {
+  color: #000000 !important;
+  opacity: 0.55 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input:focus,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis:focus,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input:focus-visible,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input:focus,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis:focus-visible {
+  border-color: #6d28d9 !important;
+  outline: 2px solid #7c3aed !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.28) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar .btn-purple-glass:focus-visible,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn:focus-visible,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-pagination-btn:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar .btn-purple-glass:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-pagination-btn:focus-visible {
+  outline: 2px solid #7c3aed !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.28) !important;
+}
+
+/* ---- Dashboard recent patients list -------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container > .bg-gray-50,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container > div.rounded-lg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-gray-50.rounded-lg,
+html[data-pcode-theme="light"] body.pcode-app-bento #recent-patients-container > div {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container .hover\:bg-gray-100:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .hover\:bg-gray-100:hover {
+  background: #f1f5f9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container .font-semibold,
+html[data-pcode-theme="light"] body.pcode-app-bento #recent-patients-container .text-gray-800 {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container .text-sm,
+html[data-pcode-theme="light"] body.pcode-app-bento #recent-patients-container .text-gray-600 {
+  color: #475569 !important;
+}
+
+/* ---- Chart legend / axis labels (HTML legend + canvas-adjacent) ---------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-chart-legend,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-chart-legend__label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-chart-panel .text-sm,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-chart-panel .text-gray-500,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-chart-panel .text-gray-600,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-chart-legend__label {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Metric tile SVG icons ? solid badge + white glyph for WCAG contrast in light mode */
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile--accent-purple .pcode-metric-tile__icon,
+html[data-pcode-theme="light"] .pcode-metric-tile--accent-purple .pcode-metric-tile__icon {
+  color: #ffffff !important;
+  background: #6d28d9 !important;
+  border: 1px solid #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile--accent-blue .pcode-metric-tile__icon,
+html[data-pcode-theme="light"] .pcode-metric-tile--accent-blue .pcode-metric-tile__icon {
+  color: #ffffff !important;
+  background: #2563eb !important;
+  border: 1px solid #1d4ed8 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile--accent-red .pcode-metric-tile__icon,
+html[data-pcode-theme="light"] .pcode-metric-tile--accent-red .pcode-metric-tile__icon {
+  color: #ffffff !important;
+  background: #dc2626 !important;
+  border: 1px solid #b91c1c !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile--accent-green .pcode-metric-tile__icon,
+html[data-pcode-theme="light"] .pcode-metric-tile--accent-green .pcode-metric-tile__icon {
+  color: #ffffff !important;
+  background: #16a34a !important;
+  border: 1px solid #15803d !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__icon,
+html[data-pcode-theme="light"] .pcode-metric-tile__icon {
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg,
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__icon svg,
+html[data-pcode-theme="light"] .pcode-metric-tile__svg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Filled icons (person) */
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg[fill='currentColor'],
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg:not([fill='none']),
+html[data-pcode-theme="light"] .pcode-metric-tile__svg[fill='currentColor'] {
+  fill: #ffffff !important;
+  stroke: none !important;
+}
+
+/* Stroke icons (checkmark ring) */
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg[fill='none'],
+html[data-pcode-theme="light"] .pcode-metric-tile__svg[fill='none'] {
+  fill: none !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.25 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg [opacity],
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg path,
+html[data-pcode-theme="light"] .pcode-metric-tile__svg path {
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg[fill='none'] path,
+html[data-pcode-theme="light"] .pcode-metric-tile__svg[fill='none'] path {
+  fill: none !important;
+  stroke: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-metric-tile__svg[fill='currentColor'] path,
+html[data-pcode-theme="light"] .pcode-metric-tile__svg[fill='currentColor'] path {
+  fill: #ffffff !important;
+  stroke: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcode-metric-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcode-mp-footnote,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .text-slate-400,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page [class*='text-blue-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .text-gray-600,
+html[data-pcode-theme="light"] body.pcode-mp-page .pcode-metric-label {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcode-metric-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcode-metric-figure,
+html[data-pcode-theme="light"] body.pcode-mp-page .pcode-metric-value {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* MP metric tiles ? clinical light cards (not dark-mode glass) */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-test-set-tile,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-tile {
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile .mp-test-set-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .mp-metric-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .pcode-metric-label,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-test-set-label,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-label,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-tile .pcode-metric-label {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile .mp-test-set-desc,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .mp-metric-desc,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .pcode-mp-footnote,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-test-set-desc,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-desc,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-tile .pcode-mp-footnote {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile .mp-test-set-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .mp-metric-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-tile .pcode-stat-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .pcode-stat-value,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-metric-tile .pcode-metric-value,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-test-set-value,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-value,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-metric-tile .pcode-metric-value {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+/* Light lavender inset panels (comparative summary, etc.) ? black copy */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset *,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset p,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset li,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-glass-inset strong,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-glass-inset,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-glass-inset *,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-glass-inset li,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-glass-inset strong {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Confusion matrix axis labels ? readable on white (exclude in-cell TP/TN/FN/FP) */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcb-cm-bento-simple > .pcb-cm-labels > span,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .pcb-confusion-bento-host .pcode-diagnostic-muted:not(.pcb-cm-cell__type),
+html[data-pcode-theme="light"] body.pcode-mp-page .pcb-cm-bento-simple > .pcb-cm-labels > span,
+html[data-pcode-theme="light"] body.pcode-mp-page .pcb-confusion-bento-host .pcode-diagnostic-muted:not(.pcb-cm-cell__type) {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+/* Keep section titles outside the gray tiles black */
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .mp-test-set-shell > h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-mp-page .bento-glass-card > h3,
+html[data-pcode-theme="light"] body.pcode-mp-page .mp-test-set-shell > h3 {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* ---- Profile drawer / Sign out ghost + Edit Profile modal inputs --------- */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #mobile-logout-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #mobile-logout-btn.btn-rose-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-red-600,
+html[data-pcode-theme="light"] body.pcode-app-bento #mobile-logout-btn {
+  background: #dc2626 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+  border-width: 1px !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #mobile-logout-btn:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-red-600:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento #mobile-logout-btn:hover {
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__dialog,
+html[data-pcode-theme="light"] .edit-profile-modal__dialog {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__title,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__section-title,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__label,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__password-title,
+html[data-pcode-theme="light"] .edit-profile-modal__title {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__section-sub,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__hint,
+html[data-pcode-theme="light"] .edit-profile-modal__hint {
+  color: #64748b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__input,
+html[data-pcode-theme="light"] .edit-profile-modal__input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__input::placeholder,
+html[data-pcode-theme="light"] .edit-profile-modal__input::placeholder {
+  color: #64748b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__input:focus,
+html[data-pcode-theme="light"] .edit-profile-modal__input:focus {
+  border-color: #6d28d9 !important;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.15) !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__input:disabled,
+html[data-pcode-theme="light"] .edit-profile-modal__input:disabled {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__password-panel,
+html[data-pcode-theme="light"] .edit-profile-modal__password-panel {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__header,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__footer,
+html[data-pcode-theme="light"] .edit-profile-modal__footer {
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__footer,
+html[data-pcode-theme="light"] .edit-profile-modal__footer {
+  padding: 1.125rem 1.5rem 1.375rem !important;
+}
+
+@media (max-width: 767px) {
+  html.pcode-app-bento-root:not(.dark) .edit-profile-modal__footer,
+  html[data-pcode-theme="light"] .edit-profile-modal__footer {
+    padding: 1.125rem 1.25rem 1.5rem !important;
+  }
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__close,
+html[data-pcode-theme="light"] .edit-profile-modal__close {
+  color: #334155 !important;
+}
+
+/* Edit Profile footer actions ? readable size + contrast in light mode */
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn,
+html[data-pcode-theme="light"] .edit-profile-modal__btn {
+  min-height: 2.75rem !important;
+  padding: 0.625rem 1.25rem !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--cancel,
+html[data-pcode-theme="light"] .edit-profile-modal__btn--cancel {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--cancel:hover,
+html[data-pcode-theme="light"] .edit-profile-modal__btn--cancel:hover {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--save,
+html[data-pcode-theme="light"] .edit-profile-modal__btn--save {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  background-image: none !important;
+  border: 1px solid #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--save:hover:not(:disabled),
+html[data-pcode-theme="light"] .edit-profile-modal__btn--save:hover:not(:disabled) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #5b21b6 !important;
+  border-color: #4c1d95 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--save:disabled,
+html[data-pcode-theme="light"] .edit-profile-modal__btn--save:disabled {
+  color: #ffffff !important;
+  opacity: 0.55 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links a,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .mobile-nav-links p,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn,
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-menu-close-btn svg,
+html.pcode-app-bento-root:not(.dark) #mobile-menu .pcode-theme-pill__status,
+html[data-pcode-theme="light"] #mobile-menu #mobile-profile-name,
+html[data-pcode-theme="light"] #mobile-menu #mobile-profile-role {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-auth-button.pcode-sidebar-signin-btn,
+html.pcode-app-bento-root:not(.dark) #mobile-auth-button.pcode-sidebar-signin-btn,
+html[data-pcode-theme="light"] #mobile-menu #mobile-auth-button.pcode-sidebar-signin-btn,
+html[data-pcode-theme="light"] #mobile-auth-button.pcode-sidebar-signin-btn {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-edit-profile-btn,
+html[data-pcode-theme="light"] #mobile-menu #mobile-edit-profile-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  background-image: none !important;
+  border: 1px solid #5b21b6 !important;
+  border-radius: 0.5rem !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-logout-btn,
+html[data-pcode-theme="light"] #mobile-menu #mobile-logout-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #dc2626 !important;
+  background-image: none !important;
+  border: 1px solid #b91c1c !important;
+  border-radius: 0.5rem !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Dark sidebar ? bright white copy (no washed-out gray role/labels) */
+html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-name,
+html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-role,
+html.pcode-app-bento-root.dark #mobile-menu .mobile-nav-links a,
+html.pcode-app-bento-root.dark #mobile-menu .mobile-nav-links p,
+html.pcode-app-bento-root.dark #mobile-menu #mobile-menu-close-btn,
+html.pcode-app-bento-root.dark #mobile-menu #mobile-menu-close-btn svg,
+html.pcode-app-bento-root.dark #mobile-menu .pcode-theme-pill__status {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark #mobile-menu .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-glass-switch__label,
+html.pcode-app-bento-root.dark #mobile-menu .pcode-theme-glass-switch__segment[aria-pressed='false'] .pcode-theme-pill__icon {
+  color: #d4d4d8 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark #mobile-menu .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-glass-switch__label,
+html.pcode-app-bento-root.dark #mobile-menu .pcode-theme-glass-switch__segment[aria-pressed='true'] .pcode-theme-pill__icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* ---- Card elevation & borders -------------------------------------------- */
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) .metric-card,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card,
+html.pcode-app-bento-root:not(.dark) .pcode-patients-table-wrap,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-metric-card,
+html[data-pcode-theme="light"] .pcode-bento-card,
+html[data-pcode-theme="light"] .metric-card,
+html[data-pcode-theme="light"] .pcode-patients-table-wrap,
+html[data-pcode-theme="light"] .pcode-patient-card {
+  border: 1px solid #000000 !important;
+  border-color: #000000 !important;
+  border-radius: 1rem !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-table-wrap.pcode-bento-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-bento-card.pcode-patients-table-wrap,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-table-wrap {
+  overflow: hidden !important;
+  border-radius: 1rem !important;
+  border: 1px solid #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-table-wrap .overflow-x-auto,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-table-wrap .pcb-scroll-x,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-table-wrap .overflow-x-auto {
+  border-radius: inherit !important;
+}
+
+/* Detect analysis cards ? solid black outline in light mode */
+html.pcode-app-bento-root:not(.dark) .detection-card,
+html.pcode-app-bento-root:not(.dark) .detection-card.pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
+html.pcode-app-bento-root:not(.dark) #patient-selection-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card,
+html[data-pcode-theme="light"] .detection-card,
+html[data-pcode-theme="light"] .pcode-diagnostic-bento,
+html[data-pcode-theme="light"] #patient-selection-card {
+  border: 1px solid #000000 !important;
+  border-color: #000000 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .detection-card.pcode-diagnostic-bento:has(.text-purple-600),
+html.pcode-app-bento-root:not(.dark) .detection-card.pcode-diagnostic-bento:has(.text-blue-600),
+html.pcode-app-bento-root:not(.dark) .bg-white.rounded-xl.pcode-diagnostic-bento:has(.text-purple-600),
+html.pcode-app-bento-root:not(.dark) .bg-white.rounded-xl.pcode-diagnostic-bento:has(.text-blue-600),
+html[data-pcode-theme="light"] .bg-white.rounded-xl.pcode-diagnostic-bento:has(.text-purple-600),
+html[data-pcode-theme="light"] .bg-white.rounded-xl.pcode-diagnostic-bento:has(.text-blue-600) {
+  border-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover {
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Keep form chrome borders black in light mode on patients toolbar */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar [class*='border-gray-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #recent-patients-container [class*='border-gray-'] {
+  border-color: #e2e8f0 !important;
+}
+
+/* ========================================================================== */
+/* Patients Management ? light mode readability (dark mode untouched)         */
+/* Scope: html.pcode-app-bento-root:not(.dark) | [data-pcode-theme="light"]   */
+/* ========================================================================== */
+
+/* 1. Hero title + subtitle ? crisp on lavender gradient */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento > .gradient-bg .hero-title,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento > .gradient-bg h1,
+html[data-pcode-theme="light"] body.pcode-app-bento > .gradient-bg .hero-title,
+html[data-pcode-theme="light"] body.pcode-app-bento > .gradient-bg h1 {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento > .gradient-bg p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento > .gradient-bg .text-purple-100,
+html[data-pcode-theme="light"] body.pcode-app-bento > .gradient-bg p,
+html[data-pcode-theme="light"] body.pcode-app-bento > .gradient-bg .text-purple-100 {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* 2. Diagnosis badges ? no wrap + high-contrast Borderline / Positive */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .patients-data-table span.rounded-full.font-semibold,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card span.rounded-full.font-semibold,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-badge,
+html[data-pcode-theme="light"] body.pcode-app-bento .patients-data-table span.rounded-full.font-semibold,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card span.rounded-full.font-semibold {
+  white-space: nowrap !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento span.bg-amber-100.text-amber-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--borderline,
+html[data-pcode-theme="light"] body.pcode-app-bento span.bg-amber-100.text-amber-900,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-history-status--borderline {
+  color: #92400e !important;
+  background-color: #fef3c7 !important;
+  border: 1px solid #fde68a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento span.bg-rose-100.text-rose-900,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--detected,
+html[data-pcode-theme="light"] body.pcode-app-bento span.bg-rose-100.text-rose-900,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-history-status--detected {
+  color: #991b1b !important;
+  background-color: #fee2e2 !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-origin--patient,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-history-origin--patient {
+  color: #1e3a8a !important;
+  -webkit-text-fill-color: #1e3a8a !important;
+  background-color: #dbeafe !important;
+  border: 1px solid #93c5fd !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-origin--physician,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-history-origin--physician {
+  color: #5b21b6 !important;
+  -webkit-text-fill-color: #5b21b6 !important;
+  background-color: #ede9fe !important;
+  border: 1px solid #c4b5fd !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--clear,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-history-status--clear {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+  background-color: #d1fae5 !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+/* 3. Latest Screening metadata + gray tags ? black */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-name-cell__tested,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__tested,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__date,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__runs,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening__empty,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-name-cell__tested--none,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patient-card__tested--none,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-name-cell__tested,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patient-card__tested,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-latest-screening__date,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-latest-screening__runs,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-latest-screening__empty {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-latest-screening .pcode-history-badge,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-latest-screening .pcode-history-badge {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  white-space: nowrap !important;
+}
+
+/* 4. Table action icons ? deep solid fills + white glyphs (light mode) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn {
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn svg,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn svg {
+  stroke: #ffffff !important;
+  fill: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--edit,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--edit {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #1d4ed8 !important;
+  border-color: #1e40af !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--history,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--history {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  border-color: #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--detect,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--detect {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #047857 !important;
+  border-color: #065f46 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--export,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--export {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #7c3aed !important;
+  border-color: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--delete,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--delete {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--edit:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--edit:hover {
+  background: #1e40af !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--history:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--history:hover {
+  background: #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--detect:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--detect:hover {
+  background: #065f46 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--export:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--export:hover {
+  background: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-action-btn--delete:hover,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-action-btn--delete:hover {
+  background: #991b1b !important;
+}
+
+/* ========================================================================== */
+/* Diagnosis Overview chips ? solid opaque pastels, no glow (light only)      */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--pending,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip--pending {
+  background: #a78bfa !important;
+  background-image: none !important;
+  border: 1px solid #7c3aed !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--positive,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip--positive {
+  background: #f87171 !important;
+  background-image: none !important;
+  border: 1px solid #dc2626 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--negative,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip--negative {
+  background: #34d399 !important;
+  background-image: none !important;
+  border: 1px solid #059669 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--borderline,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip--borderline {
+  background: #fb923c !important;
+  background-image: none !important;
+  border: 1px solid #ea580c !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip__label,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip__count,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--pending .pcode-diagnosis-chip__label,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--positive .pcode-diagnosis-chip__label,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--negative .pcode-diagnosis-chip__label,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--borderline .pcode-diagnosis-chip__label,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip__label,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip__count {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+/* Light mode ? kill neon glow on buttons, bars, charts, gauges, shapes */
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass,
+html.pcode-app-bento-root:not(.dark) .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--cnn,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--xg,
+html.pcode-app-bento-root:not(.dark) .pcb-echart-host,
+html.pcode-app-bento-root:not(.dark) .pcb-echart-host canvas,
+html.pcode-app-bento-root:not(.dark) .gauge-container,
+html.pcode-app-bento-root:not(.dark) .final-gauge-container,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card,
+html.pcode-app-bento-root:not(.dark) .metric-card,
+html[data-pcode-theme="light"] .btn-purple-glass,
+html[data-pcode-theme="light"] .btn-teal-glass,
+html[data-pcode-theme="light"] .btn-blue-glass,
+html[data-pcode-theme="light"] .pcode-diagnosis-chip,
+html[data-pcode-theme="light"] .pcb-echart-host canvas {
+  filter: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) .btn-teal-glass,
+html.pcode-app-bento-root:not(.dark) .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass,
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-fill,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-score-fill,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--cnn,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-bar--xg,
+html[data-pcode-theme="light"] .btn-purple-glass,
+html[data-pcode-theme="light"] .btn-teal-glass,
+html[data-pcode-theme="light"] .btn-blue-glass {
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .gauge-container::before,
+html.pcode-app-bento-root:not(.dark) .final-gauge-container::before,
+html.pcode-app-bento-root:not(.dark) .pcb-echart-host::before,
+html.pcode-app-bento-root:not(.dark) .pcb-echart-host::after,
+html[data-pcode-theme="light"] .gauge-container::before,
+html[data-pcode-theme="light"] .final-gauge-container::before {
+  display: none !important;
+  opacity: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+/* ========================================================================== */
+/* Detect pages ? hero + patient-selection toolbar (light mode)               */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .pcode-hero-title,
+html.pcode-app-bento-root:not(.dark) h1.pcode-hero-title,
+html.pcode-app-bento-root:not(.dark) .gradient-bg .pcode-hero-title,
+html[data-pcode-theme="light"] .pcode-hero-title,
+html[data-pcode-theme="light"] h1.pcode-hero-title {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .gradient-bg > .max-w-7xl > .text-center > p,
+html.pcode-app-bento-root:not(.dark) .gradient-bg .text-purple-100,
+html[data-pcode-theme="light"] .gradient-bg .text-purple-100 {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+/* Patient selection glass pills ? beat #patient-selection-card ID rules */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-blue-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-blue-glass {
+  background: #2563eb !important;
+  background-image: none !important;
+  border: 1px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-blue-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-blue-glass:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  border-color: #1e40af !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-purple-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-purple-glass {
+  background: #6d28d9 !important;
+  background-image: none !important;
+  border: 1px solid #5b21b6 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-purple-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-purple-glass:hover:not(:disabled) {
+  background: #5b21b6 !important;
+  border-color: #4c1d95 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-rose-glass,
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-rose-glass,
+html[data-pcode-theme="light"] .btn-rose-glass {
+  background: #e11d48 !important;
+  background-image: none !important;
+  border: 1px solid #be123c !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .btn-rose-glass:hover:not(:disabled),
+html.pcode-app-bento-root:not(.dark) .btn-rose-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card .btn-rose-glass:hover:not(:disabled) {
+  background: #be123c !important;
+  border-color: #9f1239 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card #patient-select,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card .text-gray-600,
+html[data-pcode-theme="light"] body.pcode-app-bento #patient-selection-card p {
+  color: #334155 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-selection-card #patient-select {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Detect analysis cards ? pure black type + borders (light mode) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card li,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card h2,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card .text-gray-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card [class*='text-gray-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card .pcode-detect-step-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-clinical-checklist span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-upload-instruction,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .upload-area p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone__icon,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-note-badge--primary-modality,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card p,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card label,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card .pcode-detect-step-label {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Detect CTAs ? solid primary = white label; ghost/outline = black label */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #prev-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #prev-btn {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #prev-btn span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass svg {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer #next-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn.btn-purple-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn.text-purple-400,
+html[data-pcode-theme="light"] body.pcode-app-bento #next-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  background-image: none !important;
+  border: 1px solid #5b21b6 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-ultrasound-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento #analyze-ultrasound-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #2563eb !important;
+  background-image: none !important;
+  border: 1px solid #1d4ed8 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-blue-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .btn-blue-glass svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-ultrasound-btn span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-ultrasound-btn svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass svg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+/* Confidence bars ? solid opaque fills (no neon fade/glow) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-progress,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-progress,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-fill-combined,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-neon-bar-fill {
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  background-image: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--pending,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--pending,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-progress.pcode-neon-bar-fill--pending,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--pending {
+  background: #7c3aed !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--positive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--positive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-progress.pcode-neon-bar-fill--positive,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--positive {
+  background: #dc2626 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--negative,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--negative,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-progress.pcode-neon-bar-fill--negative,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--negative {
+  background: #16a34a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--borderline,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--borderline,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-progress.pcode-neon-bar-fill--borderline,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--borderline {
+  background: #ea580c !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--clinical,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-fill--imaging {
+  background: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__track {
+  background: #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+/* Final Combined Diagnosis ? dark silver labels/percents ? black in light */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-bar__label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-bar__value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-verdict__percent,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-kv-value:not(.pcode-xai-summary-value),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-val-clinical,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #bar-val-imaging,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-probability,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-probability,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-percent,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-final-bar__label,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-final-bar__value,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-kv-value:not(.pcode-xai-summary-value) {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-bar__label small,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-bar__value.is-muted,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__value.is-muted,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-final-bar__label small {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-caption,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-verdict-title,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-kv-label {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+  opacity: 1 !important;
+}
+
+/* Result card header icons ? deeper opaque purple */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-section-header__icon,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-section-header__icon {
+  background: #6d28d9 !important;
+  border: 1px solid #5b21b6 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-section-header__icon svg,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-section-header__icon svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .upload-area,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-dropzone {
+  border-color: #000000 !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-clinical-checklist input[type='checkbox'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input[type='checkbox'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card input[type='checkbox'],
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-form input[type='checkbox'] {
+  accent-color: #000000 !important;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  min-width: 1.15rem !important;
+  min-height: 1.15rem !important;
+  border: 1.5px solid #000000 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0.25rem;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  flex-shrink: 0;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-clinical-checklist input[type='checkbox']:checked,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input[type='checkbox']:checked,
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-form input[type='checkbox']:checked {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-clinical-checklist input[type='checkbox']:focus,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input[type='checkbox']:focus,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card input[type='checkbox']:focus,
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-form input[type='checkbox']:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-clinical-checklist input[type='checkbox']:focus-visible,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input[type='checkbox']:focus-visible,
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-form input[type='checkbox']:focus-visible {
+  outline: 2px solid #6d28d9 !important;
+  outline-offset: 2px !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card select,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card .clinical-modality-select,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form select,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card select {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-card input::placeholder,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-form input::placeholder,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-card input::placeholder {
+  color: #000000 !important;
+  opacity: 0.55 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 2px solid #000000 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass:hover:not(:disabled),
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass:hover:not(:disabled) {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #f3f4f6 !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-dropzone-actions .btn-blue-glass {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #2563eb !important;
+  background-image: none !important;
+  border: 2px solid #1d4ed8 !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-note-badge--primary-modality,
+html[data-pcode-theme="light"] body.pcode-app-bento .clinical-note-badge--primary-modality {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #f5f3ff !important;
+  border-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-detect-stepper,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-detect-stepper {
+  border-bottom-color: #000000 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-detect-step-dot.is-pending,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-detect-step-dot.is-pending {
+  color: #000000 !important;
+  border-color: #000000 !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-pill,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-toggle,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-unit-pill {
+  border: 1px solid #c4b5fd !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-pill__btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-toggle__btn,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-unit-pill__btn {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  background: transparent !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-pill__btn.is-active,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-unit-toggle__btn.is-active,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-unit-pill__btn.is-active {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #6d28d9 !important;
+  border-color: #6d28d9 !important;
+}
+
+/* Login / logout / session center alerts ? light mode */
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-overlay,
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay,
+html.login-bento-page:not(.dark) #pcode-center-alert-overlay,
+html.login-bento-page:not(.dark) #login-loading-modal,
+html[data-pcode-theme="light"] #pcode-center-alert-overlay,
+html[data-pcode-theme="light"] #pcode-export-loading-overlay {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-card,
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-inner > div[role="status"],
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay .pcode-center-alert-card,
+html.login-bento-page:not(.dark) #login-loading-modal .panel,
+html[data-pcode-theme="light"] .pcode-center-alert-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-title,
+html.login-bento-page:not(.dark) #login-loading-modal .title,
+html[data-pcode-theme="light"] .pcode-center-alert-title {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-sub,
+html.login-bento-page:not(.dark) #login-loading-modal .msg,
+html[data-pcode-theme="light"] .pcode-center-alert-sub {
+  color: #475569 !important;
+}
+
+/* ========================================================================== */
+/* Regular-user light mode — deeper contrast pass (index / detect / xai / about) */
+/* ========================================================================== */
+
+/* Screening disclaimer: soft purple (not amber) for brand consistency */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-disclaimer,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-disclaimer p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-disclaimer span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-screening-disclaimer .font-semibold,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-screening-disclaimer,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-screening-disclaimer p,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-screening-disclaimer span,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-screening-disclaimer .font-semibold {
+  background-color: #f5f3ff !important;
+  border-color: rgba(109, 40, 217, 0.32) !important;
+  color: #1e1b4b !important;
+  -webkit-text-fill-color: #1e1b4b !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Pale Tailwind utilities that leak through on white cards */
+html.pcode-app-bento-root:not(.dark) [class*='text-violet-100'],
+html.pcode-app-bento-root:not(.dark) [class*='text-violet-200'],
+html.pcode-app-bento-root:not(.dark) [class*='text-violet-300'],
+html.pcode-app-bento-root:not(.dark) [class*='text-fuchsia-100'],
+html.pcode-app-bento-root:not(.dark) [class*='text-purple-100'],
+html.pcode-app-bento-root:not(.dark) [class*='text-amber-100'],
+html.pcode-app-bento-root:not(.dark) [class*='text-amber-200'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-fuchsia-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-purple-'],
+html[data-pcode-theme="light"] body.xai-bento-page [class*='text-violet-'],
+html[data-pcode-theme="light"] body.xai-bento-page [class*='text-fuchsia-'] {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+/* Keep semantic red/green status readable when remapped above */
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .text-red-400,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page [class*='text-red-'],
+html[data-pcode-theme="light"] body.xai-bento-page .text-red-400 {
+  color: #dc2626 !important;
+  -webkit-text-fill-color: #dc2626 !important;
+}
+
+/* Body zinc-50 shells (about / detect) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento.text-zinc-50,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento[class*='text-zinc-50'],
+html[data-pcode-theme="light"] body.pcode-app-bento {
+  color: #0f172a !important;
+}
+
+/* ---------- XAI page: retokenize dark-only inline vars + surfaces ---------- */
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page,
+html[data-pcode-theme="light"] body.xai-bento-page {
+  --xai-bg-deep: #f8f9fa;
+  --xai-bg-mid: #f8f9fa;
+  --xai-surface: #ffffff;
+  --xai-surface-2: #f8fafc;
+  --xai-card-edge: rgba(15, 23, 42, 0.14);
+  --xai-card-edge-strong: rgba(109, 40, 217, 0.28);
+  --xai-accent: #5b21b6;
+  --xai-accent-hover: #4c1d95;
+  --xai-accent-core: #6d28d9;
+  --xai-accent-deep: #5b21b6;
+  --xai-well: #f1f5f9;
+  --xai-muted: #334155;
+  --xai-faint: #475569;
+  background-color: #f8f9fa !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .gradient-bg,
+html[data-pcode-theme="light"] body.xai-bento-page .gradient-bg {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 45%, #f8f7ff 100%) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .gradient-bg::after,
+html[data-pcode-theme="light"] body.xai-bento-page .gradient-bg::after {
+  background: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page nav.xai-topnav,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page nav.pcode-topnav,
+html[data-pcode-theme="light"] body.xai-bento-page nav.pcode-topnav {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-loading-panel,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .mobile-card.bento-card,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .modal-content,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-card,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-loading-panel {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-inner,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-pill-well,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-glass-item,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .chart-well,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .img-well,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-inner,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-glass-item {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card h2,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card h3,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card h4,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .hero-title,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .hero-sub,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .xai-section-kicker,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .modal-body-pad,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-600,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-700,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-500,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card .text-gray-800,
+html[data-pcode-theme="light"] body.xai-bento-page .xai-section-kicker,
+html[data-pcode-theme="light"] body.xai-bento-page .hero-sub {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .xai-section-kicker svg,
+html[data-pcode-theme="light"] body.xai-bento-page .xai-section-kicker svg {
+  color: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout--note,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-callout {
+  background: #fffbeb !important;
+  border: 1px solid #f59e0b !important;
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout--info,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-callout--info {
+  background: #eef2ff !important;
+  border: 1px solid #818cf8 !important;
+  color: #312e81 !important;
+  -webkit-text-fill-color: #312e81 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout .text-violet-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout [class*='text-violet-'],
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-callout strong,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-callout strong {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-icon-wrap,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-icon-wrap--blue,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-icon-wrap {
+  background: #f5f3ff !important;
+  border: 1px solid #c4b5fd !important;
+  box-shadow: none !important;
+  color: #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-input,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page select.bento-input,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-patient-selection-card .xai-selection-control,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-input,
+html[data-pcode-theme="light"] body.xai-bento-page select.bento-input {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-input:focus,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page select.bento-input:focus,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-input:focus {
+  border-color: #6d28d9 !important;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.18) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .btn-ghost,
+html[data-pcode-theme="light"] body.xai-bento-page .btn-ghost {
+  background: #ffffff !important;
+  border: 1.5px solid #7c3aed !important;
+  color: #5b21b6 !important;
+  -webkit-text-fill-color: #5b21b6 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .btn-ghost:hover,
+html[data-pcode-theme="light"] body.xai-bento-page .btn-ghost:hover {
+  background: #f5f3ff !important;
+  border-color: #5b21b6 !important;
+  color: #4c1d95 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .btn-accent,
+html[data-pcode-theme="light"] body.xai-bento-page .btn-accent {
+  background: #6d28d9 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid #5b21b6 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+  filter: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .btn-accent:hover,
+html[data-pcode-theme="light"] body.xai-bento-page .btn-accent:hover {
+  background: #5b21b6 !important;
+  color: #ffffff !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page button.bg-purple-600,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .btn-purple-glass,
+html[data-pcode-theme="light"] body.xai-bento-page .btn-purple-glass,
+html[data-pcode-theme="light"] body.xai-bento-page button.bg-purple-600 {
+  background: #6d28d9 !important;
+  background-color: #6d28d9 !important;
+  border: 1px solid #5b21b6 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page footer.xai-footer,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page footer,
+html[data-pcode-theme="light"] body.xai-bento-page footer {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-patient-selection-card .xai-selection-label,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-patient-selection-card .xai-selection-label--action,
+html[data-pcode-theme="light"] body.xai-bento-page #xai-patient-selection-card .xai-selection-label {
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-loading-spinner,
+html[data-pcode-theme="light"] body.xai-bento-page #xai-loading-spinner {
+  background-color: rgba(248, 249, 250, 0.92) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-loading-spinner p,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-loading-spinner span,
+html[data-pcode-theme="light"] body.xai-bento-page #xai-loading-spinner p {
+  color: #0f172a !important;
+}
+
+/* Grad-cam legend / attribution copy on light cards */
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #gradcam-text,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #decision-factors-summary,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-attribution-row,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-attribution-pct,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-content p:not(.pcode-xai-summary-value):not([class*='severity-text']),
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page #xai-content span:not(.pcode-xai-summary-value):not([class*='severity-text']):not(.pcode-attribution-pct),
+html[data-pcode-theme="light"] body.xai-bento-page #gradcam-text,
+html[data-pcode-theme="light"] body.xai-bento-page #decision-factors-summary {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Preserve channel / severity colors on XAI summary values */
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value--clinical,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value--clinical {
+  color: #6d28d9 !important;
+  -webkit-text-fill-color: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-summary-value--imaging,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-summary-value--imaging {
+  color: #2563eb !important;
+  -webkit-text-fill-color: #2563eb !important;
+}
+
+/* Detect results subtitle hardcoded silver */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .text-\[\#D1D1D6\],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento [class*='text-[#D1D1D6]'],
+html[data-pcode-theme="light"] body.pcode-app-bento .text-\[\#D1D1D6\] {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+/* Dashboard / about inset panels that still use dark glass */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card .bg-emerald-50\/20,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card .bg-blue-50\/30,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card,
+html[data-pcode-theme="light"] body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card .bg-emerald-50\/20,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-inputs-card .bg-emerald-50\/20 {
+  background: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #my-inputs-card .bg-blue-50\/30,
+html[data-pcode-theme="light"] body.pcode-app-bento #my-inputs-card .bg-blue-50\/30 {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+/* Solid blue/indigo CTAs keep white labels (not remapped to black) */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-blue-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento button.bg-indigo-600,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento a.bg-blue-600,
+html[data-pcode-theme="light"] body.pcode-app-bento button.bg-blue-600,
+html[data-pcode-theme="light"] body.pcode-app-bento button.bg-indigo-600 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Footer copy on regular-user pages */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento footer,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento footer p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento footer span,
+html[data-pcode-theme="light"] body.pcode-app-bento footer {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* ========================================================================== */
+/* Detect result cards — light contrast lock (user + OB-GYN)                  */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #combined-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-results .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-results .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #combined-results .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-probability,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-probability,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-percent,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-caption,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-verdict-title,
+html.pcode-app-bento-root:not(.dark) body.pcode-detect-user-page .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-detect-user-page .pcode-confidence-meter__value,
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-results .pcode-kv-label,
+html[data-pcode-theme="light"] body.pcode-app-bento #image-results .pcode-kv-label,
+html[data-pcode-theme="light"] body.pcode-app-bento #combined-results .pcode-kv-label {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__track,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__track.pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) body.pcode-detect-user-page .pcode-neon-bar-track,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-neon-bar-track {
+  background: #e2e8f0 !important;
+  border: 1px solid #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-verdict__badge,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-score,
+html.pcode-app-bento-root:not(.dark) body.pcode-detect-user-page #final-combined-score,
+html[data-pcode-theme="light"] body.pcode-app-bento #final-combined-score {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background: #f1f5f9 !important;
+  border: 1.5px solid #94a3b8 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-verdict__badge[data-tone="positive"],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-score[data-tone="positive"],
+html[data-pcode-theme="light"] body.pcode-app-bento #final-combined-score[data-tone="positive"] {
+  color: #991b1b !important;
+  -webkit-text-fill-color: #991b1b !important;
+  background: #fee2e2 !important;
+  border-color: #dc2626 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-verdict__badge[data-tone="borderline"],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-score[data-tone="borderline"],
+html[data-pcode-theme="light"] body.pcode-app-bento #final-combined-score[data-tone="borderline"] {
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
+  background: #fef3c7 !important;
+  border-color: #d97706 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-final-verdict__badge[data-tone="negative"],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #final-combined-score[data-tone="negative"],
+html[data-pcode-theme="light"] body.pcode-app-bento #final-combined-score[data-tone="negative"] {
+  color: #065f46 !important;
+  -webkit-text-fill-color: #065f46 !important;
+  background: #d1fae5 !important;
+  border-color: #059669 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn.btn-blue-glass,
+html.pcode-app-bento-root:not(.dark) body.pcode-detect-user-page #view-xai-btn,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn {
+  background: #2563eb !important;
+  background-color: #2563eb !important;
+  background-image: none !important;
+  border: 2px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #view-xai-btn svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass span,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass svg,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn span,
+html[data-pcode-theme="light"] body.pcode-app-bento #view-xai-btn svg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* ========================================================================== */
+/* SVG / icon wells — light mode contrast (deep ink on tinted wells)          */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-red-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-red-100,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-red-100 {
+  background-color: #fecaca !important;
+  border-color: #f87171 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-yellow-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-yellow-100,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-yellow-100 {
+  background-color: #fcd34d !important;
+  border-color: #f59e0b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-green-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-green-100,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-green-100 {
+  background-color: #86efac !important;
+  border-color: #22c55e !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-blue-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-blue-100,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-blue-100 {
+  background-color: #bfdbfe !important;
+  border-color: #60a5fa !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-purple-100,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-purple-100,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-purple-100 {
+  background-color: #ddd6fe !important;
+  border-color: #a78bfa !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-red-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-red-100 .text-red-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-red-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-red-100 svg {
+  color: #9f1239 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-yellow-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-yellow-100 .text-yellow-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-yellow-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-yellow-100 svg {
+  color: #92400e !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-green-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-green-100 .text-green-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-green-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-green-100 svg {
+  color: #065f46 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-blue-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-blue-100 .text-blue-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-blue-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-blue-100 svg {
+  color: #1e3a8a !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-purple-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-purple-100 .text-purple-800,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-purple-100 [class*='text-purple-'],
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-purple-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-purple-100 svg {
+  color: #5b21b6 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .bg-gray-100 svg,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento svg.text-gray-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .bg-gray-100 svg {
+  color: #0f172a !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-icon-wrap svg,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-icon-wrap svg {
+  color: #5b21b6 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-dropzone__icon,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-dropzone__icon {
+  color: #4c1d95 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) nav.pcode-topnav #mobile-menu-btn svg,
+html[data-pcode-theme="light"] nav.pcode-topnav #mobile-menu-btn svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+  opacity: 1 !important;
+}
+
+/* Detect results empty-state — visible icon well + text in light mode */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-results-placeholder {
+  border-color: #cbd5e1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder__icon,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-results-placeholder__icon {
+  background: #ede9fe !important;
+  border: 1px solid #c4b5fd !important;
+  color: #6d28d9 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder__icon svg,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-results-placeholder__icon svg {
+  color: #6d28d9 !important;
+  stroke: #6d28d9 !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder h3,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder .text-gray-800,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-results-placeholder h3 {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .detection-results-placeholder .text-gray-600,
+html[data-pcode-theme="light"] body.pcode-app-bento .detection-results-placeholder p {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+/* Analyze CTA icons — crisp white glyphs aligned with label */
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .clinical-stepper-footer .pcode-btn-icon,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #next-btn .pcode-btn-icon,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #analyze-ultrasound-btn .pcode-btn-icon,
+html[data-pcode-theme="light"] body.pcode-app-bento .clinical-stepper-footer .pcode-btn-icon {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+  opacity: 1 !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+/* ========================================================================== */
+/* Light — kill purple card hover glow / halo (load-order override)           */
+/* ========================================================================== */
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card:hover,
+html.pcode-app-bento-root:not(.dark) .mobile-card:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-white.rounded-xl.shadow-lg:hover,
+html[data-pcode-theme="light"] .pcode-bento-card:hover,
+html[data-pcode-theme="light"] .metric-card:hover,
+html[data-pcode-theme="light"] .pcode-patient-card:hover,
+html[data-pcode-theme="light"] .bento-card:hover,
+html[data-pcode-theme="light"] .detection-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-inner-card:hover,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-bento-card:hover,
+html[data-pcode-theme="light"] body.xai-bento-page .bento-card:hover {
+  border-color: #000000 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  transform: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg:hover::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-white.rounded-xl.shadow-lg:hover::after,
+html[data-pcode-theme="light"] .pcode-bento-card:hover::after,
+html[data-pcode-theme="light"] .metric-card:hover::after,
+html[data-pcode-theme="light"] .bento-card:hover::after {
+  opacity: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}

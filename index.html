@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P-Code - Homepage</title>
+
+  <!-- Local CSS Files (No CDN) -->
+  <link rel="stylesheet" href="css/tailwind.css">
+
+  <!-- Local Fonts (No CDN) -->
+  <link rel="stylesheet" href="fonts/fonts.css">
+
+  <!-- Local JavaScript Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+  <script src="js/libs/typed.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer crossorigin="anonymous"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: "Inter", sans-serif;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+      max-width: 100vw;
+      margin: 0;
+      padding: 0;
+    }
+    footer { margin-top: auto; width: 100%; min-height: 64px; display: flex; align-items: center; padding: 0 !important; }
+    footer > div { width: 100%; }
+    footer.py-4 { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+    /* Hide auth UI initially to prevent flashing */
+    #profile-navbar,
+    #mobile-profile {
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #profile-navbar.hidden,
+    #mobile-profile.hidden {
+      display: none !important;
+    }
+
+    /* Mobile Menu - Right Sidebar */
+    .mobile-menu {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: min(320px, 85vw);
+      max-width: 90vw;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.95) 0%, rgba(109, 40, 217, 0.95) 100%);
+      color: white;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease-out;
+      z-index: 50;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Sidebar close button (top-right) */
+    #mobile-menu-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 60;
+    }
+
+    .mobile-menu::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .mobile-menu::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-menu::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Overlay */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-out;
+      /* Above navbar (z-40), below sidebar (z-50) */
+      z-index: 45;
+    }
+
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Ensure navbar button never gets hidden */
+    #mobile-menu-btn {
+      min-width: 44px;
+      min-height: 44px;
+      flex-shrink: 0;
+    }
+
+    /* Sidebar Sign in &#8212; solid button (not plain text) */
+    #mobile-menu #mobile-auth-button.pcode-sidebar-signin-btn,
+    #mobile-auth-button.pcode-sidebar-signin-btn {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      padding: 0.75rem 1.25rem;
+      margin: 0;
+      border: 1.5px solid rgba(196, 181, 253, 0.55);
+      border-radius: 9999px;
+      background: linear-gradient(180deg, rgba(167, 139, 250, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%);
+      color: #000000 !important;
+      -webkit-text-fill-color: #000000 !important;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.25;
+      text-align: center;
+      cursor: pointer;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+        0 8px 22px rgba(109, 40, 217, 0.35);
+      transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    #mobile-menu #mobile-auth-button.pcode-sidebar-signin-btn:hover,
+    #mobile-auth-button.pcode-sidebar-signin-btn:hover {
+      filter: brightness(1.08);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+        0 10px 28px rgba(124, 58, 237, 0.45);
+    }
+    #mobile-menu #mobile-auth-button.pcode-sidebar-signin-btn:active,
+    #mobile-auth-button.pcode-sidebar-signin-btn:active {
+      transform: translateY(1px);
+      filter: brightness(0.96);
+    }
+
+    /* Responsive navbar */
+    nav .flex.justify-between {
+      min-height: 64px;
+      flex-wrap: nowrap;
+    }
+
+    /* Desktop Navigation */
+    .nav-desktop {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    @media (max-width: 1023px) {
+      .nav-desktop {
+        display: none !important;
+      }
+    }
+
+    /* Dashboard Background */
+    .gradient-bg {
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.7) 0%, rgba(109, 40, 217, 0.6) 100%),
+                  url("resources/hero-medical.jpg") center/cover no-repeat;
+      background-attachment: fixed;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      /* Avoid iOS Safari jank with fixed backgrounds */
+      .gradient-bg { background-attachment: scroll !important; }
+    }
+    nav {
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .max-w-7xl { max-width: 100% !important; width: 100% !important; }
+
+    /* Your clinical data &#8212; multi-column even on mobile (avoid one jammed stack) */
+    #my-inputs-grid {
+      display: grid;
+      gap: 0.65rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 480px) {
+      #my-inputs-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+    }
+    @media (min-width: 768px) {
+      #my-inputs-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1024px) {
+      #my-inputs-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+    #my-inputs-grid .pcode-my-input-tile {
+      min-width: 0;
+      padding: 0.65rem 0.75rem;
+    }
+    #my-inputs-grid .pcode-my-input-tile__label {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
+      word-break: break-word;
+    }
+    #my-inputs-grid .pcode-my-input-tile__value {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 479px) {
+      #my-inputs-grid .pcode-my-input-tile {
+        padding: 0.55rem 0.65rem;
+      }
+    }
+
+    #pcode-nearby-map {
+      min-height: 20rem;
+      height: 22rem;
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100%;
+      contain: layout paint;
+      /* Keep Google InfoWindow text readable (page uses dark color-scheme) */
+      color-scheme: light;
+    }
+    #pcode-nearby-map .gm-style-iw,
+    #pcode-nearby-map .gm-style-iw-c,
+    #pcode-nearby-map .gm-style-iw-d,
+    #pcode-nearby-map .gm-style-iw-ch,
+    #pcode-nearby-map .pcode-maps-iw {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+    #pcode-nearby-map .gm-style-iw-c {
+      background: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18) !important;
+    }
+    #pcode-nearby-map .leaflet-container {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+    }
+    #nearby-care-card {
+      overflow: hidden;
+      min-width: 0;
+    }
+    #nearby-care-card .grid > * {
+      min-width: 0;
+      max-width: 100%;
+    }    /* Mobile-optimized metrics and spacing */
+    @media (max-width: 1024px) {
+      .gradient-bg { padding: 1.5rem 0 !important; }
+      .max-w-7xl { padding: 1.5rem !important; }
+    }
+
+    @media (max-width: 768px) {
+      .gradient-bg { padding: 1rem 0 !important; }
+      .max-w-7xl { padding: 1rem !important; }
+      .hero-title { font-size: 1.75rem !important; line-height: 2rem !important; }
+      .hero-lead { font-size: 0.95rem !important; }
+      .pcode-card-static metric-card { padding: 1rem !important; }
+      .pcode-card-static metric-card p:first-child { font-size: 0.8125rem !important; }
+      .pcode-card-static metric-card .text-3xl { font-size: 1.875rem !important; }
+      button { min-height: 44px !important; }
+    }
+
+    @media (max-width: 640px) {
+      .gradient-bg { padding: 0.75rem 0 !important; }
+      .max-w-7xl { padding: 0.75rem !important; }
+      .hero-title { font-size: 1.5rem !important; }
+      h2 { font-size: 1.25rem !important; }
+      .hero-lead { font-size: 0.9375rem !important; }
+      .pcode-card-static metric-card:not(.pcode-metric-tile) { padding: 0.75rem !important; margin: 0.5rem 0 !important; }
+      .pcode-card-static metric-card:not(.pcode-metric-tile) .flex { flex-direction: column !important; }
+      .pcode-card-static metric-card .w-12 { width: 2.5rem !important; height: 2.5rem !important; }
+    }
+
+    /* Mobile card sizing: reduce padding + stack actions */
+    @media (max-width: 640px) {
+      .mobile-card {
+        padding: 1rem !important;
+        border-radius: 0.875rem !important;
+      }
+      .mobile-card.mobile-card-tight {
+        padding: 0.875rem !important;
+      }
+      .mobile-card h2 {
+        font-size: 1.125rem !important;
+        line-height: 1.5rem !important;
+      }
+      .mobile-card p {
+        font-size: 0.9375rem !important;
+      }
+      .mobile-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+      }
+      .mobile-actions > button,
+      .mobile-actions > a {
+        width: 100% !important;
+      }
+    }
+
+    /* Account-only dashboard cards stay invisible until a signed-in Regular User is confirmed */
+    #account-dashboard-sections.hidden,
+    #account-dashboard-sections[hidden],
+    #my-screening-card.hidden,
+    #my-screening-card[hidden],
+    #my-screening-history-card.hidden,
+    #my-screening-history-card[hidden],
+    #my-inputs-card.hidden,
+    #my-inputs-card[hidden],
+    #regular-user-early-detection.hidden,
+    #regular-user-early-detection[hidden],
+    #why-sign-in.hidden,
+    #why-sign-in[hidden],
+    [data-pcode-guest-only].hidden,
+    [data-pcode-guest-only][hidden] {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260726-screeningcolors">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260730-herologo">
+  <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260726-lightmetrics">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260725-backleft">
+  <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
+  <style id="pcode-light-no-lift">
+    /* Outer cards: flat, black outline, no hover lift */
+    html.pcode-app-bento-root:not(.dark) #user-quickstart,
+    html.pcode-app-bento-root:not(.dark) #user-quickstart:hover,
+    html.pcode-app-bento-root:not(.dark) #pmos-learn,
+    html.pcode-app-bento-root:not(.dark) #pmos-learn:hover,
+    html.pcode-app-bento-root:not(.dark) #pcode-sdgs,
+    html.pcode-app-bento-root:not(.dark) #pcode-sdgs:hover,
+    html[data-pcode-theme="light"] #user-quickstart,
+    html[data-pcode-theme="light"] #user-quickstart:hover,
+    html[data-pcode-theme="light"] #pmos-learn,
+    html[data-pcode-theme="light"] #pmos-learn:hover,
+    html[data-pcode-theme="light"] #pcode-sdgs,
+    html[data-pcode-theme="light"] #pcode-sdgs:hover {
+      transform: none !important;
+      translate: none !important;
+      scale: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      transition: none !important;
+      border-color: #000000 !important;
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+    }
+    /* Inner content tiles: no nested borders */
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step,
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step:hover,
+    html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar,
+    html.pcode-app-bento-root:not(.dark) .pcode-pmos-pillar:hover,
+    html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason,
+    html.pcode-app-bento-root:not(.dark) .pcode-pmos-reason:hover,
+    html.pcode-app-bento-root:not(.dark) .pcode-sdg-item,
+    html.pcode-app-bento-root:not(.dark) .pcode-sdg-item:hover,
+    html.pcode-app-bento-root:not(.dark) .pcode-pmos-acronym > div,
+    html.pcode-app-bento-root:not(.dark) #regular-user-early-detection .pcode-bento-inner-card,
+    html.pcode-app-bento-root:not(.dark) #regular-user-early-detection .pcode-bento-inner-card:hover,
+    html[data-pcode-theme="light"] .pcode-user-step,
+    html[data-pcode-theme="light"] .pcode-user-step:hover,
+    html[data-pcode-theme="light"] .pcode-sdg-item,
+    html[data-pcode-theme="light"] .pcode-sdg-item:hover,
+    html[data-pcode-theme="light"] .pcode-pmos-acronym > div,
+    html[data-pcode-theme="light"] #regular-user-early-detection .pcode-bento-inner-card {
+      transform: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      transition: none !important;
+      border: none !important;
+      border-color: transparent !important;
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+    html.pcode-app-bento-root:not(.dark) #user-quickstart::before,
+    html.pcode-app-bento-root:not(.dark) #user-quickstart::after,
+    html.pcode-app-bento-root:not(.dark) #user-quickstart:hover::before,
+    html.pcode-app-bento-root:not(.dark) #user-quickstart:hover::after,
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step::before,
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step::after,
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step:hover::before,
+    html.pcode-app-bento-root:not(.dark) .pcode-user-step:hover::after {
+      content: none !important;
+      display: none !important;
+      opacity: 0 !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  </style>
+</head>
+
+<body class="pcode-app-bento min-h-screen flex flex-col antialiased">
+  <!-- Sidebar Overlay -->
+  <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Navigation -->
+  <nav class="pcode-topnav sticky top-0 z-50 border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-2 sm:space-x-6">
+          <div class="flex-shrink-0">
+            <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+          </div>
+          <div class="block">
+            <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+          </div>
+        </div>
+        <div class="nav-desktop">
+          <a href="index.html" class="pcode-nav-link is-active" aria-current="page">Dashboard</a>
+          <a href="detect-user.html" class="pcode-nav-link" onclick="return auth.requireAuth(this.href)">Detect</a>
+          <a href="history-user.html" class="pcode-nav-link" onclick="return auth.requireAuth(this.href)">History</a>
+          <a href="xai-user.html" class="pcode-nav-link" onclick="return auth.requireAuth(this.href)">XAI Insights</a>
+          <a href="about.html" class="pcode-nav-link">About</a>
+        </div>
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-xl transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hamburger Menu - Right Sidebar (kept outside nav for correct layering) -->
+  <div id="mobile-menu" class="mobile-menu pcode-sidebar-layout">
+    <button id="mobile-menu-close-btn" type="button" onclick="closeMobileMenu()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close menu">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="h-full px-4 sm:px-6 py-4 space-y-2 md:py-6 md:space-y-4">
+      <!-- Profile Section (signed-in) -->
+      <div id="mobile-profile" class="hidden pb-4 border-b border-white border-opacity-20">
+        <div class="flex items-center space-x-3 mb-4">
+          <img id="mobile-profile-avatar" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white object-cover">
+          <div class="flex-1">
+            <p id="mobile-profile-name" class="text-sm font-semibold text-white"></p>
+            <p id="mobile-profile-role" class="text-xs text-white text-opacity-80"></p>
+          </div>
+        </div>
+        <button id="mobile-logout-btn" onclick="auth.logout()" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium text-sm active:bg-red-800">
+          Sign out
+        </button>
+      </div>
+
+      <!-- Sign in (logged-out only) -->
+      <div id="mobile-auth-panel" class="hidden pb-4 border-b border-white border-opacity-20">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Account</p>
+        <button id="mobile-auth-button" type="button" class="pcode-sidebar-signin-btn">
+          Sign in
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="mobile-nav-links pt-2">
+        <p class="text-xs uppercase tracking-wider text-white/70 mb-2">Menu</p>
+        <div class="space-y-1">
+          <a href="index.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 transition-colors font-medium">Dashboard</a>
+          <a href="detect-user.html" onclick="closeMobileMenu(); return auth.requireAuth(this.href)" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">Detect</a>
+          <a href="history-user.html" onclick="closeMobileMenu(); return auth.requireAuth(this.href)" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">History</a>
+          <a href="xai-user.html" onclick="closeMobileMenu(); return auth.requireAuth(this.href)" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">XAI Insights</a>
+          <a href="about.html" onclick="closeMobileMenu()" class="block px-4 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">About</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal &#8212; floating portal chooser (matches login-new entry UI) -->
+  <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
+    <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button type="button" class="pcode-auth-float-close" onclick="auth.closeAuthModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
+        <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+          <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
+        </div>
+        <div class="pcode-auth-float-hint">
+          <h3 id="auth-modal-title">Choose How to Continue</h3>
+          <p>Select your access type before logging in or registering.</p>
+        </div>
+        <div class="pcode-auth-float-grid">
+          <button type="button" id="auth-entry-community" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+                <circle cx="32" cy="24" r="7" stroke="currentColor" stroke-width="3"/>
+                <path d="M19 45C21.5 38.5 27 35 32 35C37 35 42.5 38.5 45 45" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as <span class="pcode-regular-user-label">Regular User</span></p>
+            <p class="pcode-auth-float-option-desc">For personal early detection, promoting timely clinical intervention and awareness.</p>
+          </button>
+          <button type="button" id="auth-entry-provider" class="pcode-auth-float-option">
+            <span class="pcode-auth-float-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="11" y="10" width="42" height="44" rx="8" stroke="currentColor" stroke-width="3"/>
+                <path d="M32 20V40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 30H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 50H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <p class="pcode-auth-float-option-title">Continue as<br>OB-GYN</p>
+            <p class="pcode-auth-float-option-desc">For OB-GYN specialists using decision support tools with patient management, improving clinical efficiency and patient care.</p>
+          </button>
+        </div>
+      </div>
+
+      <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
+        <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
+        <div id="login-form-container" class="pcode-auth-float-signin-body">
+          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+          <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
+          <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
+          <div class="pcode-google-oauth-panel">
+            <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
+            <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
+            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+            <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <div class="gradient-bg relative py-8 sm:py-12">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <img
+          src="resources/PCODE_LOGO.png"
+          alt="P-Code"
+          class="pcode-hero-logo"
+          width="120"
+          height="120"
+          decoding="async"
+        >
+        <h1 class="hero-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
+          <span id="typed-text"></span>
+        </h1>
+        <p class="pcode-brand-quote" role="doc-subtitle">&#8220;Doubts decoded, future steps guided.&#8221;</p>
+        <p class="hero-lead text-base sm:text-lg md:text-xl text-white mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
+          <span id="hero-desc-user">P-Code synthesizes your known health history and ultrasound results into a structured screening summary for <strong>PMOS</strong> (formerly PCOS). By translating complex data into transparent language, we assist you in preparing for productive discussions with your doctor. Your clinician provides the formal diagnosis; we provide the tools to ensure you enter your appointment well-informed and fully prepared.</span>
+          <span id="hero-desc-provider" style="display:none;">A clinical decision support system that combines clinical indicators and ultrasound imaging to support PMOS screening, summarize risk with confidence, and provide explainable insights you can use alongside clinical judgment.</span>
+        </p>
+        <div id="hero-user-actions" class="pcode-user-actions justify-center max-w-xl mx-auto px-2">
+          <a class="pcode-user-cta pcode-user-cta--primary pcode-user-cta--on-hero" href="detect-user.html" onclick="return auth.requireAuth(this.href)">Start a screening</a>
+          <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero" href="#why-sign-in" data-pcode-guest-only>Why sign in?</a>
+          <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero hidden" href="#pmos-learn" data-pcode-signed-in-only hidden>Learn about PMOS</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 h-auto">
+    <!-- How to use P-Code (Regular Users) -->
+    <section id="user-quickstart" class="pcode-user-quickstart pcode-card-static mobile-card pcode-bento-card mt-4 sm:mt-6 mb-8 sm:mb-10 w-full p-4 sm:p-6">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">How to use P-Code</h2>
+        <p class="text-sm text-gray-600 mt-1">Three steps to get started. For what each result means and how explainability works, see <a class="font-semibold underline" href="about.html#system-capabilities" style="color:#6d28d9;">How P-Code works in depth</a>.</p>
+      </div>
+      <div class="pcode-user-quickstart__grid">
+        <div class="pcode-user-step pcode-card-static">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="pcode-user-step__num" aria-hidden="true">1</span>
+            <h3 class="text-base font-bold text-gray-800">Enter your details</h3>
+          </div>
+          <p class="text-sm text-gray-600">On Detect, add symptoms, measurements, and any lab values you have. Ultrasound is optional but helpful.</p>
+        </div>
+        <div class="pcode-user-step pcode-card-static">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="pcode-user-step__num" aria-hidden="true">2</span>
+            <h3 class="text-base font-bold text-gray-800">Review your screening</h3>
+          </div>
+          <p class="text-sm text-gray-600">See imaging, clinical, and overall results in plain language &#8212; then open XAI Insights for "why."</p>
+        </div>
+        <div class="pcode-user-step pcode-card-static">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="pcode-user-step__num" aria-hidden="true">3</span>
+            <h3 class="text-base font-bold text-gray-800">Talk with a clinician</h3>
+          </div>
+          <p class="text-sm text-gray-600">Bring your results and questions to a doctor. P-Code supports awareness &#8212; it does not replace medical care.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Account-only sections (signed-in Regular Users) &#8212; hidden until auth confirms -->
+    <div id="account-dashboard-sections" class="pcode-account-only hidden" hidden aria-hidden="true">
+
+    <!-- Screening Results (Regular Users only) -->
+    <div id="my-screening-card" class="hidden pcode-card-static mobile-card pcode-card-static pcode-bento-card shadow-lg mt-4 sm:mt-6 mb-10 sm:mb-16 transition-colors w-full p-4 sm:p-6">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Your screening results</h2>
+          <p class="text-sm text-gray-600 mt-1">Latest saved screening from Detect. Tap a result card on XAI Insights for explanations.</p>
+        </div>
+        <div class="mobile-actions flex gap-2 flex-wrap">
+          <button id="my-screening-action-btn" type="button" class="btn-purple-glass whitespace-nowrap" onclick="window.location.href='detect-user.html'">
+            Start Screening Now
+          </button>
+        </div>
+      </div>
+
+      <div id="my-screening-empty" class="mt-4 sm:mt-6 text-gray-700">
+        <p>No screening saved yet.</p>
+        <p class="text-sm text-gray-600 mt-1">Start on the Detect page &#8212; your results will show up here after you save.</p>
+      </div>
+
+      <div id="my-screening-content" class="mt-4 sm:mt-6 hidden">
+        <div class="pcode-screening-metrics-grid items-start content-start">
+          <div id="my-screening-xg-card" class="pcode-screening-metric-card metric-card pcode-screening-metric-card--xg metric-card--xg rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col h-full min-w-0 w-full">
+            <div class="pcode-screening-metric-body">
+              <div class="pcode-screening-metric-head flex flex-row items-start justify-between gap-3 min-w-0">
+                <p class="pcode-metric-label min-w-0">Clinical (AI model)</p>
+                <span class="pcode-screening-metric-icon inline-flex shrink-0 items-center justify-center w-10 h-10 rounded-lg bg-purple-100 ring-1 ring-purple-200/60 overflow-hidden" aria-hidden="true">
+                  <svg class="w-5 h-5 text-purple-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </span>
+              </div>
+              <p class="pcode-metric-value !text-lg sm:!text-xl" id="my-screening-xg">PENDING</p>
+              <p id="my-screening-xg-prob-line" class="text-sm text-gray-600"><span class="font-semibold" id="my-screening-xg-prob">0.00%</span> probability</p>
+              <div class="pcode-screening-metric-track w-full rounded-full h-3">
+                <div id="my-screening-xg-bar" class="pcode-screening-metric-bar pcode-screening-metric-bar--xg h-3 rounded-full progress-bar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="my-screening-cnn-card" class="pcode-screening-metric-card metric-card pcode-screening-metric-card--cnn metric-card--cnn rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col h-full min-w-0 w-full">
+            <div class="pcode-screening-metric-body">
+              <div class="pcode-screening-metric-head flex flex-row items-start justify-between gap-3 min-w-0">
+                <p class="pcode-metric-label min-w-0">Imaging (AI model)</p>
+                <span class="pcode-screening-metric-icon inline-flex shrink-0 items-center justify-center w-10 h-10 rounded-lg bg-blue-100 ring-1 ring-blue-200/60 overflow-hidden" aria-hidden="true">
+                  <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </span>
+              </div>
+              <p class="pcode-metric-value !text-lg sm:!text-xl" id="my-screening-cnn">PENDING</p>
+              <p id="my-screening-cnn-prob-line" class="text-sm text-gray-600"><span class="font-semibold" id="my-screening-cnn-prob">0.00%</span> probability</p>
+              <div class="pcode-screening-metric-track w-full rounded-full h-3">
+                <div id="my-screening-cnn-bar" class="pcode-screening-metric-bar pcode-screening-metric-bar--cnn h-3 rounded-full progress-bar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="my-screening-overall-card" class="pcode-screening-metric-card metric-card pcode-screening-metric-card--pending metric-card--pending rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col h-full min-w-0 w-full">
+            <div class="pcode-screening-metric-body">
+              <div class="pcode-screening-metric-head flex flex-row items-start justify-between gap-3 min-w-0">
+                <p class="pcode-metric-label min-w-0">Overall</p>
+                <span id="my-screening-overall-icon" class="pcode-screening-metric-icon inline-flex shrink-0 items-center justify-center w-10 h-10 rounded-lg bg-violet-100 ring-1 ring-violet-200/60 text-violet-700 overflow-hidden" aria-hidden="true">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </span>
+              </div>
+              <p class="pcode-metric-value" id="my-screening-overall">PENDING</p>
+              <p id="my-screening-overall-prob-line" class="text-sm text-gray-600"><span class="font-semibold" id="my-screening-overall-prob">0.00%</span> probability</p>
+              <div id="my-screening-overall-track" class="pcode-screening-metric-track w-full rounded-full h-3">
+                <div id="my-screening-overall-bar" class="pcode-neon-bar-fill pcode-screening-metric-bar pcode-screening-metric-bar--overall-pending pcode-neon-bar-fill--pending h-3 rounded-full progress-bar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="pcode-screening-disclaimer mt-6 sm:mt-7 rounded-3xl border-2 px-4 py-4 sm:px-6 sm:py-5 shadow-sm">
+          <p class="text-sm sm:text-base leading-relaxed">
+            <span class="font-semibold">Disclaimer:</span> These screening results are for early guidance only and are
+            <span class="font-semibold">not</span> a final or official diagnosis. If you have concerns or symptoms, please
+            seek a professional medical evaluation and diagnosis.
+          </p>
+        </div>
+
+        <div id="ru-result-story" class="pcode-care-card mt-6 hidden" hidden></div>
+
+      </div>
+    </div>
+
+    <!-- Screening history preview &#8212; full timeline on History page -->
+    <div id="my-screening-history-card" class="hidden pcode-card-static mobile-card pcode-bento-card shadow-lg mt-4 sm:mt-6 mb-10 sm:mb-16 transition-colors w-full p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Screening history</h2>
+          <p class="text-sm text-gray-600 mt-1">Your recent Detect runs. Open History for the full timeline and input diffs.</p>
+        </div>
+        <a href="history-user.html" class="btn-purple-glass inline-flex items-center justify-center whitespace-nowrap" onclick="return auth.requireAuth(this.href)">Open History</a>
+      </div>
+      <div id="home-screening-history-preview" class="pcode-home-history-preview" aria-live="polite">
+        <p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>
+      </div>
+    </div>
+
+    <!-- Regular User: Early Detection Guide (Regular Users only) -->
+    <section id="regular-user-early-detection" class="pcode-card-static mobile-card pcode-card-static pcode-bento-card shadow-lg mt-6 mb-16 transition-colors w-full hidden" hidden>
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Early detection guide</h2>
+          <p class="text-sm text-gray-600 mt-1">
+            Personalized next steps from your latest screening. Fuller education lives on About.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Next steps (dynamic) -->
+        <div class="pcode-bento-inner-card rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 ring-1 ring-blue-200/60 shrink-0 overflow-hidden" aria-hidden="true">
+              <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </span>
+            <h3 class="text-lg font-bold text-gray-800">Recommended next steps</h3>
+          </div>
+          <div class="mt-3">
+            <p id="ru-next-steps-title" class="text-sm font-semibold text-gray-800">Based on your latest screening</p>
+            <ul id="ru-next-steps-list" class="mt-3 space-y-2 text-sm text-gray-700">
+              <li>Run a screening on the Detection page to get personalized next steps.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Data completeness & confidence nudges (dynamic) -->
+        <div class="pcode-bento-inner-card rounded-xl p-6">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 ring-1 ring-green-200/60 shrink-0 overflow-hidden" aria-hidden="true">
+              <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </span>
+            <h3 class="text-lg font-bold text-gray-800">Improve screening quality</h3>
+          </div>
+          <p class="text-sm text-gray-600 mt-1">More complete information can help the system provide clearer screening results.</p>
+
+          <div class="mt-4 space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-gray-700"><span class="font-semibold">Clinical inputs</span> (symptoms, vitals, hormones)</span>
+              <span id="ru-quality-clinical" class="text-gray-500">PENDING</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-gray-700"><span class="font-semibold">Ultrasound image</span> (optional)</span>
+              <span id="ru-quality-ultrasound" class="text-gray-500">PENDING</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-gray-700"><span class="font-semibold">Overall screening</span> (combined)</span>
+              <span id="ru-quality-overall" class="text-gray-500">PENDING</span>
+            </div>
+          </div>
+
+          <p id="ru-quality-tip" class="text-xs text-gray-500 mt-4">
+            Tip: If you're missing hormone values, you can still screen using symptoms and basic measurements, then update later when you have results.
+          </p>
+        </div>
+
+        <div class="pcode-bento-inner-card rounded-xl p-6 lg:col-span-2">
+          <h3 class="text-lg font-bold text-gray-800">Want the full early-awareness guide?</h3>
+          <p class="text-sm text-gray-600 mt-2">
+            Symptom patterns, why timing matters, which inputs improve quality, and general wellness notes live on About &#8212; so this dashboard stays focused on your personalized next steps.
+          </p>
+          <p class="text-sm text-gray-600 mt-3">
+            <a class="font-semibold underline" href="about.html#early-awareness" style="color:#6d28d9;">Early awareness &amp; screening literacy</a> &middot; <a class="font-semibold underline" href="about.html#system-capabilities" style="color:#6d28d9;">How P-Code works in depth</a>
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Your clinical data (Regular Users only) -->
+    <div id="my-inputs-card" class="pcode-card-static mobile-card pcode-card-static pcode-bento-card shadow-lg mt-6 mb-16 border-emerald-500/30 transition-colors w-full hidden">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Your data</h2>
+          <p class="text-sm text-gray-600 mt-1">What you enter on Detect is saved and shown here for easy review on any device.</p>
+        </div>
+        <div class="mobile-actions flex gap-2 flex-wrap">
+          <button type="button" onclick="window.location.href='detect-user.html'" class="btn-purple-glass">Update your data</button>
+        </div>
+      </div>
+
+      <div id="my-inputs-empty" class="mt-6 text-gray-700">
+        No clinical data saved yet. Run a screening on Detect and tap <strong>Save Record</strong> first.
+      </div>
+
+      <div id="my-inputs-content" class="mt-6 hidden">
+        <div class="rounded-xl bg-emerald-50/20 p-5 shadow-sm mb-4">
+          <p class="text-xs uppercase tracking-wide text-gray-500">Clinical parameters (latest)</p>
+          <p class="text-sm text-gray-600 mt-1">These are the latest clinical values you saved from Detect.</p>
+        </div>
+        <div id="my-inputs-grid" class="grid"></div>
+
+        <!-- Ultrasound image (latest) - placed after symptom-related fields in the grid -->
+        <div id="my-inputs-ultrasound" class="mt-6 hidden">
+          <div class="rounded-xl bg-blue-50/30 p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p class="text-xs uppercase tracking-wide text-gray-500">Ultrasound image (latest)</p>
+                <p class="text-sm text-gray-600 mt-1">This is the ultrasound image you last saved from Detect.</p>
+              </div>
+              <button onclick="window.location.href='detect-user.html'" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Update image
+              </button>
+            </div>
+
+            <div class="mt-4 flex justify-center">
+              <img id="my-inputs-ultrasound-img" src="" alt="Saved ultrasound" class="max-w-full sm:max-w-2xl rounded-lg shadow-lg border border-blue-100 bg-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /#account-dashboard-sections -->
+
+    <!-- Why sign in (unregistered only) -->
+    <section id="why-sign-in" class="pcode-why-signin pcode-card-static mobile-card pcode-bento-card mb-8 sm:mb-10 w-full p-4 sm:p-6" data-pcode-guest-only aria-labelledby="why-sign-in-title">
+      <h2 id="why-sign-in-title" class="text-xl sm:text-2xl font-bold text-gray-800">Why sign in?</h2>
+      <p class="text-sm text-gray-600 mt-1">Sign in unlocks Detect, History, and XAI Insights. Education on this page stays free to read.</p>
+      <div class="pcode-why-signin__grid">
+        <div class="pcode-why-signin__item">
+          <h3>Run a screening</h3>
+          <p>Use Detect with your symptoms, measurements, and optional ultrasound.</p>
+        </div>
+        <div class="pcode-why-signin__item">
+          <h3>Save your history</h3>
+          <p>Reopen past runs later ? scores, band labels, and the inputs you recorded.</p>
+        </div>
+        <div class="pcode-why-signin__item">
+          <h3>See explainable AI</h3>
+          <p>Open XAI Insights to understand what drove your screening summary.</p>
+        </div>
+      </div>
+      <div class="pcode-user-actions mt-5">
+        <button type="button" class="pcode-user-cta pcode-user-cta--primary" onclick="auth.openAuthModal('login', { forceChooser: true })">Sign in</button>
+        <a class="pcode-user-cta pcode-user-cta--secondary" href="#pmos-learn">Learn about PMOS</a>
+      </div>
+    </section>
+
+    <!-- Understanding PMOS (Regular Users) -->
+    <section id="pmos-learn" class="pcode-pmos-learn pcode-card-static mobile-card pcode-bento-card mb-8 sm:mb-12 w-full p-4 sm:p-6 scroll-mt-24">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Understanding PMOS</h2>
+      <p class="text-sm text-gray-600 mt-1">
+        <strong>PMOS</strong> means <em>Polyendocrine Metabolic Ovarian Syndrome</em> &#8212; the updated name for what many people still know as <strong>PCOS</strong> (Polycystic Ovary Syndrome).
+      </p>
+
+      <dl class="pcode-pmos-acronym" aria-label="What PMOS stands for">
+        <div>
+          <dt>Polyendocrine</dt>
+          <dd>More than one hormone system can be involved &#8212; not only the ovaries.</dd>
+        </div>
+        <div>
+          <dt>Metabolic</dt>
+          <dd>Weight, insulin, and long-term metabolic health are often part of the picture.</dd>
+        </div>
+        <div>
+          <dt>Ovarian</dt>
+          <dd>Cycles, ovulation, and fertility can be affected &#8212; without requiring "cyst disease."</dd>
+        </div>
+      </dl>
+
+      <div class="pcode-pmos-reasons mt-6">
+        <div class="pcode-pmos-reason">
+          <h3 class="text-base font-bold text-gray-800">Why the name changed from PCOS</h3>
+          <p class="text-sm text-gray-600 mt-2">
+            "Polycystic" made many people think the condition was mainly about dangerous ovarian cysts. Research shows it is a broader hormone and metabolic syndrome &#8212; and the old name added stigma and delayed recognition.
+          </p>
+        </div>
+        <div class="pcode-pmos-reason">
+          <h3 class="text-base font-bold text-gray-800">How it became PMOS</h3>
+          <p class="text-sm text-gray-600 mt-2">
+            A global consensus process chose <strong>Polyendocrine Metabolic Ovarian Syndrome (PMOS)</strong>. Full guideline alignment is targeted around 2028; older materials may still say PCOS.
+          </p>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-600 mt-5">
+        Full rename story, sources, and in-depth screening literacy:
+        <a class="font-semibold underline" href="about.html#pmos-research" style="color:#6d28d9;">Understanding PMOS on About</a> &middot; <a class="font-semibold underline" href="about.html#early-awareness" style="color:#6d28d9;">Early awareness</a> &middot; <a class="font-semibold underline" href="about.html#system-capabilities" style="color:#6d28d9;">How P-Code works</a>.
+      </p>
+    </section>
+
+    <!-- UN SDGs &#8212; public -->
+    <section id="pcode-sdgs" class="pcode-sdgs pcode-card-static mobile-card pcode-bento-card mb-8 sm:mb-12 w-full p-4 sm:p-6 scroll-mt-24" aria-labelledby="pcode-sdgs-heading">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Aligned with the UN Sustainable Development Goals</h2>
+      <p class="text-sm text-gray-600 mt-1 max-w-3xl">
+        P-Code's screening and education work relates especially to SDGs 3, 5, 9, and 10.
+        <a class="font-semibold underline" href="about.html#pcode-sdgs" style="color:#6d28d9;">See how on About</a>.
+      </p>
+      <div class="pcode-sdg-grid mt-6">
+        <article class="pcode-sdg-item" data-sdg="3">
+          <img class="pcode-sdg-logo" src="resources/sdg/sdg-03.jpg" width="96" height="96" alt="UN Sustainable Development Goal 3: Good Health and Well-being" loading="lazy" decoding="async">
+          <div>
+            <h3 class="text-base font-bold text-gray-800">Good Health and Well-being</h3>
+            <p class="text-sm text-gray-600 mt-1">Earlier screening conversations and clearer next steps.</p>
+          </div>
+        </article>
+        <article class="pcode-sdg-item" data-sdg="5">
+          <img class="pcode-sdg-logo" src="resources/sdg/sdg-05.jpg" width="96" height="96" alt="UN Sustainable Development Goal 5: Gender Equality" loading="lazy" decoding="async">
+          <div>
+            <h3 class="text-base font-bold text-gray-800">Gender Equality</h3>
+            <p class="text-sm text-gray-600 mt-1">Better literacy for a long-overlooked women's health condition.</p>
+          </div>
+        </article>
+        <article class="pcode-sdg-item" data-sdg="9">
+          <img class="pcode-sdg-logo" src="resources/sdg/sdg-09.jpg" width="96" height="96" alt="UN Sustainable Development Goal 9: Industry, Innovation and Infrastructure" loading="lazy" decoding="async">
+          <div>
+            <h3 class="text-base font-bold text-gray-800">Industry, Innovation and Infrastructure</h3>
+            <p class="text-sm text-gray-600 mt-1">Explainable AI for clinical + imaging screening support.</p>
+          </div>
+        </article>
+        <article class="pcode-sdg-item" data-sdg="10">
+          <img class="pcode-sdg-logo" src="resources/sdg/sdg-10.jpg" width="96" height="96" alt="UN Sustainable Development Goal 10: Reduced Inequalities" loading="lazy" decoding="async">
+          <div>
+            <h3 class="text-base font-bold text-gray-800">Reduced Inequalities</h3>
+            <p class="text-sm text-gray-600 mt-1">Wider access beyond specialist-only settings.</p>
+          </div>
+        </article>
+      </div>
+      <p class="text-xs text-gray-500 mt-5">
+        Educational tool only &#8212; not a UN program or a diagnosis.
+        <a class="font-semibold underline" href="about.html#pcode-sdgs" style="color:#6d28d9;">Full SDG notes on About</a>.
+      </p>
+    </section>
+
+
+    <!-- Nearby care &#8212; public (Google Maps); not gated behind sign-in -->
+    <section id="nearby-care-card" class="pcode-card-static mobile-card pcode-bento-card shadow-lg mt-6 mb-16 transition-colors w-full p-4 sm:p-6 lg:p-8">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Find care near you</h2>
+        <p class="text-sm text-gray-600 mt-1">
+          Nearby OB-GYN, women's health, hospitals, and ultrasound / diagnostic places (Google Maps). Specialty clinics like eye or dental care are filtered out. Your browser will ask to share your location.
+        </p>
+        <p id="pcode-map-status" class="text-sm text-gray-600 mt-2" role="status" aria-live="polite"></p>
+        <div class="mt-3">
+          <button type="button" id="pcode-nearby-refresh" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+            Update location
+          </button>
+        </div>
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch min-w-0">
+          <div id="pcode-nearby-map" class="w-full min-w-0 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-100"></div>
+          <div class="pcode-nearby-list-panel min-w-0 rounded-xl border-2 border-gray-100 bg-gray-50/50 p-3" style="max-height: 22rem; overflow-y: auto;">
+            <p class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Nearby places</p>
+            <ul id="pcode-nearby-list" class="list-none p-0 m-0"></ul>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-4 max-w-3xl">
+          Listings come from Google Maps Places for reference only. P-Code does not verify or endorse any facility. Confirm services and hours with the provider.
+        </p>
+      </div>
+    </section>
+
+    <!-- Provider-only metrics live in provider-dashboard.html -->
+
+    <!-- Provider-only cards/sections are in provider-dashboard.html -->
+  </div>
+
+  <!-- Footer -->
+  <footer class="w-full mt-auto py-6 border-t border-slate-200/40 dark:border-white/5 bg-transparent text-center select-none z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p class="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                &copy; 2026 P-Code: XAI-Integrated PMOS Detection System. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+  <script src="js/pcode-maps-config.js"></script>
+  <script type="module" src="js/firebase-config.js"></script>
+  <script src="js/nearby-care-google.js?v=20260724-contacts" defer></script>
+
+  <!-- Auth Module -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="js/auth.js?v=20260730-firebase-emaillink"></script>
+  <script src="js/pcode-google-auth.js?v=20260707a"></script>
+  <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
+  <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
+  <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+  <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+
+  <script>
+    // Percent formatting: floor to 2 decimals (avoid 99.99 -> 100.00 rounding)
+    function pcodePct2Floor(n) {
+      const v = Number(n);
+      if (!Number.isFinite(v)) return '--';
+      return (Math.floor(v * 100) / 100).toFixed(2);
+    }
+
+    // Generation counter for Home screening/history loads (shared with loaders below)
+    var homeAccountLoadGen = 0;
+    function checkAuthAndRedirect() {
+      if (typeof auth === "undefined") return;
+
+      const runHomeAuth = function () {
+        if (auth.isAuthenticated()) {
+          if (typeof auth.updateUIForLoggedInUser === "function") {
+            auth.updateUIForLoggedInUser();
+          }
+          if (typeof auth.enforcePageAccess === "function") {
+            auth.enforcePageAccess("community");
+          }
+          return;
+        }
+        if (typeof auth.updateUIForLoggedOutUser === "function") {
+          auth.updateUIForLoggedOutUser();
+        }
+      };
+
+      if (typeof auth.whenAuthReady === "function") {
+        auth.whenAuthReady(runHomeAuth);
+      }
+      window.addEventListener("pcode-auth-ready", runHomeAuth, { once: true });
+      setTimeout(runHomeAuth, 200);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      checkAuthAndRedirect();
+    });
+
+    function enforceRegularUserDashboard() {
+      if (!auth?.currentUser) return;
+      if (auth.currentUser.isGuest) return;
+      if (auth.isProviderUser && auth.isProviderUser(auth.currentUser)) {
+        window.location.replace("provider-dashboard.html");
+      }
+    }
+
+    function updateRegularUserEarlyDetectionUI({ overall, xg, cnn, hasUltrasound, hasAnyScreening }) {
+      const setText = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
+      };
+      const setList = (id, items) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = "";
+        items.forEach((t) => {
+          const li = document.createElement("li");
+          li.textContent = t;
+          el.appendChild(li);
+        });
+      };
+
+      const overallLabel = overall?.diagnosis ? String(overall.diagnosis).toLowerCase() : null;
+      const overallProb = (typeof overall?.probability === "number" && isFinite(overall.probability)) ? overall.probability : null;
+
+      // Quality indicators
+      setText("ru-quality-clinical", xg?.diagnosis ? "AVAILABLE" : "PENDING");
+      setText("ru-quality-ultrasound", hasUltrasound ? "AVAILABLE" : "PENDING");
+      setText("ru-quality-overall", overall?.diagnosis ? "AVAILABLE" : "PENDING");
+
+      // Next steps (banded)
+      if (!hasAnyScreening) {
+        setText("ru-next-steps-title", "Based on your latest screening");
+        setList("ru-next-steps-list", [
+          "Run a screening on the Detection page to get personalized next steps.",
+          "You can start with symptoms and basic measurements, then update later with lab values or ultrasound if available."
+        ]);
+        return;
+      }
+
+      const probText = (overallProb !== null) ? `${overallProb.toFixed(2)}%` : "your latest result";
+      setText("ru-next-steps-title", `Based on your latest overall screening (${probText})`);
+
+      if (overallLabel === "negative") {
+        setList("ru-next-steps-list", [
+          "Keep monitoring your cycle and symptoms. Re-screen if anything changes.",
+          "If symptoms persist or worsen, consider discussing with a clinician for proper evaluation.",
+          "Improve screening quality next time by adding hormone values (if available) or an ultrasound image."
+        ]);
+      } else if (overallLabel === "borderline") {
+        setList("ru-next-steps-list", [
+          "Consider re-screening with more complete information (hormone values and/or ultrasound image) for a clearer result.",
+          "If you have symptoms or concerns, discuss the result with a clinician for next steps.",
+          "Use the XAI Insights page to see which factors most influenced this screening."
+        ]);
+      } else if (overallLabel === "positive") {
+        setList("ru-next-steps-list", [
+          "Consider scheduling a clinical consultation to confirm and interpret results appropriately.",
+          "A clinician may recommend lab tests and/or ultrasound review depending on your situation.",
+          "Use the XAI Insights page to understand what influenced the screening result."
+        ]);
+      } else {
+        setList("ru-next-steps-list", [
+          "Complete at least one analysis (clinical or imaging) on the Detection page, then save your screening.",
+          "If possible, include more complete clinical inputs and/or ultrasound image."
+        ]);
+      }
+    }
+
+    function isAccountDashboardUser() {
+      try {
+        const token = sessionStorage.getItem("PMOS_auth_token") || "";
+        if (!token) return false;
+      } catch (_) {
+        return false;
+      }
+      const user = auth?.currentUser;
+      if (!user || !auth?.isAuthenticated?.()) return false;
+      if (user.isGuest === true || user.isGuest === 1 || user.isGuest === "true") return false;
+      const role = String(user.role || "").trim().toLowerCase();
+      if (!role || role === "guest") return false;
+      if (typeof auth.roleStringIsAppRegularUser === "function") {
+        return auth.roleStringIsAppRegularUser(user.role);
+      }
+      return role === "regular user";
+    }
+
+    function hideAccountDashboardSections() {
+      const wrap = document.getElementById("account-dashboard-sections");
+      if (wrap) {
+        wrap.classList.add("hidden");
+        wrap.setAttribute("hidden", "");
+        wrap.setAttribute("aria-hidden", "true");
+        wrap.style.display = "none";
+      }
+      ["my-screening-card", "my-screening-history-card", "my-inputs-card", "regular-user-early-detection"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add("hidden");
+        el.setAttribute("hidden", "");
+        el.style.display = "none";
+      });
+    }
+
+    function showAccountDashboardShell() {
+      const wrap = document.getElementById("account-dashboard-sections");
+      if (wrap) {
+        wrap.classList.remove("hidden");
+        wrap.removeAttribute("hidden");
+        wrap.setAttribute("aria-hidden", "false");
+        wrap.style.display = "";
+      }
+      revealEl(document.getElementById("regular-user-early-detection"));
+    }
+
+    function revealEl(el) {
+      if (!el) return;
+      el.classList.remove("hidden");
+      el.removeAttribute("hidden");
+      el.style.display = "";
+    }
+
+    let homeHistoryAbort = null;
+
+    function loadMyScreeningHistory(loadGen) {
+      const historyCard = document.getElementById("my-screening-history-card");
+      const preview = document.getElementById("home-screening-history-preview");
+      if (!historyCard) return;
+
+      if (!isAccountDashboardUser()) {
+        hideAccountDashboardSections();
+        return;
+      }
+
+      showAccountDashboardShell();
+      revealEl(historyCard);
+
+      if (!preview) return;
+      preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>';
+
+      const token = sessionStorage.getItem("PMOS_auth_token") || "";
+      if (!token) {
+        preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Sign in to view your screening history.</p>';
+        return;
+      }
+
+      if (homeHistoryAbort) {
+        try { homeHistoryAbort.abort(); } catch (_) {}
+      }
+      homeHistoryAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
+
+      fetch("./api/diagnostics/get_user_history.php", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + token
+        },
+        credentials: "include",
+        signal: homeHistoryAbort ? homeHistoryAbort.signal : undefined
+      })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            return { ok: resp.ok, status: resp.status, data: data };
+          }).catch(function () {
+            return { ok: false, status: 0, data: null };
+          });
+        })
+        .then(function (result) {
+          if (loadGen != null && loadGen !== homeAccountLoadGen) return;
+          if (!preview.isConnected) return;
+          if (result.status === 401 || result.status === 403) {
+            preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Sign in as a regular user to view screening history.</p>';
+            return;
+          }
+          if (!result.ok || !result.data || !result.data.success) {
+            preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Unable to load screening history right now.</p>';
+            return;
+          }
+
+          const entries = Array.isArray(result.data.history) ? result.data.history : [];
+          if (!entries.length) {
+            preview.innerHTML =
+              '<p class="pcode-home-history-preview__status text-sm text-gray-600">' +
+              (result.data.message || "No screening history yet. Complete a Detect run and tap Save My Record.") +
+              "</p>";
+            return;
+          }
+
+          const esc = function (s) {
+            return String(s == null ? "" : s)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+          };
+          const shown = entries.slice(0, 3);
+          const more = entries.length - shown.length;
+
+          preview.innerHTML =
+            '<ul class="pcode-home-history-list" role="list">' +
+            shown.map(function (entry) {
+              const rawDate = String(entry.created_at_display || entry.created_at || "").trim();
+              const dateParts = rawDate.split(/\s*[·•|]\s*/);
+              const dateMain = (dateParts[0] || rawDate).trim();
+              const dateTime = (dateParts[1] || "").trim();
+              const label = entry.status_label || "Pending";
+              const badge = entry.status_badge_class || "pcode-history-status--borderline";
+              const pct =
+                entry.confidence_percent != null && isFinite(Number(entry.confidence_percent))
+                  ? Number(entry.confidence_percent).toFixed(1) + "%"
+                  : "—";
+              return (
+                '<li class="pcode-home-history-item">' +
+                  '<div class="pcode-home-history-item__left">' +
+                    '<div class="pcode-home-history-item__when">' +
+                      '<span class="pcode-home-history-item__date">' + esc(dateMain) + "</span>" +
+                      (dateTime ? '<span class="pcode-home-history-item__time">' + esc(dateTime) + "</span>" : "") +
+                    "</div>" +
+                    '<span class="pcode-home-history-item__badge ' + esc(badge) + '">' + esc(label) + "</span>" +
+                  "</div>" +
+                  '<div class="pcode-home-history-item__score" aria-label="Overall score">' +
+                    '<span class="pcode-home-history-item__score-label">Overall</span>' +
+                    '<span class="pcode-home-history-item__score-value">' + esc(pct) + "</span>" +
+                  "</div>" +
+                "</li>"
+              );
+            }).join("") +
+            "</ul>" +
+            '<div class="pcode-home-history-preview__foot">' +
+              (more > 0
+                ? '<p class="pcode-home-history-preview__more">' +
+                  esc(String(more)) +
+                  " more on the History page</p>"
+                : "") +
+              '<p class="pcode-home-history-preview__count">' +
+              esc(String(entries.length)) +
+              (entries.length === 1 ? " saved run" : " saved runs") +
+              "</p>" +
+            "</div>";
+        })
+        .catch(function (err) {
+          if (err && err.name === "AbortError") return;
+          if (loadGen != null && loadGen !== homeAccountLoadGen) return;
+          if (!preview.isConnected) return;
+          preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Network error while loading screening history.</p>';
+        });
+    }
+
+    let homeScreeningAbort = null;
+
+    async function loadMyLatestScreening(loadGen) {
+      try {
+        const emptyEl = document.getElementById("my-screening-empty");
+        const contentEl = document.getElementById("my-screening-content");
+        const screeningCard = document.getElementById("my-screening-card");
+        const actionBtn = document.getElementById("my-screening-action-btn");
+
+        const setAction = (mode) => {
+          if (!actionBtn) return;
+          const m = String(mode || "").toLowerCase();
+          if (m === "xai") {
+            actionBtn.textContent = "View XAI Insights";
+            actionBtn.onclick = () => { window.location.href = "xai-user.html"; };
+            actionBtn.className =
+              "pcode-btn-outline px-5 py-2.5 rounded-lg font-medium whitespace-nowrap transition-colors";
+            actionBtn.classList.remove("hidden");
+            actionBtn.removeAttribute("aria-hidden");
+            actionBtn.disabled = false;
+            return;
+          }
+          // default: start screening
+          actionBtn.textContent = "Start Screening Now";
+          actionBtn.onclick = () => { window.location.href = "detect-user.html"; };
+          actionBtn.className =
+            "btn-purple-glass px-5 py-2.5 rounded-lg font-medium whitespace-nowrap";
+          actionBtn.classList.remove("hidden");
+          actionBtn.removeAttribute("aria-hidden");
+          actionBtn.disabled = false;
+        };
+        if (!isAccountDashboardUser()) {
+          hideAccountDashboardSections();
+          return;
+        }
+
+        showAccountDashboardShell();
+
+        const token = sessionStorage.getItem("PMOS_auth_token");
+        if (!token) {
+          hideAccountDashboardSections();
+          return;
+        }
+
+        if (!emptyEl || !contentEl) return;
+
+        // Initialize guide UI with a safe default
+        updateRegularUserEarlyDetectionUI({
+          overall: null,
+          xg: null,
+          cnn: null,
+          hasUltrasound: false,
+          hasAnyScreening: false
+        });
+
+        if (homeScreeningAbort) {
+          try { homeScreeningAbort.abort(); } catch (_) {}
+        }
+        homeScreeningAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
+
+        const resp = await fetch("./api/get_user_diagnosis.php", {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` },
+          signal: homeScreeningAbort ? homeScreeningAbort.signal : undefined
+        });
+        if (loadGen != null && loadGen !== homeAccountLoadGen) return;
+        const data = await resp.json().catch(() => null);
+        if (loadGen != null && loadGen !== homeAccountLoadGen) return;
+        if (!resp.ok || !data?.success) {
+          // Fall back to empty state instead of hiding the section
+          if (screeningCard) revealEl(screeningCard);
+          emptyEl.classList.remove("hidden");
+          // Keep charts visible (0%) even on error
+          contentEl.classList.remove("hidden");
+          setAction("start");
+          if (typeof PcodeUserCare !== "undefined") {
+            PcodeUserCare.initHomeCare({ hasClinical: false, hasUltrasound: false, hasOverall: false });
+          }
+          return;
+        }
+        if (!data.data) {
+          if (screeningCard) revealEl(screeningCard);
+          emptyEl.classList.remove("hidden");
+          // Keep charts visible (0%) when no saved diagnosis exists
+          contentEl.classList.remove("hidden");
+          setAction("start");
+          // Hide inputs card when no saved screening exists
+          try {
+            document.getElementById("my-inputs-card")?.classList.add("hidden");
+          } catch (_) {}
+          updateRegularUserEarlyDetectionUI({
+            overall: null,
+            xg: null,
+            cnn: null,
+            hasUltrasound: false,
+            hasAnyScreening: false
+          });
+          if (typeof PcodeUserCare !== "undefined") {
+            PcodeUserCare.initHomeCare({ hasClinical: false, hasUltrasound: false, hasOverall: false });
+          }
+          return;
+        }
+
+        const row = data.data;
+
+        // ----------------------------
+        // Your clinical data card
+        // ----------------------------
+        try {
+          const inputsCard = document.getElementById("my-inputs-card");
+          const inputsEmpty = document.getElementById("my-inputs-empty");
+          const inputsContent = document.getElementById("my-inputs-content");
+          const inputsGrid = document.getElementById("my-inputs-grid");
+
+          const excludedKeys = new Set([
+            // IDs / timestamps (internal ? not useful on the user dashboard)
+            "id", "user_id", "patient_id", "created_at", "updated_at",
+            "Parameter_id", "parameter_id", "parameterId", "ParameterId",
+            "Diagnosis_id", "diagnosis_id", "DiagnosisId", "diagnosisId",
+            "screening_id", "Screening_id", "Screening_ID", "ScreeningId", "screeningId",
+            "created_by", "Created_by", "createdBy",
+            // image payloads
+            "Ultrasound_image", "ultrasound_image",
+            // result fields used in this dashboard
+            "Overall_diagnosis", "Overall_diagnosis_probability_percentage",
+            "XGBoost_diagnosis", "XGBoost_diagnosis_probability_percentage",
+            "CNN_diagnosis", "CNN_diagnosis_probability_percentage",
+            // misc
+            "overall_diagnosis", "overall_probability", "xgboost_probability", "cnn_probability"
+          ]);
+
+          const isInternalMetaKey = (k) => {
+            const s = String(k || "").toLowerCase();
+            if (excludedKeys.has(k)) return true;
+            if (/(^|_)(id|uuid|guid)$/.test(s)) return true;
+            if (s.includes("screening_id") || s.includes("diagnosis_id") || s.includes("parameter_id")) return true;
+            if (s === "created_by" || s.endsWith("_created_by")) return true;
+            return false;
+          };
+
+          const looksLikeUuid = (v) =>
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || "").trim());
+
+          // Treat these as "user selected" only when true/1
+          const booleanOnlyWhenTrue = new Set([
+            "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss", "Pimples", "Fast_food", "Reg_Exercise"
+          ]);
+
+          const labelMap = {
+            Age_yrs: "Age (years)",
+            Weight_kg: "Weight (kg)",
+            Height_cm: "Height (cm)",
+            BMI: "BMI",
+            Waist_inch: "Waist (inch)",
+            Hip_inch: "Hip (inch)",
+            Waist_hip_ratio: "Waist?Hip Ratio (WHR)",
+            Pulse_rate_bpm: "Pulse rate (bpm)",
+            RR_breath_min: "Respiratory rate (breaths/min)",
+            BP_Systolic_mmHg: "BP systolic (mmHg)",
+            BP_Diastolic_mmHg: "BP diastolic (mmHg)",
+            Hb_g_dl: "Hemoglobin (g/dL)",
+            CycleR_I: "Cycle regularity",
+            Cycle_length_days: "Cycle length (days)",
+            Marriage_Status_years: "Marriage (years)",
+            Pregnant: "Pregnant",
+            No_of_abortions: "No. of abortions",
+            FSH_mIU_mL: "FSH (mIU/mL)",
+            LH_mIU_mL: "LH (mIU/mL)",
+            FSH_LH: "LH/FSH ratio",
+            AMH_ng_mL: "AMH (ng/mL)",
+            PRL_ng_mL: "Prolactin (ng/mL)",
+            TSH_mIU_L: "TSH (mIU/L)",
+            Vit_D3_ng_mL: "Vitamin D3 (ng/mL)",
+            PRG_ng_mL: "Progesterone (ng/mL)",
+            RBS_mg_dl: "Blood sugar (mg/dL)",
+            Follicle_no_L: "Follicles (L)",
+            Follicle_no_R: "Follicles (R)",
+            Avg_F_size_L_mm: "Avg follicle L (mm)",
+            Avg_F_size_R_mm: "Avg follicle R (mm)",
+            Endometrium_mm: "Endometrium (mm)",
+            Weight_gain: "Weight gain",
+            Hair_growth: "Hair growth",
+            Skin_darkening: "Skin darkening",
+            Hair_loss: "Hair loss",
+            Pimples: "Acne / pimples",
+            Fast_food: "Fast food",
+            Reg_Exercise: "Regular exercise"
+          };
+
+          const prettyKey = (k) => labelMap[k] || String(k).replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+          const toDisplay = (k, v) => {
+            if (v === null || v === undefined) return null;
+            if (typeof v === "string" && v.trim() === "") return null;
+            if (typeof v === "number" && !isFinite(v)) return null;
+
+            // Special-case: Cycle regularity (R/I) should read Regular/Irregular
+            if (k === "CycleR_I") {
+              const s = String(v).trim().toLowerCase();
+              if (s === "r" || s === "regular") return "Regular";
+              if (s === "i" || s === "irregular") return "Irregular";
+              if (s === "1" || s === "yes" || s === "true") return "Regular";
+              if (s === "0" || s === "no" || s === "false") return "Irregular";
+              return String(v);
+            }
+
+            if (booleanOnlyWhenTrue.has(k)) {
+              const on = (v === 1 || v === "1" || v === true || String(v).toLowerCase() === "yes");
+              // If the field exists in the DB, show both states (Yes/No)
+              return on ? "Yes" : "No";
+            }
+
+            // Common bool flags
+            if (v === 0 || v === 1 || v === "0" || v === "1") {
+              // For non-symptom flags, still show both states if it exists in DB
+              // (but most of your values are null when not provided)
+              return (v === 1 || v === "1") ? "Yes" : "No";
+            }
+
+            return String(v);
+          };
+
+          const entries = Object.keys(row || {})
+            .filter((k) => !isInternalMetaKey(k))
+            .map((k) => ({ key: k, value: toDisplay(k, row[k]) }))
+            .filter((e) => e.value !== null && !looksLikeUuid(e.value));
+
+          if (inputsCard && inputsGrid && inputsEmpty && inputsContent) {
+            if (entries.length === 0) {
+              inputsCard.classList.add("hidden");
+            } else {
+              revealEl(inputsCard);
+              inputsEmpty.classList.add("hidden");
+              inputsContent.classList.remove("hidden");
+              inputsGrid.innerHTML = entries
+                .sort((a, b) => prettyKey(a.key).localeCompare(prettyKey(b.key)))
+                .map((e) => {
+                  return `
+                    <div class="pcode-my-input-tile rounded-xl border-2 border-emerald-100 bg-emerald-50/20">
+                      <p class="pcode-my-input-tile__label text-xs uppercase text-gray-500">${prettyKey(e.key)}</p>
+                      <p class="pcode-my-input-tile__value text-sm font-semibold text-gray-800 mt-1">${e.value}</p>
+                    </div>
+                  `;
+                })
+                .join("");
+            }
+          }
+        } catch (e) {
+          // Non-blocking
+          console.warn("[DASH] Your clinical data render failed:", e);
+        }
+
+        const mapDiag = (code) => {
+          if (code === null || code === undefined || code === '') return null;
+          const n = Number(code);
+          if (!Number.isFinite(n)) return String(code);
+          if (n === 1) return 'positive';
+          if (n === 0) return 'negative';
+          if (n === 2) return 'borderline';
+          return null;
+        };
+
+        const overall = {
+          diagnosis: mapDiag(row.Overall_diagnosis),
+          probability: Number(row.Overall_diagnosis_probability_percentage)
+        };
+        const xg = {
+          diagnosis: mapDiag(row.XGBoost_diagnosis),
+          probability: Number(row.XGBoost_diagnosis_probability_percentage)
+        };
+        const cnn = {
+          diagnosis: mapDiag(row.CNN_diagnosis),
+          probability: Number(row.CNN_diagnosis_probability_percentage)
+        };
+
+        const hasUltrasound = !!(row.Ultrasound_image || row.ultrasound_image);
+        const ultrasoundRaw = row.Ultrasound_image || row.ultrasound_image || null;
+
+        const setText = (id, v) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = v;
+        };
+        const guessImageMime = (b64) => {
+          const s = String(b64 || "").trim();
+          if (!s) return "image/jpeg";
+          if (s.startsWith("data:")) return null; // already has mime
+          // PNG signature
+          if (s.startsWith("iVBORw0KGgo")) return "image/png";
+          // JPEG signature
+          if (s.startsWith("/9j/")) return "image/jpeg";
+          // WEBP signature (RIFF....WEBP)
+          if (s.startsWith("UklGR")) return "image/webp";
+          return "image/jpeg";
+        };
+        const fmtProb = (v) => (typeof v === "number" && isFinite(v)) ? `${v.toFixed(2)}%` : "--";
+        const fmtLabel = (v) => v ? String(v).toUpperCase() : "PENDING";
+        const clampPct = (v) => {
+          const n = Number(v);
+          if (!Number.isFinite(n)) return 0;
+          return Math.max(0, Math.min(100, n));
+        };
+        const setBar = (id, v, enabled) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const pct = clampPct(v);
+          const w = `${pct}%`;
+          el.style.width = w;
+          const showFill = enabled && pct > 0;
+          el.style.opacity = showFill ? "1" : "0";
+          el.style.display = "block";
+          // Tiny values still need a visible sliver
+          if (showFill) el.style.minWidth = "8px";
+          else el.style.minWidth = "0";
+          el.style.boxShadow = showFill ? "" : "none";
+
+          // Themed bars: width/opacity only ? colors from CSS or applyOverallTheme
+          if (el.id === "my-screening-overall-bar" || el.classList.contains("pcode-screening-metric-bar")) return;
+
+          el.style.backgroundImage = "none";
+          el.style.backgroundColor = "";
+        };
+        const applyOverallTheme = (diag) => {
+          const card = document.getElementById("my-screening-overall-card");
+          const icon = document.getElementById("my-screening-overall-icon");
+          const track = document.getElementById("my-screening-overall-track");
+          const bar = document.getElementById("my-screening-overall-bar");
+          const label = document.getElementById("my-screening-overall");
+          if (!card || !icon || !track || !bar) return;
+
+          const d = String(diag || "").toLowerCase();
+          const themes = ["pending", "negative", "borderline", "positive"];
+          themes.forEach((t) => {
+            card.classList.remove("metric-card--" + t);
+            card.classList.remove("pcode-screening-metric-card--" + t);
+          });
+
+          let state = "pending";
+          if (d === "negative") state = "negative";
+          else if (d === "borderline") state = "borderline";
+          else if (d === "positive") state = "positive";
+
+          card.classList.add("metric-card--" + state);
+          card.classList.add("pcode-screening-metric-card--" + state);
+          card.style.backgroundColor = "";
+          card.style.backgroundImage = "";
+          icon.style.backgroundColor = "";
+          icon.style.color = "";
+
+          track.className = "pcode-screening-metric-track w-full rounded-full h-3";
+          track.id = "my-screening-overall-track";
+          bar.className =
+            "pcode-neon-bar-fill pcode-screening-metric-bar pcode-screening-metric-bar--overall-" +
+            state +
+            " h-3 rounded-full progress-bar pcode-neon-bar-fill--" +
+            state;
+          bar.id = "my-screening-overall-bar";
+          bar.style.backgroundImage = "";
+          bar.style.backgroundColor = "";
+          bar.style.boxShadow = "";
+
+          if (label) label.style.color = "";
+        };
+
+        const renderZeroCharts = (opts) => {
+          const msg = (opts && opts.message) ? String(opts.message) : "No screening results yet.";
+          if (screeningCard) revealEl(screeningCard);
+
+          // Keep the charts visible, but at 0%
+          setText("my-screening-overall", "PENDING");
+          setText("my-screening-overall-prob", fmtProb(0));
+          setText("my-screening-xg", "PENDING");
+          setText("my-screening-xg-prob", fmtProb(0));
+          setText("my-screening-cnn", "PENDING");
+          setText("my-screening-cnn-prob", fmtProb(0));
+
+          // Ensure cards are shown
+          const overallCard = document.getElementById("my-screening-overall-card");
+          const overallProbLine = document.getElementById("my-screening-overall-prob-line");
+          const xgCard = document.getElementById("my-screening-xg-card");
+          const xgProbLine = document.getElementById("my-screening-xg-prob-line");
+          const cnnCard = document.getElementById("my-screening-cnn-card");
+          const cnnProbLine = document.getElementById("my-screening-cnn-prob-line");
+          if (overallCard) overallCard.style.display = "";
+          if (overallProbLine) overallProbLine.style.display = "";
+          if (xgCard) xgCard.style.display = "";
+          if (xgProbLine) xgProbLine.style.display = "";
+          if (cnnCard) cnnCard.style.display = "";
+          if (cnnProbLine) cnnProbLine.style.display = "";
+
+          setBar("my-screening-xg-bar", 0, false);
+          setBar("my-screening-cnn-bar", 0, false);
+          applyOverallTheme(null);
+          setBar("my-screening-overall-bar", 0, false);
+
+          // Show helper message + button (empty area) below charts
+          if (emptyEl) {
+            emptyEl.classList.remove("hidden");
+            const p0 = emptyEl.querySelector("p");
+            if (p0) p0.textContent = msg;
+          }
+          contentEl?.classList.remove("hidden");
+        };
+
+        // Hide sections that are not available
+        const hasOverall = !!overall.diagnosis && typeof overall.probability === "number" && isFinite(overall.probability);
+        const hasXg = !!xg.diagnosis && typeof xg.probability === "number" && isFinite(xg.probability);
+        const hasCnn = !!cnn.diagnosis && typeof cnn.probability === "number" && isFinite(cnn.probability);
+        const hasAnyScreeningResult = hasOverall || hasXg || hasCnn;
+
+        updateRegularUserEarlyDetectionUI({
+          overall,
+          xg,
+          cnn,
+          hasUltrasound,
+          hasAnyScreening: hasAnyScreeningResult
+        });
+
+        if (typeof PcodeUserCare !== "undefined" && typeof PcodeUserCare.initHomeCare === "function") {
+          PcodeUserCare.initHomeCare({
+            overall,
+            xg,
+            cnn,
+            hasUltrasound,
+            hasClinical: hasXg || !!(row && (row.Age_yrs != null || row.Weight_kg != null || row.Pimples != null)),
+            hasOverall
+          });
+        }
+
+        if (hasAnyScreeningResult) {
+          if (screeningCard) revealEl(screeningCard);
+          emptyEl.classList.add("hidden");
+          contentEl.classList.remove("hidden");
+          setAction("xai");
+
+          setText("my-screening-overall", hasOverall ? fmtLabel(overall.diagnosis) : "PENDING");
+          setText("my-screening-overall-prob", fmtProb(hasOverall ? overall.probability : 0));
+          setText("my-screening-xg", hasXg ? fmtLabel(xg.diagnosis) : "PENDING");
+          setText("my-screening-xg-prob", fmtProb(hasXg ? xg.probability : 0));
+          setText("my-screening-cnn", hasCnn ? fmtLabel(cnn.diagnosis) : "PENDING");
+          setText("my-screening-cnn-prob", fmtProb(hasCnn ? cnn.probability : 0));
+
+          const overallCard = document.getElementById("my-screening-overall-card");
+          const overallProbLine = document.getElementById("my-screening-overall-prob-line");
+          const xgCard = document.getElementById("my-screening-xg-card");
+          const xgProbLine = document.getElementById("my-screening-xg-prob-line");
+          const cnnCard = document.getElementById("my-screening-cnn-card");
+          const cnnProbLine = document.getElementById("my-screening-cnn-prob-line");
+
+          // Always keep Imaging / Clinical / Overall cards visible — missing runs show PENDING
+          if (overallCard) overallCard.style.display = "";
+          if (overallProbLine) overallProbLine.style.display = "";
+          if (xgCard) xgCard.style.display = "";
+          if (xgProbLine) xgProbLine.style.display = "";
+          if (cnnCard) cnnCard.style.display = "";
+          if (cnnProbLine) cnnProbLine.style.display = "";
+
+          try {
+            setBar("my-screening-xg-bar", hasXg ? xg.probability : 0, hasXg);
+            setBar("my-screening-cnn-bar", hasCnn ? cnn.probability : 0, hasCnn);
+            applyOverallTheme(hasOverall ? overall.diagnosis : null);
+            setBar("my-screening-overall-bar", hasOverall ? overall.probability : 0, hasOverall);
+          } catch (themeErr) {
+            console.warn("[DASH] Screening theme apply failed:", themeErr);
+          }
+        } else {
+          // Saved record exists but doesn't contain any usable result fields yet
+          renderZeroCharts({ message: "No screening results saved yet." });
+          setAction("start");
+        }
+
+        // Ultrasound preview (if available) ? show saved image even when no model result yet
+        try {
+          const wrap = document.getElementById("my-inputs-ultrasound");
+          const img = document.getElementById("my-inputs-ultrasound-img");
+          if (wrap && img) {
+            if (hasUltrasound && ultrasoundRaw) {
+              const raw = String(ultrasoundRaw).trim();
+              if (raw.startsWith("data:")) {
+                img.src = raw;
+              } else {
+                const mime = guessImageMime(raw) || "image/jpeg";
+                img.src = `data:${mime};base64,${raw}`;
+              }
+              wrap.classList.remove("hidden");
+            } else {
+              wrap.classList.add("hidden");
+              img.src = "";
+            }
+          }
+        } catch (_) {
+          // Non-blocking
+        }
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+        if (loadGen != null && loadGen !== homeAccountLoadGen) return;
+        console.warn("[DASH] loadMyLatestScreening failed:", e);
+        try {
+          if (!isAccountDashboardUser()) {
+            hideAccountDashboardSections();
+            return;
+          }
+          const screeningCard = document.getElementById("my-screening-card");
+          const emptyEl = document.getElementById("my-screening-empty");
+          const contentEl = document.getElementById("my-screening-content");
+          if (screeningCard) revealEl(screeningCard);
+          emptyEl?.classList.remove("hidden");
+          contentEl?.classList.add("hidden");
+        } catch (_) {
+          /* ignore */
+        }
+      }
+    }
+
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById("mobile-menu");
+      const overlay = document.getElementById("menu-overlay");
+      const menuIcon = document.getElementById("menu-icon");
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      if (!mobileMenu) return;
+      const willOpen = !mobileMenu.classList.contains("active");
+
+      if (willOpen) {
+        mobileMenu.classList.add("active");
+        if (overlay) overlay.classList.add("active");
+        document.body.classList.add("pcode-mobile-nav-open");
+      } else {
+        closeMobileMenu();
+      }
+
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      if (menuIcon) menuIcon.classList.remove("hidden");
+    }
+
+    function closeMobileMenu() {
+      const mobileMenu = document.getElementById("mobile-menu");
+      const overlay = document.getElementById("menu-overlay");
+      const menuIcon = document.getElementById("menu-icon");
+      const menuBtn = document.getElementById("mobile-menu-btn");
+
+      if (mobileMenu) mobileMenu.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
+      document.body.classList.remove("pcode-mobile-nav-open");
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+      if (menuIcon) menuIcon.classList.remove("hidden");
+    }
+
+    // Note: in ?desktop site? mode we keep hamburger + profile actions,
+    // but hide the sidebar navigation link list via CSS.
+
+    // Check if user is authenticated on page load
+    window.addEventListener("load", function() {
+      // The auth session check happens automatically in auth.js
+      // The UI will be updated based on authentication status
+    });
+
+    // Initialize typed text effect
+    document.addEventListener("DOMContentLoaded", function() {
+      hideAccountDashboardSections();
+      enforceRegularUserDashboard();
+
+      // Coalesce auth-ready / settle / fallback into one screening+history load
+      var homeAccountRefreshTimer = null;
+      var homeAccountRefreshBound = false;
+
+      const refreshAccountSections = function () {
+        if (homeAccountRefreshTimer) {
+          clearTimeout(homeAccountRefreshTimer);
+        }
+        homeAccountRefreshTimer = setTimeout(function () {
+          homeAccountRefreshTimer = null;
+          homeAccountRefreshBound = true;
+          var loadGen = ++homeAccountLoadGen;
+          if (!isAccountDashboardUser()) {
+            hideAccountDashboardSections();
+            return;
+          }
+          showAccountDashboardShell();
+          loadMyLatestScreening(loadGen);
+          loadMyScreeningHistory(loadGen);
+        }, 0);
+      };
+
+      if (typeof auth !== "undefined" && auth.whenAuthReady) {
+        auth.whenAuthReady(refreshAccountSections);
+      } else {
+        window.addEventListener("pcode-auth-ready", refreshAccountSections, { once: true });
+        window.addEventListener("pcode-auth-settled", refreshAccountSections, { once: true });
+      }
+      // One late fallback if auth never signals (should rarely run)
+      setTimeout(function () {
+        if (!homeAccountRefreshBound) refreshAccountSections();
+      }, 600);
+
+      const firstNameFromUser = (raw) => {
+        const s = String(raw || "").trim();
+        if (!s) return "Guest";
+        if (s.includes("@")) {
+          const local = (s.split("@")[0] || "").split(/[._\-]/)[0] || "";
+          return local.trim() || "Guest";
+        }
+        return s.split(/\s+/)[0] || "Guest";
+      };
+
+      // Welcome line: personalized when signed in; generic on public home
+      let welcomeMessage = "Welcome to P-Code";
+      const userDataStr = sessionStorage.getItem("PMOS_user");
+      if (userDataStr && auth && auth.isAuthenticated && auth.isAuthenticated()) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          const fullName = userData.full_name || userData.name || userData.email || "";
+          const displayName = firstNameFromUser(fullName);
+          if (displayName && displayName !== "Guest") {
+            welcomeMessage = `Hello there, ${displayName}`;
+          }
+        } catch (e) {
+          welcomeMessage = "Welcome to P-Code";
+        }
+      }
+
+      const typedWelcome = new Typed("#typed-text", {
+        strings: [welcomeMessage],
+        typeSpeed: 40,
+        backSpeed: 0,
+        backDelay: 0,
+        smartBackspace: false,
+        loop: false,
+        showCursor: true
+      });
+      setInterval(function () {
+        typedWelcome.reset();
+      }, 5000);
+
+    });
+  </script>
+      <script>
+        // Apply adaptive border colors to metric cards
+        document.addEventListener('DOMContentLoaded', function() {
+          const metricCards = document.querySelectorAll('.metric-card');
+          const colorMap = {
+            'text-purple-600': 'rgba(109, 40, 217, 0.35)',
+            'text-blue-600': 'rgba(59, 130, 246, 0.35)',
+            'text-green-600': 'rgba(16, 185, 129, 0.35)',
+            'text-red-600': 'rgba(239, 68, 68, 0.35)',
+            'text-orange-600': 'rgba(251, 146, 60, 0.35)',
+            'text-indigo-600': 'rgba(99, 102, 241, 0.35)',
+            'text-pink-600': 'rgba(236, 72, 153, 0.35)',
+            'text-teal-600': 'rgba(20, 184, 166, 0.35)',
+            'text-cyan-600': 'rgba(34, 211, 238, 0.35)',
+            'text-yellow-600': 'rgba(250, 204, 21, 0.35)'
+          };
+
+          metricCards.forEach(card => {
+            let foundColor = null;
+            for (const [colorClass, colorValue] of Object.entries(colorMap)) {
+              if (card.innerHTML.includes(colorClass)) {
+                foundColor = colorValue;
+                break;
+              }
+            }
+            if (foundColor) {
+              card.style.borderColor = foundColor;
+              card.style.borderWidth = '2.5px';
+            }
+          });
+
+          // Also apply to other white cards with borders
+          const whiteCards = document.querySelectorAll('.bg-white[class*="rounded"][class*="border"]');
+          whiteCards.forEach(card => {
+            let foundColor = null;
+            for (const [colorClass, colorValue] of Object.entries(colorMap)) {
+              if (card.innerHTML.includes(colorClass)) {
+                foundColor = colorValue;
+                break;
+              }
+            }
+            if (foundColor) {
+              card.style.borderColor = foundColor;
+              card.style.borderWidth = '2.5px';
+            }
+          });
+        });
+      </script>
+</html>
+
+

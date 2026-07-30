@@ -1,0 +1,22 @@
+# P-Code ML API — Render.com / local Flask
+# Install: pip install -r requirements.txt
+# Run local:  python app.py
+# Run Render: gunicorn app:app
+
+Flask>=3.0.0,<4
+flask-cors>=4.0.0,<5
+gunicorn>=22.0.0,<24
+
+# Numerical / tabular (XGBoost path)
+numpy>=1.26.0,<3
+pandas>=2.0.0,<3
+xgboost>=2.0.0,<4
+scikit-learn>=1.3.0,<2
+shap>=0.44.0,<0.50
+scipy>=1.11.0,<2
+joblib>=1.3.0,<2
+
+# Imaging (CNN path) — headless OpenCV for Linux servers
+tensorflow>=2.15.0,<2.20
+Pillow>=10.0.0,<12
+opencv-python-headless>=4.8.0,<5

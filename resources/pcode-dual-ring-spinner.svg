@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <defs>
+    <style>
+      @keyframes pcode-drs-cw { to { transform: rotate(360deg); } }
+      @keyframes pcode-drs-ccw { to { transform: rotate(-360deg); } }
+      .pcode-drs-outer {
+        transform-origin: 32px 32px;
+        animation: pcode-drs-cw 0.95s linear infinite;
+      }
+      .pcode-drs-inner {
+        transform-origin: 32px 32px;
+        animation: pcode-drs-ccw 0.95s linear infinite;
+      }
+    </style>
+  </defs>
+  <circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/>
+  <circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/>
+</svg>

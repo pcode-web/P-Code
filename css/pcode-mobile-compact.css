@@ -1,0 +1,250 @@
+/**
+ * P-Code — mobile-first density (compact cards, modals, tables, detection forms).
+ * Desktop spacing is preserved via sm:/md: breakpoints and min-width media queries.
+ */
+
+@media (max-width: 767px) {
+  /* Page shell — tighter horizontal rhythm */
+  body.pcode-app-bento .pcode-page-shell,
+  body.pcode-app-bento main.max-w-7xl,
+  body.xai-bento-page .page-shell {
+    padding-top: 1rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  /* Bento / metric / detection cards — micro padding (override global 1.25rem rule) */
+  body.pcode-app-bento .pcode-bento-card,
+  body.pcode-app-bento .metric-card,
+  body.pcode-app-bento .detection-card,
+  body.pcode-app-bento .mobile-card,
+  body.xai-bento-page .bento-card,
+  body.xai-bento-page .mobile-card.bento-card {
+    padding: 0.75rem !important;
+    border-radius: 1rem !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked),
+  body.pcode-app-bento .pcode-bento-metrics-grid > .metric-card:not(.pcode-metric-tile--stacked),
+  body.pcode-app-bento #metrics-grid > .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) {
+    padding: 0.625rem 0.7rem !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-tile__icon {
+    width: 2rem !important;
+    height: 2rem !important;
+    align-self: start !important;
+    justify-self: end !important;
+  }
+
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-tile__svg {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid:not(.pcode-bento-metrics-grid--fluid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-bento-metrics-grid--fluid {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chips-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-diagnosis-chip {
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metric-card {
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  body.pcode-app-bento .pcode-screening-metric-card {
+    padding: 0.75rem !important;
+  }
+
+  /* Patient modal — condensed steps & footer */
+  body.pcode-app-bento #patient-modal .step-content {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+    padding: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer,
+  body.pcode-app-bento #patient-modal .clinical-stepper-footer {
+    padding: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* Dropzones — shorter upload wells */
+  body.pcode-app-bento .pcode-dropzone,
+  body.pcode-app-bento .pcode-ultrasound-dropzone,
+  body.pcode-app-bento .upload-area {
+    padding: 1rem !important;
+    min-height: 0 !important;
+  }
+
+  body.pcode-app-bento .pcode-dropzone .pcode-dropzone__icon,
+  body.pcode-app-bento .pcode-ultrasound-dropzone > div > svg.w-12,
+  body.pcode-app-bento .upload-area > svg.w-12 {
+    width: 2rem !important;
+    height: 2rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  /* High-density file / camera actions */
+  body.pcode-app-bento .pcode-btn-density,
+  body.pcode-app-bento .pcode-dropzone-actions .btn-purple-glass,
+  body.pcode-app-bento .pcode-dropzone-actions .btn-ghost-glass,
+  body.pcode-app-bento #patient-modal .pcode-dropzone-actions button,
+  body.pcode-app-bento .upload-area .flex button,
+  body.pcode-app-bento .upload-area + .flex button,
+  body.pcode-app-bento .upload-area .mt-4.flex button {
+    min-height: 0 !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Clinical symptom grids */
+  body.pcode-app-bento .pcode-clinical-checklist,
+  body.pcode-app-bento #step-6-content .grid,
+  body.pcode-app-bento .step-content .grid.grid-cols-2:not(.pcode-bento-metrics-grid),
+  body.pcode-app-bento .step-content .grid.md\:grid-cols-2:not(.pcode-bento-metrics-grid) {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-diagnostic-scroll,
+  body.pcode-app-bento .detection-card #clinical-form {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    flex: none !important;
+    max-height: none !important;
+  }
+
+  body.pcode-app-bento .pcode-clinical-panel,
+  body.pcode-app-bento #step-6-content {
+    padding: 0.25rem 0.75rem 0.75rem !important;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form .pcode-clinical-panel,
+  body.pcode-app-bento .detection-card #step-6-content {
+    padding-top: 0.25rem !important;
+  }
+
+  body.pcode-app-bento .pcode-clinical-panel .space-y-3,
+  body.pcode-app-bento #add-patient-form .space-y-3 {
+    gap: 0.5rem !important;
+  }
+
+  body.pcode-app-bento .pcode-clinical-checklist label span,
+  body.pcode-app-bento #step-6-content label span {
+    font-size: 0.8125rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Patient table — compact cells */
+  body.pcode-app-bento .pcode-patients-table-wrap table th,
+  body.pcode-app-bento .pcode-patients-table-wrap table td,
+  body.pcode-app-bento .pcode-table-compact th,
+  body.pcode-app-bento .pcode-table-compact td {
+    padding: 0.625rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body.pcode-app-bento .pcode-patient-card {
+    padding: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-patient-card__name {
+    font-size: 0.9375rem !important;
+  }
+
+  /* Detection step panels */
+  body.pcode-app-bento .detection-card .step-content,
+  body.pcode-app-bento [id^='step-'][id$='-content'].step-content {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .gradient-bg {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  body.pcode-app-bento h2.text-2xl {
+    font-size: 1.125rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  body.pcode-app-bento h3.text-lg {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  body.pcode-app-bento .pcode-kv-pill {
+    padding: 0.75rem !important;
+    min-height: 72px;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions {
+    padding-top: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn,
+  body.pcode-app-bento .clinical-stepper-footer .btn-purple-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-ghost-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-blue-glass,
+  body.pcode-app-bento .clinical-stepper-footer .btn-teal-glass,
+  body.pcode-app-bento .btn-purple-glass,
+  body.pcode-app-bento .btn-blue-glass,
+  body.pcode-app-bento .btn-teal-glass,
+  body.pcode-app-bento .btn-rose-glass,
+  body.pcode-app-bento .btn-ghost-glass {
+    min-height: 2.35rem !important;
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  body.pcode-app-bento #xai-loading-spinner .bento-loading-panel {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  body.pcode-app-bento .pcode-clinical-checklist,
+  body.pcode-app-bento #step-6-content .grid.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (min-width: 640px) {
+  body.pcode-app-bento .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked),
+  body.pcode-app-bento #metrics-grid > .metric-card.pcode-metric-tile:not(.pcode-metric-tile--stacked) {
+    min-height: 7.5rem !important;
+    aspect-ratio: auto !important;
+    display: grid !important;
+  }
+}

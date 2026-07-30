@@ -1,0 +1,285 @@
+/**
+ * Detect (provider + user) — 50/50 columns; cards size to visible content.
+ * Ultrasound preview stays compact (does not stretch to clinical height).
+ * Page shell is wider so detect cards are not squeezed in the middle.
+ */
+
+html.pcode-app-bento-root {
+  scrollbar-gutter: stable;
+}
+
+/* Wider detect content band — matches full nav width better on large screens */
+body.pcode-app-bento.pcode-detect-user-page .pcode-page-shell,
+body.pcode-app-bento.pcode-detect-provider-page .pcode-page-shell,
+body.pcode-detect-user-page .pcode-page-shell {
+  width: 100% !important;
+  max-width: min(96rem, calc(100% - 1.5rem)) !important;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  body.pcode-app-bento.pcode-detect-user-page .pcode-page-shell,
+  body.pcode-app-bento.pcode-detect-provider-page .pcode-page-shell,
+  body.pcode-detect-user-page .pcode-page-shell {
+    max-width: min(96rem, calc(100% - 3rem)) !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+/* Intro + analysis cards use the full shell width */
+body.pcode-app-bento.pcode-detect-user-page .pcode-page-shell > .pcode-bento-card,
+body.pcode-app-bento.pcode-detect-user-page .pcode-page-shell > .pcode-card-static,
+body.pcode-app-bento.pcode-detect-user-page .pcode-page-shell > .detection-grid,
+body.pcode-app-bento.pcode-detect-provider-page .pcode-page-shell > .pcode-bento-card,
+body.pcode-app-bento.pcode-detect-provider-page .pcode-page-shell > .pcode-card-static,
+body.pcode-app-bento.pcode-detect-provider-page .pcode-page-shell > .detection-grid {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Page shell already pads the viewport — drop extra inset on the detection grid */
+body.pcode-app-bento .pcode-page-shell > .pcode-diagnostic-grid.detection-grid,
+body.pcode-app-bento .pcode-page-shell > .grid.pcode-diagnostic-grid.detection-grid {
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento .detection-grid,
+body.pcode-app-bento .pcode-diagnostic-grid.detection-grid {
+  display: grid !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+}
+
+@media (min-width: 1024px) {
+  /* Hard 50/50 — cards size to their own content (not forced equal height) */
+  body.pcode-app-bento .detection-grid,
+  body.pcode-app-bento .pcode-diagnostic-grid.detection-grid,
+  body.pcode-app-bento .grid.lg\:grid-cols-2.detection-grid,
+  body.pcode-app-bento .grid.grid-cols-1.lg\:grid-cols-2.detection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start !important;
+  }
+
+  body.pcode-app-bento .detection-grid > *,
+  body.pcode-app-bento .pcode-diagnostic-grid.detection-grid > * {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  body.pcode-app-bento .detection-grid > * > .detection-card,
+  body.pcode-app-bento .detection-grid .detection-card,
+  body.pcode-app-bento .detection-card.detection-card--tall {
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body.pcode-app-bento .detection-card #clinical-form,
+  body.pcode-app-bento .detection-card #clinical-form.pcode-diagnostic-scroll,
+  body.pcode-app-bento .detection-card.pcode-detect-clinical-shell .pcode-detect-scroll,
+  body.pcode-app-bento .detection-card.pcode-detect-imaging-shell > .pcode-detect-scroll {
+    flex: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  body.pcode-app-bento .detection-card.pcode-detect-imaging-shell #ultrasound-upload-section:not(.hidden) {
+    flex: none !important;
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  body.pcode-app-bento .detection-card.pcode-detect-imaging-shell #ultrasound-upload-section.hidden,
+  body.pcode-app-bento .detection-card #upload-area-ultrasound-empty.hidden,
+  body.pcode-app-bento .detection-card #image-preview-ultrasound.hidden {
+    display: none !important;
+  }
+
+  body.pcode-app-bento .detection-card .clinical-stepper-footer {
+    margin-top: 1.5rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Compact ultrasound dropzone — content-sized, not stretched to clinical height */
+  body.pcode-app-bento .detection-card #upload-area-ultrasound,
+  body.pcode-app-bento .detection-card #upload-area-ultrasound.is-preview {
+    flex: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  body.pcode-app-bento .detection-card #image-preview-ultrasound:not(.hidden) {
+    flex: none !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  body.pcode-app-bento .detection-card #image-preview-ultrasound > .relative {
+    flex: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  body.pcode-app-bento .detection-card #preview-img-ultrasound {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 14rem !important;
+    min-height: 0 !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+}
+
+/* Keep patient + analysis cards on the same horizontal track */
+body.pcode-app-bento .pcode-page-shell > #patient-selection-card,
+body.pcode-app-bento .detection-grid .detection-card,
+body.pcode-app-bento .detection-card.detection-card--tall {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Patient Selection — even button spacing (overrides mobile grid collapse) */
+body.pcode-app-bento #patient-selection-card .pcode-patient-selection-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+body.pcode-app-bento #patient-selection-card .pcode-patient-selection-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.pcode-app-bento #patient-selection-card .pcode-patient-selection-actions > button {
+  width: 100%;
+  margin: 0 !important;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento #patient-selection-card .pcode-patient-selection-note {
+  margin: 1rem 0 0 !important;
+  line-height: 1.45;
+}
+
+@media (min-width: 640px) {
+  body.pcode-app-bento #patient-selection-card .pcode-patient-selection-row {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  body.pcode-app-bento #patient-selection-card .pcode-patient-selection-actions {
+    flex-direction: row;
+    flex-shrink: 0;
+    width: auto;
+    gap: 0.65rem;
+  }
+
+  body.pcode-app-bento #patient-selection-card .pcode-patient-selection-actions > button {
+    width: auto;
+    min-width: 7.25rem;
+    flex: 0 0 auto;
+  }
+}
+
+
+/* Ultrasound preview must fill the column (max-w-md made the right card look narrower) */
+body.pcode-app-bento .detection-card #image-preview-ultrasound,
+body.pcode-app-bento .detection-card #image-preview-ultrasound > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+body.pcode-app-bento .detection-card #preview-img-ultrasound {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 14rem !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}
+
+/* Stepper must not inflate column min-content width */
+body.pcode-app-bento .detection-card .pcode-detect-stepper,
+body.pcode-app-bento .detection-card .pcode-detect-stepper-track,
+body.pcode-app-bento .detection-card .pcode-detect-stepper-steps {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.pcode-app-bento .detection-card .pcode-detect-step-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Clinical steps — only the active step contributes to card height            */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento .detection-card .pcode-clinical-steps-host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+body.pcode-app-bento .detection-card .pcode-clinical-steps-host > .step-content {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento .detection-card .pcode-clinical-steps-host > .step-content.hidden {
+  display: none !important;
+}
+
+body.pcode-app-bento .detection-card .pcode-clinical-steps-host > .step-content:not(.hidden) {
+  display: block !important;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Symptom checklist stays inside the locked column */
+body.pcode-app-bento #step-6-content,
+body.pcode-app-bento .pcode-clinical-checklist {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}

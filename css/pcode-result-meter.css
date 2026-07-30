@@ -1,0 +1,292 @@
+/* Clinical / imaging / combined confidence meters — label + percent row, full-width bar below */
+
+.pcode-result-meter {
+  margin-top: 0;
+}
+
+/* Stacked confidence bar (label + value header, bar beneath) */
+.pcode-confidence-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.pcode-confidence-meter__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pcode-confidence-meter__header .pcode-kv-label {
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.pcode-confidence-meter__value {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pcode-confidence-meter__track {
+  display: block;
+  width: 100%;
+  height: 0.85rem;
+  min-height: 0.85rem;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pcode-confidence-meter__track .pcode-neon-bar-fill,
+.pcode-confidence-meter__track .pcode-final-bar__fill {
+  display: block;
+  height: 100%;
+  min-height: 100%;
+  border-radius: 999px;
+}
+
+.pcode-confidence-meter__track.is-analyzing .pcode-neon-bar-fill,
+.pcode-confidence-meter__track.is-analyzing .pcode-final-bar__fill {
+  width: 40% !important;
+  background: linear-gradient(
+    90deg,
+    rgba(124, 58, 237, 0.15),
+    rgba(196, 181, 253, 0.55),
+    rgba(124, 58, 237, 0.15)
+  ) !important;
+  animation: pcode-confidence-meter-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes pcode-confidence-meter-indeterminate {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+.pcode-confidence-meter__value.is-muted {
+  color: #7a7a83;
+  font-weight: 600;
+}
+
+.pcode-confidence-meter--verdict {
+  margin-top: 0.15rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Legacy row layout (kept for any remaining references) */
+.pcode-result-meter__row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.pcode-result-meter__percent,
+.pcode-result-meter__row .pcode-confidence-meter__value,
+.pcode-result-meter__row #clinical-probability,
+.pcode-result-meter__row #image-probability,
+.pcode-final-verdict--meter #final-combined-percent {
+  flex-shrink: 0;
+  min-width: 4.75rem;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pcode-result-meter__track-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pcode-result-meter__track-wrap .pcode-neon-bar-track {
+  margin-top: 0;
+}
+
+.pcode-result-meter__risk {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pcode-result-meter__risk .pcode-kv-label {
+  margin: 0;
+}
+
+/* Light mode — confidence / risk labels must stay dark on white result cards */
+html.pcode-app-bento-root:not(.dark) .pcode-result-meter .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__header .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) .pcode-result-meter__risk .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-confidence-meter__header p,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-confidence-meter__header p,
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-confidence-meter__header p,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #clinical-results p.pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #image-results p.pcode-kv-label,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #combined-results p.pcode-kv-label,
+html[data-pcode-theme="light"] .pcode-result-meter .pcode-kv-label,
+html[data-pcode-theme="light"] .pcode-confidence-meter__header .pcode-kv-label,
+html[data-pcode-theme="light"] #clinical-results .pcode-kv-label,
+html[data-pcode-theme="light"] #image-results .pcode-kv-label,
+html[data-pcode-theme="light"] #combined-results .pcode-kv-label,
+html[data-pcode-theme="light"] body.pcode-app-bento #clinical-results p.pcode-kv-label,
+html[data-pcode-theme="light"] body.pcode-app-bento #image-results p.pcode-kv-label {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-result-meter .pcode-kv-value,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__value,
+html.pcode-app-bento-root:not(.dark) .pcode-result-meter__risk-value,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-kv-value,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-kv-value,
+html.pcode-app-bento-root:not(.dark) #clinical-probability,
+html.pcode-app-bento-root:not(.dark) #image-probability,
+html.pcode-app-bento-root:not(.dark) #final-combined-percent,
+html[data-pcode-theme="light"] .pcode-result-meter .pcode-kv-value,
+html[data-pcode-theme="light"] .pcode-confidence-meter__value,
+html[data-pcode-theme="light"] #clinical-probability,
+html[data-pcode-theme="light"] #image-probability,
+html[data-pcode-theme="light"] #final-combined-percent {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__value.is-muted,
+html[data-pcode-theme="light"] .pcode-confidence-meter__value.is-muted {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-result-meter__risk,
+html[data-pcode-theme="light"] .pcode-result-meter__risk {
+  border-top-color: #cbd5e1 !important;
+}
+
+/* Confidence tracks — visible slate rails on white cards */
+html.pcode-app-bento-root:not(.dark) .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__track,
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__track.pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-confidence-meter__track,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-neon-bar-track,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-confidence-meter__track.pcode-neon-bar-track,
+html[data-pcode-theme="light"] .pcode-neon-bar-track,
+html[data-pcode-theme="light"] .pcode-confidence-meter__track,
+html[data-pcode-theme="light"] #combined-results .pcode-confidence-meter__track {
+  background: #e2e8f0 !important;
+  border: 1px solid #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-section-header__rule,
+html[data-pcode-theme="light"] .pcode-section-header__rule {
+  background: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-section-header__title,
+html.pcode-app-bento-root:not(.dark) #clinical-results .pcode-section-header__title,
+html.pcode-app-bento-root:not(.dark) #image-results .pcode-section-header__title,
+html.pcode-app-bento-root:not(.dark) #combined-results .pcode-section-header__title,
+html[data-pcode-theme="light"] .pcode-section-header__title {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Amber / red note banners — dark copy on pastel fills */
+html.pcode-app-bento-root:not(.dark) #image-results .border-amber-500\/30,
+html.pcode-app-bento-root:not(.dark) #image-results .bg-amber-500\/10,
+html.pcode-app-bento-root:not(.dark) #clinical-warning,
+html[data-pcode-theme="light"] #image-results .border-amber-500\/30,
+html[data-pcode-theme="light"] #clinical-warning {
+  background: #fffbeb !important;
+  border-color: #f59e0b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #image-results .text-amber-100,
+html.pcode-app-bento-root:not(.dark) #clinical-warning .text-amber-100,
+html.pcode-app-bento-root:not(.dark) #clinical-warning-text,
+html.pcode-app-bento-root:not(.dark) .pcode-detect-amber-note__text,
+html.pcode-app-bento-root:not(.dark) .pcode-detect-amber-note__text .font-semibold,
+html[data-pcode-theme="light"] #image-results .text-amber-100,
+html[data-pcode-theme="light"] #clinical-warning-text,
+html[data-pcode-theme="light"] .pcode-detect-amber-note__text {
+  color: #92400e !important;
+  -webkit-text-fill-color: #92400e !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-detect-amber-note,
+html[data-pcode-theme="light"] .pcode-detect-amber-note {
+  background: #fffbeb !important;
+  border-color: #f59e0b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #image-ultrasound-validation-warning,
+html[data-pcode-theme="light"] #image-ultrasound-validation-warning {
+  background: #fef2f2 !important;
+  border-color: #f87171 !important;
+  color: #991b1b !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #image-ultrasound-validation-warning *,
+html[data-pcode-theme="light"] #image-ultrasound-validation-warning * {
+  color: #991b1b !important;
+  -webkit-text-fill-color: #991b1b !important;
+}
+
+/* Indeterminate analyzing bar — keep fill readable on light tracks */
+html.pcode-app-bento-root:not(.dark) .pcode-confidence-meter__track.is-analyzing .pcode-neon-bar-fill,
+html[data-pcode-theme="light"] .pcode-confidence-meter__track.is-analyzing .pcode-neon-bar-fill {
+  background: linear-gradient(
+    90deg,
+    rgba(109, 40, 217, 0.15),
+    rgba(109, 40, 217, 0.75),
+    rgba(109, 40, 217, 0.15)
+  ) !important;
+}
+
+.pcode-result-meter__risk-value,
+.pcode-result-meter__risk #clinical-risk,
+.pcode-result-meter__risk #follicle-count {
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .pcode-confidence-meter__value,
+  .pcode-result-meter__percent {
+    min-width: 3.85rem;
+    font-size: 1.35rem;
+  }
+
+  .pcode-result-meter__row {
+    gap: 0.65rem;
+  }
+}

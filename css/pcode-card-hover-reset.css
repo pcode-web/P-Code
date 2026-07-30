@@ -1,0 +1,210 @@
+/**
+ * P-Code — card hover hard reset (load LAST after pcode-design-system.css)
+ * Kills Y-axis lift, scale, and transform transitions on all layout cards.
+ * Color / border tints only — panels stay spatially anchored.
+ */
+
+/* Shared utility — append to card markup: pcode-card-static */
+.pcode-card-static,
+.pcode-bento-card,
+.metric-card,
+.pcode-patient-card,
+.bento-glass-card,
+.bento-card,
+.detection-card,
+.pcode-diagnostic-bento,
+.pcode-obsidian-data-card,
+.pcode-obsidian-data-shell,
+.pcode-screening-metric-card,
+.mobile-card,
+.entry-card,
+.entry-selection-card,
+.pcode-bento-inner-card,
+.card,
+.card-hover,
+body.pcode-app-bento #quick-actions-section,
+body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl,
+body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg,
+body.xai-bento-page .bg-white.rounded-xl.shadow-lg,
+body.pcode-app-bento .rounded-2xl.shadow-lg.pcode-bento-card,
+body.pcode-app-bento .rounded-2xl.shadow-lg.metric-card,
+body.xai-bento-page .rounded-2xl.shadow-lg.bento-card {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease !important;
+}
+
+.pcode-card-static:hover,
+.pcode-bento-card:hover,
+.metric-card:hover,
+.pcode-patient-card:hover,
+.bento-glass-card:hover,
+.bento-card:hover,
+.detection-card:hover,
+.pcode-diagnostic-bento:hover,
+.pcode-obsidian-data-card:hover,
+.pcode-obsidian-data-shell:hover,
+.pcode-screening-metric-card:hover,
+.mobile-card:hover,
+.entry-card:hover,
+.entry-selection-card:hover,
+.pcode-bento-inner-card:hover,
+.card:hover,
+.card-hover:hover,
+body.pcode-app-bento #quick-actions-section:hover,
+body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl:hover,
+body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg:hover,
+body.xai-bento-page .bg-white.rounded-xl.shadow-lg:hover,
+body.pcode-app-bento .rounded-2xl.shadow-lg.pcode-bento-card:hover,
+body.pcode-app-bento .rounded-2xl.shadow-lg.metric-card:hover,
+body.xai-bento-page .rounded-2xl.shadow-lg.bento-card:hover {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  filter: none !important;
+}
+
+/* Light mode — keep cards solid white (never translucent grey wash) */
+html.pcode-app-bento-root:not(.dark) .pcode-card-static:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .mobile-card:hover,
+html[data-pcode-theme="light"] .pcode-patient-card:hover {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+/* Dark bento — tint without lifting */
+html.pcode-app-bento-root.dark .pcode-bento-card:hover,
+html.pcode-app-bento-root.dark .metric-card:hover,
+html.pcode-app-bento-root.dark .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root.dark .mobile-card:hover,
+html.pcode-app-bento-root.dark .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-bento-card:hover,
+html.pcode-app-bento-root.dark body.xai-bento-page .bento-card:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(196, 181, 253, 0.35) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 32px rgba(196, 181, 253, 0.08),
+    0 0 25px rgba(196, 181, 253, 0.12) !important;
+}
+
+/* Light clinical — border-only hover, no purple halo / outer glow */
+html.pcode-app-bento-root:not(.dark) .pcode-card-static:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card:hover,
+html.pcode-app-bento-root:not(.dark) .mobile-card:hover,
+html.pcode-app-bento-root:not(.dark) .pcode-bento-inner-card:hover,
+html.pcode-app-bento-root:not(.dark) .card:hover,
+html.pcode-app-bento-root:not(.dark) .card-hover:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl:hover,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento main .bg-white.rounded-xl.shadow-lg:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bg-white.rounded-xl.shadow-lg:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-bento-card:hover,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-card:hover,
+html[data-pcode-theme="light"] .metric-card:hover,
+html[data-pcode-theme="light"] .pcode-patient-card:hover,
+html[data-pcode-theme="light"] .bento-card:hover,
+html[data-pcode-theme="light"] .detection-card:hover,
+html[data-pcode-theme="light"] .pcode-bento-inner-card:hover {
+  background-color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-patient-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .bento-glass-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .detection-card:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento:hover::after,
+html.pcode-app-bento-root:not(.dark) .pcode-screening-metric-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #quick-actions-section:hover::after,
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl:hover::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-bento-card:hover::after,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .bento-card:hover::after,
+html[data-pcode-theme="light"] .pcode-bento-card:hover::after,
+html[data-pcode-theme="light"] .metric-card:hover::after {
+  opacity: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Login gateway entry cards — stationary glass panels, border-only feedback  */
+/* -------------------------------------------------------------------------- */
+
+button.entry-card,
+.entry-card {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease !important;
+}
+
+button.entry-card:hover,
+button.entry-card:focus,
+button.entry-card:focus-visible,
+button.entry-card:active,
+.entry-card:hover,
+.entry-card:focus,
+.entry-card:focus-visible,
+.entry-card:active {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  filter: none !important;
+  top: auto !important;
+  margin-top: inherit !important;
+}
+
+.entry-selection-card:hover,
+.entry-selection-card:focus,
+.entry-selection-card:focus-visible {
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+html.login-bento-page.dark button.entry-card:hover,
+html.login-bento-page.dark button.entry-card:focus-visible {
+  border-color: rgba(196, 181, 253, 0.4) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.login-bento-page:not(.dark) button.entry-card:hover,
+html.login-bento-page:not(.dark) button.entry-card:focus-visible {
+  border-color: #000000 !important;
+  background-color: rgba(250, 245, 255, 0.72) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}

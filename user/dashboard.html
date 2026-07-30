@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="pcode-app-bento-root dark" data-pcode-oauth-bootstrap="auto" data-pcode-oauth-portal="community" data-pcode-oauth-next="../index.html">
+<head>
+  <script src="../js/pcode-theme-init.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P-Code — Patient Dashboard</title>
+  <link rel="stylesheet" href="../css/tailwind.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0B0813;
+      color: #e9d5ff;
+    }
+    .dash-loading { text-align: center; font-size: 0.9375rem; opacity: 0.85; }
+    #oauth-bootstrap-error:not(.hidden) { display: block; max-width: 28rem; margin: 1rem auto; }
+  </style>
+</head>
+<body>
+  <p class="dash-loading" role="status" aria-live="polite">Completing secure sign-in…</p>
+  <p id="oauth-bootstrap-error" class="hidden" style="color:#fecaca;text-align:center;padding:1rem;"></p>
+  <script src="../js/auth.js?v=20260707c"></script>
+  <script src="../js/pcode-oauth-bootstrap.js?v=20260707c"></script>
+</body>
+</html>

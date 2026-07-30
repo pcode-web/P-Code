@@ -1,0 +1,45 @@
+/**
+ * P-Code — diagnostic severity text colors (Positive / Borderline / Negative)
+ * Text-only: never alter parent container backgrounds.
+ * Default = light-readable; pale neon tones only under html.dark.
+ */
+
+.pcode-severity-text--positive,
+.pcode-kv-value.pcode-severity-text--positive {
+  color: #be123c !important;
+}
+
+.pcode-severity-text--borderline,
+.pcode-kv-value.pcode-severity-text--borderline {
+  color: #b45309 !important;
+}
+
+.pcode-severity-text--negative,
+.pcode-kv-value.pcode-severity-text--negative {
+  color: #047857 !important;
+}
+
+.pcode-severity-text--pending,
+.pcode-kv-value.pcode-severity-text--pending {
+  color: #475569 !important;
+}
+
+html.dark .pcode-severity-text--positive,
+html.dark .pcode-kv-value.pcode-severity-text--positive {
+  color: #fb7185 !important; /* text-rose-400 */
+}
+
+html.dark .pcode-severity-text--borderline,
+html.dark .pcode-kv-value.pcode-severity-text--borderline {
+  color: #fbbf24 !important; /* text-amber-400 */
+}
+
+html.dark .pcode-severity-text--negative,
+html.dark .pcode-kv-value.pcode-severity-text--negative {
+  color: #34d399 !important; /* text-emerald-400 */
+}
+
+html.dark .pcode-severity-text--pending,
+html.dark .pcode-kv-value.pcode-severity-text--pending {
+  color: #94a3b8 !important;
+}

@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en" class="login-bento-page pcode-app-bento-root dark">
+<head>
+  <script src="js/pcode-theme-init.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-signin-client_id" content="953442697406-1nisk0lf775augnlkbbftpk19g4fkgl3.apps.googleusercontent.com">
+  <title>P-Code - Sign in with Google</title>
+  <!-- Local CSS Files (No CDN) -->
+  <link rel="stylesheet" href="css/tailwind.css">
+  <!-- Local Fonts (No CDN) -->
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <!-- Local JavaScript Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
+  <script src="js/libs/typed.min.js" defer></script>
+  <!-- Google Identity Services Library -->
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260707c">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    html.login-bento-page {
+      color-scheme: dark;
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    body.login-bento-page {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      background-color: #0B0813 !important;
+      color: #f5f3ff;
+    }
+    .input-medical { 
+      width: 100%; 
+      padding: 0.65rem 0.75rem; 
+      border: 1px solid rgba(196, 181, 253, 0.35) !important; 
+      border-radius: 0.75rem; 
+      font-size: 0.9375rem; 
+      transition: border-color 0.2s ease, box-shadow 0.2s ease; 
+      font-family: inherit; 
+      background-color: rgba(8, 5, 18, 0.9) !important; 
+      color: #f5f3ff !important; 
+    }
+    .input-medical::placeholder { 
+      color: rgba(221, 214, 255, 0.55) !important; 
+    }
+    .input-medical:focus { 
+      outline: none; 
+      border-color: rgba(216, 189, 250, 0.82) !important; 
+      box-shadow: 0 0 0 3px rgba(216, 180, 254, 0.2); 
+      background-color: rgba(10, 6, 22, 0.95) !important; 
+      color: #faf5ff !important; 
+    }
+    input:not([type="checkbox"]):not([type="hidden"]),
+    textarea,
+    select.input-medical {
+      background-color: rgba(8, 5, 18, 0.9) !important;
+      color: #f5f3ff !important;
+    }
+    input::placeholder, textarea::placeholder { 
+      color: rgba(221, 214, 255, 0.55) !important; 
+    }
+    select.input-medical {
+      cursor: pointer;
+      min-height: 48px;
+      appearance: auto;
+    }
+    .auth-page-container { 
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      overflow-x: hidden;
+      isolation: isolate;
+      padding: max(0.75rem, env(safe-area-inset-top, 0px)) max(0.75rem, env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px));
+      box-sizing: border-box;
+      background:
+        radial-gradient(ellipse 78% 56% at 14% 26%, rgba(199, 184, 254, 0.2) 0%, transparent 55%),
+        radial-gradient(ellipse 62% 48% at 86% 64%, rgba(199, 210, 254, 0.18) 0%, transparent 52%),
+        linear-gradient(168deg, #0B0813 0%, #140b22 44%, #0B0813 100%);
+      background-attachment: fixed;
+    }
+    /* Noise must sit ON the shell (not on body): the page gradient is opaque and was hiding body-level grain. */
+    .auth-page-container::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.12;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .auth-page-container::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 38%);
+      mix-blend-mode: soft-light;
+    }
+    .auth-page-right { 
+      position: relative;
+      z-index: 4;
+      width: 100%;
+      max-width: min(22rem, calc(100vw - 1.5rem));
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      margin: 0 auto;
+      min-height: 0;
+      background: transparent;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: visible;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .auth-main-card {
+      position: relative;
+      z-index: 4;
+      width: 100%;
+      /* Glass surface: html.login-bento-page .auth-main-card in pcode-app-bento-dark.css */
+      padding: 1rem 1rem 1.1rem;
+      box-sizing: border-box;
+      border-radius: 2.5rem;
+    }
+    .entry-card {
+      border-radius: 2rem;
+      border: 1.5px solid #000000;
+    }
+    html.login-bento-page:not(.dark) button.entry-card,
+    html.login-bento-page:not(.dark) .entry-card {
+      border: 1.5px solid #000000 !important;
+    }
+    html.login-bento-page:not(.dark) .auth-main-card {
+      border: 1.5px solid #000000 !important;
+    }
+    .auth-form-container { 
+      width: 100%; 
+      max-width: 100%;
+      margin: 0;
+    }
+
+    /* Login loading modal — same footprint as XAI / pcodeShowCenterAlert (max-w-md, p-8, purple spinner) */
+    #login-loading-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(15, 23, 42, 0.45);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      isolation: isolate;
+    }
+    html.dark #login-loading-modal {
+      background-color: rgba(0, 0, 0, 0.82);
+    }
+    #login-loading-modal.show { display: flex; }
+    #login-loading-modal .panel {
+      width: 100%;
+      max-width: 22rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      box-sizing: border-box;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+      color: #0f172a;
+    }
+    html.dark #login-loading-modal .panel {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      color: inherit;
+    }
+    #login-loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+    }
+    #login-loading-modal .title {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 1rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+    html.dark #login-loading-modal .title {
+      color: #faf5ff;
+    }
+    #login-loading-modal .msg {
+      color: #475569;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+    html.dark #login-loading-modal .msg {
+      color: rgba(221, 214, 255, 0.82);
+    }
+    /* Never stack spinner + error if both blocks slip out of sync */
+    #login-loading-modal:has(#login-modal-error-alert:not(.hidden)) #login-loading-content {
+      display: none !important;
+    }
+    #login-modal-error-alert.hidden,
+    #login-modal-error-alert[aria-hidden="true"] {
+      display: none !important;
+    }
+    #login-modal-error-alert:not(.hidden) {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    #login-modal-error-alert .login-modal-error-inner {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      text-align: left;
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background: #fef2f2; /* red-50 */
+      border: 1px solid #fecaca; /* red-200 */
+      border-radius: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      #login-loading-modal {
+        padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+      }
+      #login-loading-modal .panel {
+        border-radius: 0.75rem;
+        border: 1px solid rgba(216, 189, 250, 0.28);
+      }
+      #login-modal-error-alert .login-modal-error-inner {
+        border-radius: 0;
+      }
+    }
+    #login-modal-error-alert .login-modal-error-icon {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      color: #dc2626; /* red-600 */
+    }
+    #login-modal-error-text {
+      margin: 0;
+      color: #991b1b; /* red-800 */
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .auth-tabs { 
+      display: flex; 
+      border-bottom: 1px solid rgba(216, 189, 250, 0.22); 
+      margin-bottom: 0.75rem; 
+    }
+    .auth-tab { 
+      flex: 1; 
+      padding: 0.55rem 0.45rem; 
+      text-align: center; 
+      font-weight: 600; 
+      color: rgba(224, 215, 255, 0.68); 
+      cursor: pointer; 
+      border-bottom: 3px solid transparent; 
+      transition: all 0.2s ease; 
+      background: transparent; 
+      border: none;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-tab.active { 
+      color: #faf5ff; 
+      border-bottom-color: #e9d5ff; 
+    }
+    .auth-tab-content { 
+      display: none; 
+    }
+    .auth-tab-content.active { 
+      display: block; 
+    }
+    .entry-card {
+      width: 100%;
+      min-width: 0;
+      padding: 1rem 0.85rem 0.95rem;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      transform: none;
+      cursor: pointer;
+      min-height: 150px;
+      max-height: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      box-sizing: border-box;
+      gap: 0.5rem;
+      text-align: center;
+      font: inherit;
+    }
+    /* Fixed-height row so both SVGs share the same vertical band regardless of line count below */
+    .entry-icon-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 3rem;
+      flex-shrink: 0;
+    }
+    html.login-bento-page.dark .entry-card-title {
+      font-size: 0.875rem;
+      line-height: 1.35;
+      min-height: 2.25rem;
+      display: block;
+      text-align: center;
+      width: 100%;
+      margin: 0;
+      padding: 0 0.25rem;
+      text-transform: none;
+      color: #faf5ff;
+    }
+    /* Product label must read “Regular User” (capital R and U), not sentence-case or lowercase */
+    .entry-card,
+    .entry-card .entry-card-title,
+    .entry-card .entry-card-desc {
+      text-transform: none;
+    }
+    .pcode-regular-user-label,
+    #register-role,
+    #register-role option {
+      text-transform: none;
+    }
+    html.login-bento-page.dark .entry-card-desc {
+      line-height: 1.45;
+      margin: 0;
+      padding: 0;
+      max-width: 100%;
+      color: rgba(237, 228, 255, 0.88);
+      font-size: 0.8125rem;
+      text-align: center;
+      text-wrap: pretty;
+    }
+    .entry-grid {
+      display: grid;
+      width: 100%;
+      /* Fit two columns inside narrow auth column (minmax(240px,…) required ~480px+ and stacked on desktop) */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: center;
+      gap: 1rem;
+      align-items: stretch;
+    }
+    .entry-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      color: #f0e9ff;
+      display: block;
+      flex-shrink: 0;
+      margin: 0;
+    }
+    .entry-hero {
+      text-align: center;
+      color: #1f2937;
+      margin-bottom: 0.6rem;
+    }
+    .entry-hero img {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 0.25rem;
+      display: block;
+    }
+    .entry-hero h2 {
+      color: #1f2937 !important;
+      font-size: 2.25rem;
+      line-height: 1.15;
+      margin-bottom: 0.25rem;
+      font-weight: 700;
+    }
+    .entry-hero p {
+      color: #4b5563 !important;
+      font-size: 1.2rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .entry-content {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .entry-selection-card {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .entry-brand-block {
+      text-align: center;
+      margin-bottom: 0.85rem;
+    }
+    .entry-brand-row {
+      --entry-logo-size: calc(4.25rem - 4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      flex-wrap: nowrap;
+      max-width: 100%;
+    }
+    .entry-selection-card .entry-selection-logo {
+      display: block;
+      width: var(--entry-logo-size);
+      height: var(--entry-logo-size);
+      max-width: var(--entry-logo-size);
+      max-height: var(--entry-logo-size);
+      margin: 0;
+      flex-shrink: 0;
+      object-fit: contain;
+      object-position: center;
+    }
+    .entry-brand-code {
+      font-size: calc(var(--entry-logo-size) * 0.82);
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      color: #faf5ff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      min-height: var(--entry-logo-size);
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .entry-brand-tagline {
+      margin: 0.45rem 0 0;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(237, 228, 255, 0.88);
+    }
+    .entry-selection-card .right-entry-hint {
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 380px) {
+      .entry-brand-row {
+        --entry-logo-size: calc(3.65rem - 4px);
+        gap: 0.25rem;
+      }
+    }
+    @media (min-width: 641px) {
+      .entry-brand-row {
+        --entry-logo-size: calc(4.5rem - 4px);
+      }
+    }
+    .entry-title {
+      color: #1f2937 !important;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .entry-subtitle {
+      color: #4b5563 !important;
+      text-align: center;
+      font-size: 0.95rem;
+      margin-bottom: 0.7rem;
+    }
+    @media (max-width: 768px) {
+      .auth-page-container {
+        justify-content: center !important;
+        align-items: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding:
+          max(1rem, env(safe-area-inset-top, 0px))
+          max(1rem, env(safe-area-inset-right, 0px))
+          max(1rem, env(safe-area-inset-bottom, 0px))
+          max(1rem, env(safe-area-inset-left, 0px));
+      }
+      .auth-page-right {
+        width: 100%;
+        max-width: min(26rem, calc(100vw - 2rem));
+        margin: 0 auto;
+        align-self: center;
+        flex: 0 1 auto;
+        justify-content: center;
+        padding-top: 0;
+      }
+      .auth-main-card {
+        width: 100%;
+        max-width: 100%;
+        padding: 1.35rem 1.1rem 1.4rem;
+        border-radius: 1.5rem;
+      }
+      .entry-selection-card {
+        padding: 0;
+      }
+      .entry-brand-block {
+        margin-bottom: 0.85rem;
+      }
+      .entry-brand-tagline {
+        font-size: 0.875rem;
+      }
+      .entry-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
+      }
+      .entry-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: center !important;
+        width: 100%;
+        min-height: 9.75rem;
+        padding: 1.15rem 1rem 1.2rem !important;
+        gap: 0.4rem;
+        box-sizing: border-box;
+      }
+      .entry-icon-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        height: 3rem !important;
+        margin: 0 0 0.15rem !important;
+        grid-area: unset !important;
+      }
+      .entry-icon {
+        width: 2.35rem;
+        height: 2.35rem;
+      }
+      .entry-card > .entry-card-title,
+      .entry-card > .entry-card-desc {
+        grid-area: unset !important;
+        text-align: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 0.15rem !important;
+      }
+      html.login-bento-page.dark .entry-card-title,
+      html.login-bento-page:not(.dark) .entry-card-title {
+        font-size: 1rem !important;
+        line-height: 1.35 !important;
+        min-height: 0 !important;
+      }
+      html.login-bento-page.dark .entry-card-desc,
+      html.login-bento-page:not(.dark) .entry-card-desc {
+        font-size: 0.8125rem !important;
+        line-height: 1.45 !important;
+      }
+      .right-entry-hint {
+        margin-bottom: 1rem;
+      }
+      .right-entry-hint h3 {
+        font-size: 1.35rem;
+      }
+      .right-entry-hint p {
+        font-size: 0.875rem;
+        max-width: 100%;
+      }
+      .entry-hero img {
+        width: 120px;
+        height: 120px;
+      }
+      .entry-hero h2 {
+        font-size: 1.65rem;
+      }
+      .entry-hero p {
+        font-size: 1rem;
+      }
+      .entry-title {
+        font-size: 1.5rem;
+      }
+    }
+    @media (max-width: 640px) {
+      .auth-main-card {
+        padding: 1.2rem 1rem 1.25rem;
+        border-radius: 1.35rem;
+      }
+      .entry-card {
+        min-height: 9.25rem;
+      }
+    }
+    /* Register CTA only — Sign in uses #login-btn.pcode-sign-in-btn (Obsidian glass pill) */
+    #register-btn.btn-primary {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      background: linear-gradient(180deg, #f5f0ff 0%, #e9d5ff 45%, #ddd6fe 100%);
+      color: #1a1024 !important;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+      font-size: 0.9375rem;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22) inset, 0 10px 32px rgba(196, 181, 253, 0.28);
+    }
+    #register-btn.btn-primary:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28) inset, 0 12px 40px rgba(216, 189, 250, 0.35);
+    }
+    #register-btn.btn-primary:disabled {
+      background: rgba(100, 100, 120, 0.5);
+      color: rgba(255, 255, 255, 0.6) !important;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+      filter: none;
+    }
+
+    .login-sign-in-wrap {
+      overflow: visible;
+    }
+
+    #auth-forms-view .login-form-actions {
+      overflow: visible;
+    }
+
+    #login-btn.pcode-sign-in-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin: 0;
+      padding: 1rem 1.5rem;
+      border-radius: 9999px;
+      border: 2px solid rgba(168, 85, 247, 0.5);
+      background: rgba(147, 51, 234, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 0.8125rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+      transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
+        box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    #login-btn.pcode-sign-in-btn:hover:not(:disabled) {
+      background: rgb(168, 85, 247) !important;
+      border-color: rgba(192, 132, 252, 0.85);
+      box-shadow: 0 0 35px rgba(168, 85, 247, 0.6);
+      transform: scale(1.02);
+    }
+
+    #login-btn.pcode-sign-in-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    #login-btn.pcode-sign-in-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+    }
+
+    @media (min-width: 640px) {
+      #login-btn.pcode-sign-in-btn {
+        width: auto;
+        min-width: 12.5rem;
+        padding: 1rem 2.5rem;
+      }
+    }
+    #google-login-btn {
+      transition: all 0.2s ease;
+      background: rgba(12, 8, 24, 0.55) !important;
+      border: 1px solid rgba(216, 189, 250, 0.32) !important;
+      color: #f5f3ff !important;
+      border-radius: 0.75rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    #google-login-btn:hover {
+      background: rgba(216, 189, 250, 0.14) !important;
+      border-color: rgba(233, 213, 254, 0.5) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    #google-login-btn:active {
+      background: rgba(8, 5, 18, 0.75) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    #google-login-btn:disabled {
+      opacity: 0.55 !important;
+      cursor: not-allowed;
+    }
+    #guest-login-btn {
+      background: rgba(12, 8, 24, 0.45) !important;
+      border: 1px solid rgba(216, 189, 250, 0.32) !important;
+      color: #f5f3ff !important;
+      border-radius: 0.75rem;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    #guest-login-btn:hover {
+      opacity: 0.92;
+      background: rgba(76, 29, 149, 0.35) !important;
+      border-color: rgba(196, 181, 253, 0.45) !important;
+    }
+
+    /* Firebase email link (passwordless) */
+    .firebase-email-link-panel {
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid rgba(216, 189, 250, 0.22);
+    }
+    .firebase-email-link-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 0 0 0.85rem;
+      font-size: 0.78rem;
+      color: rgba(221, 214, 255, 0.78);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .firebase-email-link-divider::before,
+    .firebase-email-link-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(216, 189, 250, 0.22);
+    }
+    .firebase-email-mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .firebase-email-mode {
+      border: 1px solid rgba(216, 189, 250, 0.28);
+      background: rgba(76, 29, 149, 0.18);
+      color: rgba(237, 233, 254, 0.92);
+      border-radius: 0.75rem;
+      padding: 0.45rem 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 40px;
+    }
+    .firebase-email-mode.is-active {
+      background: rgba(124, 58, 237, 0.45);
+      border-color: rgba(196, 181, 253, 0.55);
+      color: #fff;
+    }
+    .firebase-email-label {
+      display: block;
+      font-size: 0.8rem;
+      margin: 0.35rem 0 0.25rem;
+      color: rgba(237, 233, 254, 0.88);
+    }
+    #firebase-email-input,
+    #firebase-new-password,
+    #firebase-new-password-confirm {
+      width: 100%;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(216, 189, 250, 0.28);
+      background: rgba(15, 10, 30, 0.35);
+      color: #faf5ff;
+      padding: 0.7rem 0.85rem;
+      margin-bottom: 0.55rem;
+      min-height: 44px;
+    }
+    .firebase-email-cta {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 0.15rem;
+    }
+    .firebase-email-status {
+      margin-top: 0.65rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: rgba(237, 233, 254, 0.9);
+      text-align: center;
+    }
+    .firebase-email-status.is-error {
+      color: #fecaca;
+    }
+    .firebase-email-hint {
+      font-size: 0.8rem;
+      color: rgba(221, 214, 255, 0.8);
+      margin: 0.5rem 0 0.35rem;
+      text-align: center;
+    }
+    .firebase-set-password-wrap {
+      margin-top: 0.75rem;
+      padding-top: 0.65rem;
+      border-top: 1px dashed rgba(216, 189, 250, 0.22);
+    }
+    html.login-bento-page:not(.dark) .firebase-email-mode {
+      background: #f5f3ff;
+      color: #4c1d95;
+      border-color: #ddd6fe;
+    }
+    html.login-bento-page:not(.dark) .firebase-email-mode.is-active {
+      background: #7c3aed;
+      color: #fff;
+      border-color: #7c3aed;
+    }
+    html.login-bento-page:not(.dark) #firebase-email-input,
+    html.login-bento-page:not(.dark) #firebase-new-password,
+    html.login-bento-page:not(.dark) #firebase-new-password-confirm {
+      background: #fff;
+      color: #1e1b4b;
+      border-color: #ddd6fe;
+    }
+    html.login-bento-page:not(.dark) .firebase-email-label,
+    html.login-bento-page:not(.dark) .firebase-email-status,
+    html.login-bento-page:not(.dark) .firebase-email-hint,
+    html.login-bento-page:not(.dark) .firebase-email-link-divider {
+      color: #5b21b6;
+    }
+      background: rgba(216, 189, 250, 0.14) !important;
+      border-color: rgba(233, 213, 254, 0.5) !important;
+    }
+    #back-to-entry-btn {
+      color: #f5f0ff !important;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+    #back-to-entry-btn:hover {
+      color: #ffffff !important;
+      text-decoration: underline;
+    }
+    .form-group { 
+      margin-bottom: 1.5rem; 
+    }
+    #auth-forms-view .form-group {
+      margin-bottom: 0.9rem;
+    }
+    #auth-forms-view .form-label {
+      margin-bottom: 0.3rem;
+    }
+    #auth-forms-view .form-footer {
+      margin-top: 1rem;
+    }
+    #auth-forms-view .password-requirements {
+      margin-top: 0.4rem;
+      padding: 0.5rem 0.65rem;
+      font-size: 0.7rem;
+    }
+    #auth-forms-view .login-form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    #auth-forms-view .auth-back-row {
+      margin-bottom: 0.5rem;
+    }
+    .form-label { 
+      display: block; 
+      font-size: 0.8125rem; 
+      font-weight: 600; 
+      color: rgba(237, 233, 254, 0.9); 
+      margin-bottom: 0.5rem; 
+    }
+    .form-error { 
+      color: #dc2626; 
+      font-size: 0.875rem; 
+      margin-top: 0.5rem; 
+      display: none; 
+    }
+    .form-error.show { 
+      display: block; 
+    }
+    .form-footer { 
+      text-align: center; 
+      margin-top: 1.5rem; 
+      font-size: 0.8125rem; 
+      color: rgba(221, 214, 255, 0.78); 
+    }
+    .form-footer a { 
+      color: #f5f0ff; 
+      text-decoration: none; 
+      font-weight: 600; 
+    }
+    .form-footer a:hover { 
+      text-decoration: underline; 
+    }
+    .password-field-wrapper { 
+      position: relative; 
+      display: flex; 
+      align-items: center; 
+    }
+    .password-field-wrapper input { 
+      width: 100%; 
+      padding-right: 2.75rem; 
+    }
+    .toggle-password { 
+      position: absolute; 
+      right: 0.5rem; 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      color: rgba(221, 214, 255, 0.82); 
+      padding: 0.5rem; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      width: 2.5rem; 
+      height: 2.5rem; 
+      border-radius: 0.375rem; 
+      transition: all 0.2s ease; 
+    }
+    .toggle-password:hover { 
+      color: #faf5ff; 
+      background-color: rgba(216, 189, 250, 0.2); 
+      transform: scale(1.05);
+    }
+    .toggle-password:active {
+      transform: scale(0.95);
+    }
+    .toggle-password svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: opacity 0.2s ease;
+    }
+    .password-icon-visible.hidden {
+      display: none !important;
+    }
+    .password-requirements { 
+      font-size: 0.7rem; 
+      color: rgba(221, 214, 255, 0.82); 
+      margin-top: 0.5rem; 
+      padding: 0.5rem 0.65rem; 
+      background-color: rgba(8, 5, 18, 0.55); 
+      border: 1px solid rgba(216, 189, 250, 0.22);
+      border-radius: 0.5rem; 
+    }
+    .left-content { 
+      transition: opacity 0.25s ease; 
+      width: 100%; 
+      min-height: 0;
+      display: flex; 
+      flex-direction: column; 
+      justify-content: flex-start; 
+      align-items: center; 
+      padding-bottom: 0.25rem;
+    }
+    .left-content.active { 
+      display: flex; 
+      opacity: 1; 
+    }
+    .left-content:not(.active) { 
+      display: none; 
+      opacity: 0; 
+    }
+    .left-content .text-center { 
+      width: 100%; 
+      text-align: center;
+      background: transparent !important;
+      padding: 0;
+    }
+    .left-content h2 {
+      color: #faf5ff !important;
+      font-size: 1.05rem;
+      line-height: 1.25;
+      margin: 0.15rem 0 0.2rem;
+      font-weight: 700;
+    }
+    .left-content p {
+      color: rgba(237, 228, 255, 0.88) !important;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      margin: 0;
+      max-width: 22rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .left-content img {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+    .auth-forms-hero {
+      margin: 0 0 0.65rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid rgba(216, 189, 250, 0.22);
+    }
+    .auth-forms-hero .auth-hero-logo {
+      display: block;
+      box-sizing: border-box;
+      width: 3rem;
+      height: 3rem;
+      max-width: 3rem;
+      max-height: 3rem;
+      object-fit: contain;
+      object-position: center;
+      margin: 0 auto 0.35rem;
+    }
+    .right-entry-hint {
+      margin-bottom: 0.85rem;
+      color: rgba(237, 233, 254, 0.92);
+      text-align: center;
+    }
+    .right-entry-hint h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #faf5ff;
+      line-height: 1.25;
+      text-wrap: balance;
+    }
+    .right-entry-hint p {
+      margin: 0.35rem 0 0;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: rgba(237, 228, 255, 0.88);
+      text-align: center;
+      text-wrap: pretty;
+      max-width: 22rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .entry-access-message {
+      width: 100%;
+      max-width: 42rem;
+      margin: 0 auto 0.65rem;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.35);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 0.65rem;
+      text-align: center;
+    }
+    .entry-access-message:empty,
+    .entry-access-message.hidden {
+      display: none;
+    }
+    input[type="checkbox"] {
+      accent-color: #c4b5fd;
+      cursor: pointer;
+    }
+    @media (max-width: 640px) {
+      .auth-form-container {
+        max-width: 100%;
+        padding: 0;
+      }
+      .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid rgba(216, 189, 250, 0.22);
+        margin-bottom: 1rem;
+        gap: 0;
+      }
+      .auth-tab {
+        flex: 1;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.375rem;
+      }
+      .input-medical {
+        padding: 0.625rem;
+        font-size: 1rem;
+      }
+      #register-btn.btn-primary {
+        padding: 0.625rem;
+        font-size: 0.95rem;
+        min-height: 44px;
+      }
+      #login-btn.pcode-sign-in-btn {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.75rem;
+      }
+      .password-field-wrapper input {
+        padding-right: 2.5rem;
+      }
+      .toggle-password {
+        width: 2rem;
+        height: 2rem;
+      }
+      .toggle-password svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+    html.login-bento-page.dark .auth-main-card .text-gray-900 { color: #faf5ff !important; }
+    html.login-bento-page.dark .auth-main-card .text-gray-800 { color: #f5f3ff !important; }
+    html.login-bento-page.dark .auth-main-card .text-gray-700 { color: rgba(237, 233, 254, 0.88) !important; }
+    html.login-bento-page.dark .auth-main-card .text-gray-600 { color: rgba(224, 202, 255, 0.78) !important; }
+    html.login-bento-page.dark .auth-main-card .text-gray-500 { color: rgba(221, 214, 255, 0.72) !important; }
+  </style>
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260725-loginm2">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
+</head>
+<body class="login-bento-page min-h-screen h-auto flex flex-col text-violet-50 antialiased">
+  <div id="auth-page-container" class="auth-page-container">
+    <div id="auth-page-right" class="auth-page-right entry-active">
+      <div class="auth-main-card">
+      <div class="auth-form-container">
+        <div id="entry-selection-view" class="entry-content">
+          <div class="entry-selection-card">
+            <div class="entry-brand-block" aria-label="P-Code, PMOS Detection System">
+              <div class="entry-brand-row" aria-hidden="true">
+                <img src="resources/PCODE_LOGO.png" alt="" class="entry-selection-logo" width="92" height="92" decoding="async">
+
+              </div>
+              <p class="entry-brand-tagline" aria-hidden="true">P-Code: PMOS Detection System</p>
+            </div>
+            <div class="right-entry-hint">
+              <h3>Choose How to Continue</h3>
+              <p>Select your access type before logging in or registering.</p>
+            </div>
+            <div id="entry-access-message" class="entry-access-message hidden" role="status"></div>
+            <div class="entry-grid">
+            <button type="button" id="entry-community-btn" class="pcode-card-static entry-card">
+              <span class="entry-icon-slot" aria-hidden="true">
+              <svg class="entry-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <!-- Symmetric mark only (removed corner check that skewed the icon visually) -->
+                <circle cx="32" cy="32" r="26" stroke="currentColor" stroke-width="3"/>
+                <circle cx="32" cy="24" r="7" stroke="currentColor" stroke-width="3"/>
+                <path d="M19 45C21.5 38.5 27 35 32 35C37 35 42.5 38.5 45 45" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              </span>
+              <p class="entry-card-title font-semibold text-gray-800">Continue as <span class="pcode-regular-user-label">Regular User</span></p>
+              <p class="entry-card-desc text-sm text-gray-600">For personal early detection, promoting timely clinical intervention and awareness.</p>
+            </button>
+            <button type="button" id="entry-provider-btn" class="pcode-card-static entry-card">
+              <span class="entry-icon-slot" aria-hidden="true">
+              <svg class="entry-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="11" y="10" width="42" height="44" rx="8" stroke="currentColor" stroke-width="3"/>
+                <path d="M32 20V40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 30H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M22 50H42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              </span>
+              <p class="entry-card-title font-semibold text-gray-800">Continue as <br>OB-GYN</p>
+              <p class="entry-card-desc text-sm text-gray-600">For OB-GYN specialists using decision support tools with patient management, improving clinical efficiency and patient care.</p>
+            </button>
+            </div>
+          </div>
+        </div>
+        <div id="auth-forms-view" class="hidden">
+          <div class="auth-forms-hero" aria-live="polite">
+            <div class="text-center">
+              <img src="resources/PCODE_LOGO.png" alt="P-Code logo" class="auth-hero-logo" width="56" height="56" decoding="async">
+              <h2 class="text-lg font-bold text-gray-900">Sign in with Google</h2>
+              <p class="text-sm text-gray-600 mt-1">Secure access for patients and OB-GYN specialists.</p>
+            </div>
+          </div>
+          <div class="auth-back-row">
+            <button type="button" id="back-to-entry-btn" class="text-sm text-violet-200 hover:text-white">&larr; Change access type</button>
+          </div>
+
+          <div class="pcode-google-oauth-panel mt-2">
+            <div class="oauth-google-button-shell">
+              <div class="oauth-google-button-shell-inner">
+                <div id="google-signin-mount-login" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
+              </div>
+            </div>
+            <button type="button" id="google-login-btn" class="pcode-google-btn-fallback btn-purple-glass hidden" aria-label="Log in with Google">Log in with Google</button>
+            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community"></p>
+            <p id="login-general-error" class="form-error text-center"></p>
+          </div>
+
+          <div id="firebase-email-link-panel" class="firebase-email-link-panel" aria-label="Email link authentication">
+            <p class="firebase-email-link-divider"><span>Or continue with email link</span></p>
+            <div class="firebase-email-mode-tabs" role="tablist" aria-label="Email link mode">
+              <button type="button" class="firebase-email-mode is-active" data-firebase-mode="signin" aria-pressed="true">Sign in</button>
+              <button type="button" class="firebase-email-mode" data-firebase-mode="signup" aria-pressed="false">Sign up</button>
+              <button type="button" class="firebase-email-mode" data-firebase-mode="password" aria-pressed="false">Change password</button>
+            </div>
+            <form id="firebase-email-link-form" class="firebase-email-link-form" novalidate>
+              <label class="firebase-email-label" for="firebase-email-input">Email</label>
+              <input
+                type="email"
+                id="firebase-email-input"
+                name="firebase_email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              >
+              <button type="button" id="firebase-email-send-btn" class="btn-purple-glass firebase-email-cta">
+                Send sign-in link
+              </button>
+              <button type="button" id="firebase-password-reset-btn" class="btn-purple-glass firebase-email-cta hidden">
+                Send password reset email
+              </button>
+            </form>
+            <p id="firebase-email-status" class="firebase-email-status" hidden role="status"></p>
+            <div id="firebase-set-password-wrap" class="firebase-set-password-wrap hidden">
+              <p class="firebase-email-hint">Optional: set a password for this account after email verification.</p>
+              <label class="firebase-email-label" for="firebase-new-password">New password</label>
+              <input type="password" id="firebase-new-password" autocomplete="new-password" placeholder="New password">
+              <label class="firebase-email-label" for="firebase-new-password-confirm">Confirm password</label>
+              <input type="password" id="firebase-new-password-confirm" autocomplete="new-password" placeholder="Confirm password">
+              <button type="button" id="firebase-set-password-btn" class="btn-purple-glass firebase-email-cta">Save password</button>
+            </div>
+          </div>
+
+          <input type="hidden" id="login-mode" value="user">
+
+          <div id="other-ways-to-continue" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(216, 189, 250, 0.22);">
+            <p style="font-size: 0.8125rem; color: rgba(221, 214, 255, 0.82); margin-bottom: 0.35rem; text-align: center;">Other ways to continue:</p>
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" id="guest-login-btn" class="flex-1 px-4 py-2.5 rounded-xl font-medium cursor-pointer transition-colors duration-200 text-base min-h-[48px]">Continue as Guest</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Module -->
+  <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
+  <script src="js/pcode-google-auth.js?v=20260707a"></script>
+  <script src="js/auth.js?v=20260730-firebase-emaillink"></script>
+  <script type="module" src="js/firebase-config.js"></script>
+  <script src="js/firebase-email-link-auth.js?v=20260730-emaillink"></script>
+
+  <script>
+    /**
+     * Provider: email + password only (role/name/institution set server-side).
+     * Community: full name + Regular User role.
+     */
+    function applyRegisterRoleUiForPortal(portalType) {
+      const nameGroup = document.getElementById('register-name-group');
+      const nameInput = document.getElementById('register-name');
+      const roleInput = document.getElementById('register-role');
+      if (portalType === 'provider') {
+        if (nameGroup) nameGroup.classList.add('hidden');
+        if (nameInput) {
+          nameInput.required = false;
+          nameInput.value = '';
+        }
+        if (roleInput) roleInput.value = 'Other';
+      } else {
+        if (nameGroup) nameGroup.classList.remove('hidden');
+        if (nameInput) nameInput.required = true;
+        if (roleInput) roleInput.value = 'Regular User';
+      }
+    }
+
+    // Tab switching function
+    function switchTab(tabName) {
+      console.log('switchTab called with:', tabName);
+      
+      // Hide all tabs
+      document.querySelectorAll('.auth-tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Hide all left content
+      document.querySelectorAll('.left-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      // Show selected tab
+      const tabContent = document.getElementById(tabName);
+      if (tabContent) {
+        tabContent.classList.add('active');
+      }
+      
+      const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+      if (activeTab) {
+        activeTab.classList.add('active');
+      }
+
+      // Show corresponding left content
+      const leftContent = document.getElementById(`left-${tabName}-content`);
+      if (leftContent) {
+        leftContent.classList.add('active');
+      }
+
+      if (tabName === 'register') {
+        try {
+          const p = (typeof auth !== 'undefined' && auth && auth.selectedPortalType) || sessionStorage.getItem('PMOS_selected_portal_type');
+          if (p === 'community' || p === 'provider') {
+            applyRegisterRoleUiForPortal(p);
+          }
+        } catch (e) {
+          console.warn('Register tab role UI sync failed:', e);
+        }
+      }
+    }
+
+    // Toggle password visibility
+    // Toggle password visibility with improved event handling
+    function togglePasswordVisibility(fieldId) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      
+      // Find the button - could be clicked on SVG or button itself
+      let button = event.target.closest('.toggle-password');
+      if (!button) {
+        button = document.querySelector(`button[onclick="togglePasswordVisibility('${fieldId}')"]`);
+      }
+      
+      if (field && button) {
+        // Toggle password visibility
+        field.type = field.type === 'password' ? 'text' : 'password';
+        
+        // Toggle icons
+        const hiddenIcon = button.querySelector('.password-icon-hidden');
+        const visibleIcon = button.querySelector('.password-icon-visible');
+        
+        if (hiddenIcon && visibleIcon) {
+          const isPassword = field.type === 'password';
+          if (isPassword) {
+            hiddenIcon.classList.remove('hidden');
+            visibleIcon.classList.add('hidden');
+          } else {
+            hiddenIcon.classList.add('hidden');
+            visibleIcon.classList.remove('hidden');
+          }
+        }
+      }
+    }
+
+    function clearEntryAccessMessage() {
+      const el = document.getElementById('entry-access-message');
+      if (el) {
+        el.textContent = '';
+        el.classList.add('hidden');
+      }
+    }
+
+    /**
+     * @param {{ bannerMessage?: string } | undefined} options - If set, show banner on the access chooser (e.g. after wrong access type)
+     */
+    function showEntrySelection(options) {
+      const bannerMessage = options && options.bannerMessage;
+      const authPageContainer = document.getElementById('auth-page-container');
+      const rightPanel = document.getElementById('auth-page-right');
+      const entrySelectionView = document.getElementById('entry-selection-view');
+      const authFormsView = document.getElementById('auth-forms-view');
+      try {
+        sessionStorage.removeItem('PMOS_selected_portal_type');
+        if (typeof auth !== 'undefined' && auth) auth.selectedPortalType = null;
+      } catch (e) {
+        console.warn('Clear portal when changing access type:', e);
+      }
+      if (bannerMessage) {
+        const el = document.getElementById('entry-access-message');
+        if (el) {
+          el.textContent = bannerMessage;
+          el.classList.remove('hidden');
+        }
+      } else {
+        clearEntryAccessMessage();
+      }
+      if (rightPanel) rightPanel.classList.add('entry-active');
+      if (entrySelectionView) entrySelectionView.classList.remove('hidden');
+      if (authFormsView) authFormsView.classList.add('hidden');
+    }
+
+    window.pcodeLoginNewReturnToAccessChooser = function (message) {
+      showEntrySelection({ bannerMessage: message || 'Pick the access type that matches your account, then sign in again.' });
+    };
+
+    function setPortalType(portalType) {
+      const rightPanel = document.getElementById('auth-page-right');
+      const entrySelectionView = document.getElementById('entry-selection-view');
+      const authFormsView = document.getElementById('auth-forms-view');
+      const loginModeInput = document.getElementById('login-mode');
+      clearEntryAccessMessage();
+
+      try {
+        sessionStorage.setItem('PMOS_selected_portal_type', portalType);
+        if (typeof auth !== 'undefined') {
+          auth.selectedPortalType = portalType;
+        }
+      } catch (e) {
+        console.warn('Could not persist portal type:', e);
+      }
+
+      if (entrySelectionView) entrySelectionView.classList.add('hidden');
+      if (authFormsView) authFormsView.classList.remove('hidden');
+      if (rightPanel) rightPanel.classList.remove('entry-active');
+      if (loginModeInput) loginModeInput.value = 'user';
+
+      try {
+        const otherWays = document.getElementById('other-ways-to-continue');
+        if (otherWays) {
+          otherWays.style.display = (portalType === 'community') ? '' : 'none';
+        }
+      } catch (e) {
+        console.warn('Guest option toggle failed:', e);
+      }
+
+      if (typeof PcodeGoogleAuth !== 'undefined') {
+        PcodeGoogleAuth.reinitForPortal(portalType, { mountId: 'google-signin-mount-login' });
+      }
+    }
+
+    // Initialize form handlers
+    function initializeFormHandlers() {
+      console.log('Initializing form handlers...');
+
+      const entryCommunityBtn = document.getElementById('entry-community-btn');
+      const entryProviderBtn = document.getElementById('entry-provider-btn');
+      const backToEntryBtn = document.getElementById('back-to-entry-btn');
+
+      if (entryCommunityBtn) {
+        entryCommunityBtn.addEventListener('click', () => {
+          window.location.href = 'login.html';
+        });
+      }
+
+      if (entryProviderBtn) {
+        entryProviderBtn.addEventListener('click', () => {
+          window.location.href = 'provider-login.html';
+        });
+      }
+
+      if (backToEntryBtn) {
+        backToEntryBtn.addEventListener('click', () => showEntrySelection());
+      }
+
+      const guestLoginBtn = document.getElementById('guest-login-btn');
+      if (guestLoginBtn) {
+        guestLoginBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          console.log('Guest login button clicked');
+          if (typeof auth !== 'undefined' && typeof auth.handleGuestLogin === 'function') {
+            auth.handleGuestLogin();
+          } else {
+            console.error('Auth not ready');
+            alert('Authentication system not ready. Please refresh the page.');
+          }
+        });
+      }
+
+      // Admin login button handler
+      const adminLoginBtn = document.getElementById('admin-login-btn');
+      if (adminLoginBtn) {
+        adminLoginBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          console.log('Admin login button clicked');
+          // Redirect to admin login page
+          window.location.href = 'admin-login.html';
+        });
+      }
+
+      console.log('Form handlers initialized');
+    }
+
+    var pcodeLoginNewAutoredirectTimer = null;
+    function scheduleLoginNewRedirectIfSession() {
+      if (pcodeLoginNewAutoredirectTimer != null) {
+        try {
+          clearTimeout(pcodeLoginNewAutoredirectTimer);
+        } catch (e) {}
+        pcodeLoginNewAutoredirectTimer = null;
+      }
+      pcodeLoginNewAutoredirectTimer = setTimeout(function () {
+        pcodeLoginNewAutoredirectTimer = null;
+        if (typeof auth === 'undefined' || typeof auth.isAuthenticated !== 'function') {
+          return;
+        }
+        if (!auth.isAuthenticated()) {
+          return;
+        }
+        console.log('User already authenticated, redirecting...');
+        var redirectUrl =
+          typeof auth.getDefaultDashboardForUser === 'function'
+            ? auth.getDefaultDashboardForUser(auth.currentUser)
+            : 'index.html';
+        window.location.href = redirectUrl;
+      }, 200);
+    }
+    window.pcodeCancelLoginNewAutoredirect = function () {
+      if (pcodeLoginNewAutoredirectTimer == null) {
+        return;
+      }
+      try {
+        clearTimeout(pcodeLoginNewAutoredirectTimer);
+      } catch (e) {}
+      pcodeLoginNewAutoredirectTimer = null;
+    };
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded fired');
+        // If redirected here after registration, land on Login tab (and preserve portal)
+        try {
+          const params = new URLSearchParams(window.location.search || '');
+          const tab = (params.get('tab') || '').toLowerCase();
+          const portal = (params.get('portal') || '').toLowerCase();
+          if (tab === 'login') {
+            if (portal === 'community' || portal === 'provider') {
+              setPortalType(portal);
+              const entrySelectionView = document.getElementById('entry-selection-view');
+              const authFormsView = document.getElementById('auth-forms-view');
+              const rightPanel = document.getElementById('auth-page-right');
+              if (entrySelectionView) entrySelectionView.classList.add('hidden');
+              if (authFormsView) authFormsView.classList.remove('hidden');
+              if (rightPanel) rightPanel.classList.remove('entry-active');
+            } else {
+              try {
+                sessionStorage.removeItem('PMOS_selected_portal_type');
+                if (typeof auth !== 'undefined' && auth) auth.selectedPortalType = null;
+              } catch (e) {
+                console.warn('Clear portal for tab=login:', e);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Post-register redirect params parse failed:', e);
+        }
+        initializeFormHandlers();
+
+        scheduleLoginNewRedirectIfSession();
+      });
+    } else {
+      // DOM already loaded
+      console.log('DOM already loaded, initializing immediately');
+      // If redirected here after registration, land on Login tab (and preserve portal)
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        const tab = (params.get('tab') || '').toLowerCase();
+        const portal = (params.get('portal') || '').toLowerCase();
+        if (tab === 'login') {
+          if (portal === 'community' || portal === 'provider') {
+            setPortalType(portal);
+            const entrySelectionView = document.getElementById('entry-selection-view');
+            const authFormsView = document.getElementById('auth-forms-view');
+            const rightPanel = document.getElementById('auth-page-right');
+            if (entrySelectionView) entrySelectionView.classList.add('hidden');
+            if (authFormsView) authFormsView.classList.remove('hidden');
+            if (rightPanel) rightPanel.classList.remove('entry-active');
+            switchTab('login');
+          } else {
+            try {
+              sessionStorage.removeItem('PMOS_selected_portal_type');
+              if (typeof auth !== 'undefined' && auth) auth.selectedPortalType = null;
+            } catch (e) {
+              console.warn('Clear portal for tab=login:', e);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Post-register redirect params parse failed:', e);
+      }
+      initializeFormHandlers();
+
+      // Load saved credentials if available
+      setTimeout(() => {
+        if (typeof auth !== 'undefined' && typeof auth.loadSavedCredentials === 'function') {
+          auth.loadSavedCredentials();
+        }
+      }, 100);
+
+      scheduleLoginNewRedirectIfSession();
+    }
+  </script>
+
+  <!-- Login loading modal (sizing aligned with XAI loading + center alerts) -->
+  <div id="login-loading-modal" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="login-loading-title">
+      <div id="login-loading-content">
+        <div class="spinner" aria-hidden="true"></div>
+        <div id="login-loading-title" class="title">Logging in…</div>
+        <div id="login-loading-message" class="msg hidden" aria-hidden="true"></div>
+      </div>
+      <div id="login-modal-error-alert" class="hidden" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="login-modal-error-inner">
+          <svg class="login-modal-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p id="login-modal-error-text" class="login-modal-error-msg"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

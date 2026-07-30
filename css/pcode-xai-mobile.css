@@ -1,0 +1,242 @@
+/**
+ * XAI Insights — mobile layout for charts, tables, and cards (provider + user).
+ */
+
+@media (max-width: 768px) {
+  body.pcode-app-bento .max-w-7xl.mx-auto.py-12,
+  body.xai-bento-page .max-w-7xl.mx-auto.py-12 {
+    padding-top: 1.25rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  body.pcode-app-bento .max-w-7xl.mx-auto,
+  body.xai-bento-page .max-w-7xl.mx-auto {
+    padding-left: 0.625rem !important;
+    padding-right: 0.625rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-bento-card,
+  body.xai-bento-page #xai-content .pcode-bento-card,
+  body.xai-bento-page #xai-content .bento-card {
+    padding: 0.875rem !important;
+    margin-bottom: 1rem !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Stack icon + title headers */
+  body.pcode-app-bento #xai-content .pcode-xai-card-header,
+  body.xai-bento-page #xai-content .pcode-xai-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-xai-card-header > div:first-child,
+  body.xai-bento-page #xai-content .pcode-xai-card-header > div:first-child {
+    margin-right: 0 !important;
+  }
+
+  /* Prediction summary — single column */
+  body.pcode-app-bento #xai-content .pcode-xai-summary-grid,
+  body.xai-bento-page #xai-content .pcode-xai-summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-xai-summary-grid > div,
+  body.xai-bento-page #xai-content .pcode-xai-summary-grid > div {
+    text-align: left !important;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  body.pcode-app-bento #xai-content .pcode-xai-summary-grid > div:last-child,
+  body.xai-bento-page #xai-content .pcode-xai-summary-grid > div:last-child {
+    border-bottom: none;
+  }
+
+  /* Diagnostic prediction summary — stack chart + attribution */
+  body.pcode-app-bento #xai-content .pcode-xai-diagnostic-grid,
+  body.xai-bento-page #xai-content .pcode-xai-diagnostic-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-xai-diagnostic-grid h3,
+  body.xai-bento-page #xai-content .pcode-xai-diagnostic-grid h3 {
+    font-size: 1rem !important;
+    margin-bottom: 0.625rem !important;
+  }
+
+  /* Factors grid — stack cards */
+  body.pcode-app-bento #xai-content .pcode-xai-factors-grid,
+  body.xai-bento-page #xai-content .pcode-xai-factors-grid,
+  body.xai-bento-page .xai-factors-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    align-items: start !important;
+  }
+
+  /* Chart scroll hosts */
+  body.pcode-app-bento #xai-content .pcode-chart-scroll,
+  body.xai-bento-page #xai-content .pcode-chart-scroll,
+  body.xai-bento-page #xai-content .chart-well {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.pcode-app-bento #xai-content .pcb-echart-host,
+  body.xai-bento-page #xai-content .pcb-echart-host {
+    padding: 0.35rem !important;
+  }
+
+  body.pcode-app-bento #shap-force-plot,
+  body.pcode-app-bento #shap-importance-chart,
+  body.pcode-app-bento #consensus-chart,
+  body.xai-bento-page #shap-force-plot,
+  body.xai-bento-page #shap-importance-chart,
+  body.xai-bento-page #consensus-chart {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 200px;
+    overflow: visible !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-chart-scroll,
+  body.xai-bento-page #xai-content .pcode-chart-scroll {
+    overflow-y: visible !important;
+  }
+
+  /* Feature contributor list */
+  body.pcode-app-bento #feature-list .pcode-xai-glass-item,
+  body.xai-bento-page #feature-list .pcode-xai-glass-item {
+    font-size: 0.875rem !important;
+    padding: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #feature-list .pcode-xai-glass-item p,
+  body.xai-bento-page #feature-list .pcode-xai-glass-item p {
+    font-size: 0.875rem !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Grad-CAM images */
+  body.pcode-app-bento #gradcam-original-container,
+  body.pcode-app-bento #gradcam-heatmap-container,
+  body.xai-bento-page #gradcam-original-container,
+  body.xai-bento-page #gradcam-heatmap-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body.pcode-app-bento #gradcam-original-container img,
+  body.pcode-app-bento #gradcam-heatmap-container img,
+  body.pcode-app-bento #gradcam-heatmap-container canvas,
+  body.xai-bento-page #gradcam-original-container img,
+  body.xai-bento-page #gradcam-heatmap-container img,
+  body.xai-bento-page #gradcam-heatmap-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Attribution rows */
+  body.pcode-app-bento #xai-content .pcode-attribution-row,
+  body.xai-bento-page #xai-content .pcode-attribution-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.625rem !important;
+    padding: 0.75rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-attribution-row > span:first-child,
+  body.xai-bento-page #xai-content .pcode-attribution-row > span:first-child,
+  body.pcode-app-bento #xai-content .pcode-attribution-label-wrap,
+  body.xai-bento-page #xai-content .pcode-attribution-label-wrap {
+    font-size: 0.8125rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-attribution-row > .pcode-attribution-meter,
+  body.xai-bento-page #xai-content .pcode-attribution-row > .pcode-attribution-meter,
+  body.pcode-app-bento #xai-content .pcode-attribution-row > div:last-child,
+  body.xai-bento-page #xai-content .pcode-attribution-row > div:last-child {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-attribution-meter,
+  body.xai-bento-page #xai-content .pcode-attribution-meter {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-attribution-track,
+  body.xai-bento-page #xai-content .pcode-attribution-track {
+    height: 0.5625rem;
+    min-width: 0;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-attribution-row .w-20,
+  body.xai-bento-page #xai-content .pcode-attribution-row .w-20 {
+    flex: 1;
+    max-width: none !important;
+    margin-right: 0.5rem !important;
+    min-width: 0;
+  }
+
+  body.pcode-app-bento #xai-content #decision-factors-summary,
+  body.xai-bento-page #xai-content #decision-factors-summary {
+    font-size: 0.875rem !important;
+    line-height: 1.45 !important;
+    padding: 0.75rem !important;
+    margin-top: 1rem !important;
+  }
+
+  /* Clinical notes — full width */
+  body.pcode-app-bento #xai-content .pcode-xai-clinical-note,
+  body.xai-bento-page #xai-content .pcode-xai-clinical-note {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.45 !important;
+  }
+
+  body.pcode-app-bento #gradcam-heatmap-caption,
+  body.pcode-app-bento #gradcam-interpretation,
+  body.xai-bento-page #gradcam-heatmap-caption,
+  body.xai-bento-page #gradcam-interpretation {
+    font-size: 0.8125rem !important;
+    line-height: 1.45 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body.pcode-app-bento .max-w-7xl.mx-auto,
+  body.xai-bento-page .max-w-7xl.mx-auto {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  body.pcode-app-bento #xai-content h2,
+  body.xai-bento-page #xai-content h2 {
+    font-size: 1.125rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body.pcode-app-bento #xai-content h3,
+  body.xai-bento-page #xai-content h3 {
+    font-size: 0.9375rem !important;
+  }
+
+  body.pcode-app-bento #xai-content .pcode-bento-card,
+  body.xai-bento-page #xai-content .pcode-bento-card,
+  body.xai-bento-page #xai-content .bento-card {
+    padding: 0.75rem !important;
+  }
+}

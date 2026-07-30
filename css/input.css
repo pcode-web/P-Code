@@ -1,0 +1,1684 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force white text on all headings with text-white class - VERY IMPORTANT */
+h1.text-white, h2.text-white, h3.text-white, h4.text-white, h5.text-white, h6.text-white {
+  color: white !important;
+  text-shadow: none;
+}
+
+/* Mobile-first typography */
+@media (max-width: 768px) {
+  h1 { font-size: 1.75rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.25rem !important; }
+  h4 { font-size: 1rem !important; }
+  p { font-size: 0.9375rem !important; }
+}
+
+/* Minimum touch target size */
+button, a.button, input[type="button"], input[type="submit"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Normal sizing for checkboxes and radio buttons */
+input[type="checkbox"], input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Improved form inputs for mobile */
+input, textarea, select {
+  font-size: 1rem; /* Prevents zoom on iOS */
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  input, textarea, select {
+    min-height: 48px;
+    padding: 0.625rem 0.75rem !important;
+  }
+}
+
+/* Custom Medical Theme Styles */
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-gray-50 transition-colors duration-300;
+  }
+
+  
+  a {
+
+  }
+
+
+}
+
+@layer components {
+  /* Gradient Backgrounds */
+  .gradient-bg {
+    background: linear-gradient(135deg, #6B46C1 0%, #8B5CF6 100%);
+  }
+
+
+  
+  .gradient-bg-light {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  }
+
+
+  /* Card static anchor — zero spatial hover movement */
+  .pcode-card-static {
+    @apply transform-none transition-[background-color,border-color] duration-200 ease-out
+      hover:!translate-y-0 hover:!scale-100;
+  }
+
+  /* Card Hover Effects */
+  .card-hover {
+    @apply pcode-card-static border-transparent;
+  }
+  
+  .card-hover:hover {
+    @apply border-purple-500/50 bg-white/[0.04];
+  }
+
+
+
+  /* Medical Metric Cards */
+  .metric-card {
+    @apply pcode-card-static bg-white/95 backdrop-blur-sm;
+  }
+
+
+
+  /* Progress Bars */
+  .progress-bar {
+    @apply transition-all duration-300 ease-out;
+  }
+
+
+
+  /* Form Inputs */
+  .input-medical {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500;
+  }
+
+  .pcode-clinical-input {
+    @apply w-full px-4 py-3 rounded-xl shadow-sm transition-all duration-200
+      border border-white/10 bg-black/30 text-white
+      focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500;
+  }
+
+
+
+  /* Glassmorphic neon pill buttons */
+  .btn-glass-pill {
+    @apply flex items-center justify-center gap-2 rounded-full transition-all duration-300 ease-out backdrop-blur-md bg-white/[0.03] border-2 font-semibold
+      shadow-[0_0_0px_rgba(168,85,247,0)]
+      px-4 py-2 text-sm
+      sm:px-6 sm:py-2.5 sm:text-base;
+  }
+
+  /* Mobile-first scaling — stats, titles, charts, shells */
+  .pcode-stat-value {
+    @apply text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl;
+  }
+
+  .pcode-hero-title {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 sm:mb-4 md:mb-6;
+  }
+
+  .pcode-card-title {
+    @apply text-base font-semibold sm:text-lg md:text-xl tracking-tight;
+  }
+
+  .pcode-page-shell {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-12 pb-20 sm:pb-12 md:pb-12;
+  }
+
+  .pcode-chart-host {
+    @apply w-full min-h-[160px] max-h-[200px] sm:min-h-[200px] sm:max-h-[280px] md:max-h-none md:min-h-[220px];
+  }
+
+  .pcode-bento-grid {
+    @apply grid grid-cols-1 gap-6 lg:gap-8;
+  }
+
+  /* Responsive bento metric grids — single column mobile, multi-column desktop */
+  .pcode-bento-metrics-grid {
+    @apply w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 px-0 sm:px-0 min-w-0 items-stretch;
+  }
+
+  .pcode-bento-metrics-grid--fluid {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .pcode-bento-metrics-grid--three {
+    @apply lg:grid-cols-3;
+  }
+
+  .pcode-bento-metrics-grid--two {
+    @apply lg:grid-cols-2;
+  }
+
+  .pcode-metric-tile {
+    @apply p-2.5 sm:p-5 rounded-2xl w-full min-w-0 overflow-hidden
+      aspect-square sm:aspect-auto sm:min-h-[7.5rem] lg:min-h-[6.5rem]
+      border border-black/15 shadow-sm dark:border-white/10;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'label icon'
+      'value value';
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+  }
+
+  /* Dashboard tiles — icon top-right beside label; value centered & larger (all breakpoints) */
+  .pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-label {
+    grid-area: label;
+    align-self: center;
+    justify-self: start;
+    text-align: left;
+    max-width: 100%;
+    line-height: 1.25;
+  }
+
+  .pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-tile__icon {
+    grid-area: icon;
+    align-self: start;
+    justify-self: end;
+  }
+
+  .pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-value {
+    grid-area: value;
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(1.65rem, 8.5vw, 2.15rem);
+    letter-spacing: -0.03em;
+  }
+
+  /* Stacked metric tiles (model performance footnotes) stay rectangular on mobile */
+  .pcode-metric-tile--stacked {
+    @apply aspect-auto min-h-0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pcode-metric-tile--stacked .pcode-metric-label {
+    @apply normal-case tracking-normal font-semibold;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .pcode-metric-tile__copy {
+    display: contents;
+  }
+
+  .pcode-metric-tile--stacked .pcode-metric-tile__copy {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0.125rem;
+  }
+
+  .pcode-metric-label {
+    @apply text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block leading-tight;
+    grid-area: label;
+  }
+
+  .pcode-metric-value {
+    @apply font-black text-black dark:text-white tracking-tight tabular-nums leading-none;
+    grid-area: value;
+  }
+
+  @media (min-width: 640px) {
+    .pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-value {
+      font-size: clamp(1.75rem, 2.8vw, 2.35rem);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .pcode-metric-tile:not(.pcode-metric-tile--stacked) .pcode-metric-value {
+      font-size: 2.35rem;
+    }
+  }
+
+  .pcode-metric-tile__icon {
+    grid-area: icon;
+    @apply w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center;
+    background: rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+
+  .pcode-metric-tile__svg {
+    @apply w-[1.125rem] h-[1.125rem] sm:w-5 sm:h-5 shrink-0;
+  }
+
+  .pcode-metric-tile--accent-purple .pcode-metric-tile__icon {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(196, 181, 253, 0.35);
+    color: #c4b5fd;
+  }
+
+  .pcode-metric-tile--accent-red .pcode-metric-tile__icon {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: rgba(251, 113, 133, 0.35);
+    color: #fb7185;
+  }
+
+  .pcode-metric-tile--accent-green .pcode-metric-tile__icon {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(74, 222, 128, 0.35);
+    color: #4ade80;
+  }
+
+  .pcode-metric-tile--accent-blue .pcode-metric-tile__icon {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(96, 165, 250, 0.35);
+    color: #60a5fa;
+  }
+
+  .pcode-dropzone {
+    @apply p-4 sm:p-8 border-2 border-dashed border-purple-500/20 rounded-xl text-center cursor-pointer transition-all duration-200;
+  }
+
+  .pcode-dropzone__icon {
+    @apply w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-1 sm:mb-2;
+  }
+
+  .pcode-dropzone-actions {
+    @apply flex flex-col sm:flex-row gap-2 justify-center mt-3 sm:mt-4;
+  }
+
+  .pcode-btn-density {
+    @apply py-2 px-3 sm:py-3 sm:px-5 text-[11px] sm:text-xs font-bold inline-flex items-center justify-center rounded-lg transition-colors;
+  }
+
+  .pcode-clinical-panel {
+    @apply p-3 sm:p-6 space-y-2 sm:space-y-4;
+  }
+
+  .pcode-clinical-checklist {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4;
+  }
+
+  .pcode-clinical-checklist label {
+    @apply flex items-center gap-2 sm:gap-3 cursor-pointer min-h-0 py-0.5;
+  }
+
+  .pcode-table-compact th,
+  .pcode-table-compact td {
+    @apply py-2.5 px-3 sm:py-4 sm:px-6 text-xs sm:text-sm;
+  }
+
+  .pcode-diagnosis-chips-grid {
+    @apply grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5 min-w-0;
+  }
+
+  .pcode-diagnosis-chip {
+    @apply rounded-2xl border px-3 py-2.5 min-w-0 aspect-square;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  .pcode-diagnosis-chip__label {
+    @apply text-[9px] sm:text-xs font-bold uppercase tracking-wider leading-tight block;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    text-align: left;
+    width: 100%;
+    margin: 0;
+  }
+
+  .pcode-diagnosis-chip__count {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: clamp(1.65rem, 6vw, 2.15rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  @media (min-width: 640px) {
+    .pcode-diagnosis-chip__count {
+      font-size: clamp(1.75rem, 2.5vw, 2.35rem);
+    }
+  }
+
+  /* Match dashboard diagnosis bar chart neon palette — DARK MODE ONLY */
+  html.dark .pcode-diagnosis-chip--pending,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--pending {
+    background: linear-gradient(
+      145deg,
+      rgba(91, 33, 182, 0.42) 0%,
+      rgba(124, 58, 237, 0.22) 50%,
+      rgba(3, 2, 5, 0.2) 100%
+    );
+    border-color: rgba(192, 132, 252, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(216, 180, 254, 0.12),
+      0 0 18px rgba(124, 58, 237, 0.2);
+  }
+
+  html.dark .pcode-diagnosis-chip--pending .pcode-diagnosis-chip__label,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--pending .pcode-diagnosis-chip__label {
+    color: #c084fc;
+  }
+
+  html.dark .pcode-diagnosis-chip--positive,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--positive {
+    background: linear-gradient(
+      145deg,
+      rgba(153, 27, 27, 0.48) 0%,
+      rgba(220, 38, 38, 0.24) 50%,
+      rgba(3, 2, 5, 0.2) 100%
+    );
+    border-color: rgba(248, 113, 113, 0.52);
+    box-shadow:
+      inset 0 1px 0 rgba(252, 165, 165, 0.14),
+      0 0 22px rgba(248, 113, 113, 0.28);
+  }
+
+  html.dark .pcode-diagnosis-chip--positive .pcode-diagnosis-chip__label,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--positive .pcode-diagnosis-chip__label {
+    color: #fca5a5;
+  }
+
+  html.dark .pcode-diagnosis-chip--negative,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--negative {
+    background: linear-gradient(
+      145deg,
+      rgba(20, 83, 45, 0.48) 0%,
+      rgba(22, 163, 74, 0.24) 50%,
+      rgba(3, 2, 5, 0.2) 100%
+    );
+    border-color: rgba(74, 222, 128, 0.48);
+    box-shadow:
+      inset 0 1px 0 rgba(134, 239, 172, 0.12),
+      0 0 22px rgba(74, 222, 128, 0.26);
+  }
+
+  html.dark .pcode-diagnosis-chip--negative .pcode-diagnosis-chip__label,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--negative .pcode-diagnosis-chip__label {
+    color: #86efac;
+  }
+
+  html.dark .pcode-diagnosis-chip--borderline,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--borderline {
+    background: linear-gradient(
+      145deg,
+      rgba(180, 83, 9, 0.46) 0%,
+      rgba(245, 158, 11, 0.24) 50%,
+      rgba(3, 2, 5, 0.2) 100%
+    );
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(253, 224, 71, 0.12),
+      0 0 20px rgba(245, 158, 11, 0.22);
+  }
+
+  html.dark .pcode-diagnosis-chip--borderline .pcode-diagnosis-chip__label,
+  html.pcode-app-bento-root.dark .pcode-diagnosis-chip--borderline .pcode-diagnosis-chip__label {
+    color: #fcd34d;
+  }
+
+  /* Light mode — solid opaque chips, no glow */
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--pending,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--pending {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    box-shadow: none;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--pending .pcode-diagnosis-chip__label,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--pending .pcode-diagnosis-chip__label {
+    color: #0f172a;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--positive,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--positive {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    box-shadow: none;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--positive .pcode-diagnosis-chip__label,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--positive .pcode-diagnosis-chip__label {
+    color: #0f172a;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--negative,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--negative {
+    background: #dcfce7;
+    border-color: #86efac;
+    box-shadow: none;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--negative .pcode-diagnosis-chip__label,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--negative .pcode-diagnosis-chip__label {
+    color: #0f172a;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--borderline,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--borderline {
+    background: #ffedd5;
+    border-color: #fdba74;
+    box-shadow: none;
+  }
+
+  html.pcode-app-bento-root:not(.dark) .pcode-diagnosis-chip--borderline .pcode-diagnosis-chip__label,
+  html[data-pcode-theme="light"] .pcode-diagnosis-chip--borderline .pcode-diagnosis-chip__label {
+    color: #0f172a;
+  }
+
+  .pcode-screening-metrics-grid {
+    @apply w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 min-w-0 items-stretch;
+  }
+
+  .pcode-screening-metric-card {
+    @apply aspect-square sm:aspect-auto;
+  }
+
+  .pcode-screening-metric-body {
+    @apply flex flex-col space-y-2 sm:space-y-3 min-w-0 w-full;
+  }
+
+  .pcode-chart-panel {
+    @apply w-full h-48 sm:h-64 mt-4 min-w-0 relative;
+  }
+
+  .pcode-chart-panel > .pcb-echart-host,
+  .pcode-chart-panel.pcb-echart-host {
+    @apply w-full h-full min-h-0 max-h-none;
+  }
+
+  .pcode-chart-panel--grouped-bar {
+    @apply h-56 sm:h-64 md:h-72 mt-2 sm:mt-4;
+  }
+
+  .pcode-chart-legend {
+    @apply w-full flex flex-wrap md:flex-row items-center justify-center gap-x-4 gap-y-2 mt-3 sm:mt-4 px-2 min-w-0;
+  }
+
+  .pcode-chart-legend__item {
+    @apply inline-flex items-center gap-2 shrink-0 max-w-full;
+  }
+
+  .pcode-chart-legend__swatch {
+    @apply w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm shrink-0;
+  }
+
+  .pcode-chart-legend__label {
+    @apply text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-400 whitespace-nowrap;
+  }
+
+  .pcode-btn-pill {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold
+      sm:px-6 sm:py-2.5 sm:text-base transition-colors;
+  }
+
+  .btn-purple-glass {
+    @apply btn-glass-pill border-purple-500/50 text-purple-400 shadow-none
+      hover:bg-purple-500/20 hover:border-purple-400
+      hover:shadow-[0_0_15px_rgba(168,85,247,0.4)];
+  }
+
+  .btn-teal-glass {
+    @apply btn-glass-pill border-teal-500/50 text-teal-400
+      hover:bg-teal-500/20 hover:border-emerald-500/60
+      hover:shadow-[0_0_15px_rgba(16,185,129,0.3)];
+  }
+
+  .btn-rose-glass {
+    @apply btn-glass-pill border-rose-500/50 text-rose-400 shadow-none
+      hover:bg-rose-500/20 hover:border-rose-400
+      hover:shadow-[0_0_15px_rgba(244,63,94,0.35)];
+  }
+
+  .btn-blue-glass {
+    @apply btn-glass-pill border-blue-500/50 text-blue-400
+      hover:bg-blue-500/20 hover:border-blue-500/60
+      hover:shadow-[0_0_15px_rgba(59,130,246,0.3)];
+  }
+
+  .btn-ghost-glass {
+    @apply btn-glass-pill border-white/20 text-violet-100
+      hover:bg-white/10 hover:border-purple-500/50
+      hover:shadow-[0_0_15px_rgba(168,85,247,0.25)];
+  }
+
+  .btn-primary {
+    @apply btn-purple-glass;
+  }
+
+  .btn-secondary {
+    @apply btn-ghost-glass;
+  }
+
+  .btn-success {
+    @apply btn-teal-glass;
+  }
+
+
+  /* Modal Styles */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm;
+  }
+
+
+  .modal-content {
+    @apply bg-white rounded-lg shadow-2xl max-w-md w-full mx-4;
+  }
+
+
+  /* Navigation Active State */
+  .nav-active {
+    @apply text-purple-600 border-b-2 border-purple-600;
+  }
+
+
+  /* Status Badges */
+  .badge-positive {
+    @apply px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold;
+  }
+
+
+  .badge-negative {
+    @apply px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold;
+  }
+
+
+  .badge-pending {
+    @apply px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold;
+  }
+
+
+  /* Upload Area */
+  .upload-area {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-all duration-200;
+  }
+
+
+  .upload-area.dragover {
+    @apply border-purple-500 bg-purple-50;
+  }
+
+
+  /* Tab Navigation */
+  .tab-button {
+    @apply px-4 py-2 border-b-2 border-transparent text-gray-600 font-semibold transition-all duration-200;
+  }
+
+
+  .tab-button.active {
+    @apply border-b-purple-600 text-purple-600;
+  }
+
+
+  /* Training Log */
+  .log-entry {
+    @apply py-2 px-3 rounded font-mono text-sm;
+  }
+
+  .log-info { 
+    @apply text-blue-600;
+  }
+
+
+  .log-success { 
+    @apply text-green-600;
+  }
+
+
+  .log-warning { 
+    @apply text-yellow-600;
+  }
+
+
+  .log-error { 
+    @apply text-red-600;
+  }
+
+
+  /* SHAP Colors */
+  .shap-positive {
+    @apply text-green-600;
+  }
+
+
+  .shap-negative {
+    @apply text-red-600;
+  }
+
+.auth-tab {
+  @apply px-4 py-2 border-b-2 border-transparent text-gray-600 font-semibold transition-all;
+}
+
+
+/* Form Inputs */
+.input-medical {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-medical-purple focus:border-transparent
+           transition-all duration-200;
+  }
+
+  /* Remove dark autofill styling */
+  .input-medical:-webkit-autofill,
+  .input-medical:-webkit-autofill:hover,
+  .input-medical:-webkit-autofill:focus,
+  .input-medical:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #1f2937 !important;
+  }
+
+  .input-medical:-webkit-autofill {
+    -webkit-transition-delay: 99999s;
+    transition-delay: 99999s;
+  }
+
+  input, select, textarea {
+    -webkit-autofill: none !important;
+    -webkit-user-autofill-selected-background-color: transparent !important;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #1f2937 !important;
+  }
+
+  /* Buttons — glass pills (see also css/pcode-glass-buttons.css) */
+  .btn-primary {
+    @apply btn-purple-glass py-3;
+  }
+
+  .btn-secondary {
+    @apply btn-ghost-glass py-3;
+  }
+
+  .btn-success {
+    @apply btn-teal-glass py-3;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+  }
+
+  .modal-content {
+    @apply bg-white rounded-xl shadow-2xl z-50 max-w-lg w-full mx-4
+           transform transition-all duration-300;
+  }
+
+  /* Navigation Active State */
+  .nav-active {
+    @apply text-medical-purple font-semibold border-b-2 border-medical-purple pb-1;
+  }
+
+  /* Status Badges */
+  .badge-positive {
+    @apply px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800;
+  }
+
+  .badge-negative {
+    @apply px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800;
+  }
+
+  .badge-pending {
+    @apply px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800;
+  }
+
+  /* Upload Area */
+  .upload-area {
+    @apply border-2 border-dashed border-gray-300 rounded-lg p-8 text-center
+           transition-all duration-300 hover:border-medical-purple hover:bg-gray-50
+
+  }
+
+  .upload-area.dragover {
+    @apply border-medical-purple bg-medical-purple/5;
+  }
+
+  /* Tab Navigation */
+  .tab-button {
+    @apply px-4 py-2 rounded-md transition-all duration-200 text-gray-600 hover:bg-gray-100;
+  }
+
+  .tab-button.active {
+    @apply bg-medical-purple text-white;
+  }
+
+  /* Force Light Mode Only - Override all dark mode media queries */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: white !important;
+      color: #111827 !important;
+    }
+
+    .input-medical,
+    input,
+    select,
+    textarea {
+      background-color: white !important;
+      color: #1f2937 !important;
+      border-color: #d1d5db !important;
+      caret-color: #1f2937 !important;
+    }
+
+    .input-medical:focus,
+    input:focus,
+    select:focus,
+    textarea:focus {
+      background-color: white !important;
+      color: #1f2937 !important;
+      border-color: #8B5CF6 !important;
+      outline-color: #8B5CF6 !important;
+    }
+
+    .input-medical::placeholder,
+    input::placeholder,
+    textarea::placeholder {
+      color: #9ca3af !important;
+    }
+
+    .input-medical::-moz-placeholder,
+    input::-moz-placeholder,
+    textarea::-moz-placeholder {
+      color: #9ca3af !important;
+    }
+
+    .btn-primary {
+      background-color: #6B46C1 !important;
+      color: white !important;
+    }
+
+    .btn-primary:hover {
+      background-color: #553399 !important;
+    }
+
+    .btn-secondary {
+      background-color: white !important;
+      color: #6B46C1 !important;
+      border-color: #6B46C1 !important;
+    }
+
+    .modal-content {
+      background-color: white !important;
+      color: #111827 !important;
+    }
+
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    a, label, p, span, div {
+      background-color: transparent;
+    }
+  }
+
+  /* Training Log */
+  .log-entry {
+    @apply py-2 px-3 border-b border-gray-200 font-mono text-xs;
+  }
+
+  .log-info { @apply text-blue-600; }
+  .log-success { @apply text-green-600; }
+  .log-warning { @apply text-yellow-600; }
+  .log-error { @apply text-red-600; }
+
+  /* SHAP Colors */
+  .shap-positive {
+    @apply text-red-600 bg-red-50;
+  }
+
+  .shap-negative {
+    @apply text-blue-600 bg-blue-50;
+  }
+
+  /* Auth / login modals: same max width and card weight as XAI loading + pcodeShowCenterAlert (max-w-md, rounded-lg, shadow-2xl, p-8) */
+  .auth-modal {
+    @apply fixed inset-0 z-[1000] flex items-center justify-center p-4;
+  }
+
+  .auth-modal-overlay {
+    @apply absolute inset-0;
+    background-color: rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .auth-modal-content {
+    @apply relative z-[1001] bg-white w-full max-w-md overflow-hidden rounded-lg shadow-2xl p-8;
+  }
+
+  .auth-tab {
+    @apply flex-1 py-4 text-center font-semibold transition-all duration-200
+           border-b-2 border-transparent text-gray-500 hover:text-gray-700;
+  }
+
+  .auth-tab.active {
+    @apply text-medical-purple border-medical-purple;
+  }
+
+  .social-btn {
+    @apply flex items-center justify-center gap-3 w-full py-3 px-4 
+           border border-gray-300 rounded-lg hover:bg-gray-50 
+           transition-all duration-200 font-medium;
+  }
+
+  .social-btn-google {
+    @apply hover:bg-red-50 hover:border-red-200;
+  }
+
+  /* Card Border with Background Image Overlay */
+  .card-with-bg-outline {
+    position: relative;
+    background-color: white;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* Create thin semi-transparent border showing background */
+  .card-with-bg-outline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(107, 70, 193, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Apply card outline to all major card types */
+  .bg-white.rounded-xl.shadow-lg.p-6.border,
+  .bg-white.rounded-lg.shadow.p-6.border,
+  .metric-card,
+  .bg-gradient-to-br.rounded-lg.p-6,
+  .bg-white.p-6.rounded-lg.shadow {
+    position: relative;
+    border: 1.5px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 
+      0 0 0 1px rgba(107, 70, 193, 0.2) inset,
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Enhanced shadow with background peek */
+  .bg-white.rounded-xl.shadow-lg.border {
+    box-shadow: 
+      inset 0 0 0 1px rgba(107, 70, 193, 0.2),
+      inset 0 1px 2px 0 rgba(139, 92, 246, 0.1),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Specific styling for metric cards */
+  .metric-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid;
+    border-color: rgba(107, 70, 193, 0.15);
+    pointer-events: none;
+  }
+
+  /* Cards in main content area */
+  .max-w-7xl .bg-white.rounded-xl {
+    border: 1.5px solid rgba(107, 70, 193, 0.15);
+    box-shadow: 
+      inset 0 1px 3px 0 rgba(139, 92, 246, 0.08),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Dialog and modal card overlays */
+  .bg-white.p-6.rounded-lg.shadow-lg {
+    border: 1px solid rgba(107, 70, 193, 0.12);
+    box-shadow: 
+      inset 0 1px 2px 0 rgba(139, 92, 246, 0.06),
+      0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Accent border for cards with color backgrounds */
+  .bg-gradient-to-br {
+    border: 1.5px solid;
+    border-color: rgba(107, 70, 193, 0.1) !important;
+  }
+
+  /* Global card border enhancement */
+  [class*="bg-white"][class*="rounded"] {
+    border-color: rgba(107, 70, 193, 0.15) !important;
+  }
+
+  /* Specific border adjustments for common card patterns */
+  .border-purple-200 {
+    border-color: rgba(107, 70, 193, 0.25) !important;
+    box-shadow: 
+      inset 0 1px 3px 0 rgba(139, 92, 246, 0.1),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .border-blue-200 {
+    border-color: rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 
+      inset 0 1px 3px 0 rgba(59, 130, 246, 0.08),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .border-green-200 {
+    border-color: rgba(16, 185, 129, 0.25) !important;
+    box-shadow: 
+      inset 0 1px 3px 0 rgba(16, 185, 129, 0.08),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .border-orange-200 {
+    border-color: rgba(251, 146, 60, 0.25) !important;
+    box-shadow: 
+      inset 0 1px 3px 0 rgba(251, 146, 60, 0.08),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Card containers */
+  .bg-white[class*="p-6"][class*="rounded-"],
+  .bg-white[class*="p-4"] {
+    border: 1px solid rgba(107, 70, 193, 0.15);
+  }
+
+  /* Enhanced inset glow for better depth */
+  .shadow-lg[class*="border"] {
+    box-shadow: 
+      inset 0 2px 4px 0 rgba(139, 92, 246, 0.05),
+      inset 0 0 1px 1px rgba(107, 70, 193, 0.1),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* ADAPTIVE COLOR BORDERS - Override Tailwind classes using :has() */
+
+  /* Increase border thickness for visibility */
+  .metric-card,
+  .bg-white.rounded-xl.shadow-lg.p-6.border,
+  .bg-white.rounded-lg.shadow.p-6.border {
+    border-width: 2.5px !important;
+  }
+
+  /* Direct color overrides for cards with colored content */
+  .metric-card:has(.text-purple-600) {
+    border-color: rgba(109, 40, 217, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-blue-600) {
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-green-600) {
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-red-600) {
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-orange-600) {
+    border-color: rgba(251, 146, 60, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-indigo-600) {
+    border-color: rgba(99, 102, 241, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-pink-600) {
+    border-color: rgba(236, 72, 153, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-teal-600) {
+    border-color: rgba(20, 184, 166, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-cyan-600) {
+    border-color: rgba(34, 211, 238, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  .metric-card:has(.text-yellow-600) {
+    border-color: rgba(250, 204, 21, 0.35) !important;
+    border-width: 2.5px !important;
+  }
+
+  /* Regular white cards with color backgrounds */
+  .bg-white.rounded-xl:has(.text-purple-600),
+  .bg-white.rounded-lg:has(.text-purple-600) {
+    border-color: rgba(109, 40, 217, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-blue-600),
+  .bg-white.rounded-lg:has(.text-blue-600) {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-green-600),
+  .bg-white.rounded-lg:has(.text-green-600) {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-red-600),
+  .bg-white.rounded-lg:has(.text-red-600) {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-orange-600),
+  .bg-white.rounded-lg:has(.text-orange-600) {
+    border-color: rgba(251, 146, 60, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-indigo-600),
+  .bg-white.rounded-lg:has(.text-indigo-600) {
+    border-color: rgba(99, 102, 241, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-pink-600),
+  .bg-white.rounded-lg:has(.text-pink-600) {
+    border-color: rgba(236, 72, 153, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-teal-600),
+  .bg-white.rounded-lg:has(.text-teal-600) {
+    border-color: rgba(20, 184, 166, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-cyan-600),
+  .bg-white.rounded-lg:has(.text-cyan-600) {
+    border-color: rgba(34, 211, 238, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl:has(.text-yellow-600),
+  .bg-white.rounded-lg:has(.text-yellow-600) {
+    border-color: rgba(250, 204, 21, 0.3) !important;
+  }
+
+  /* Gradient cards with specific colors */
+  .bg-gradient-to-br.from-purple-50 {
+    border-color: rgba(109, 40, 217, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-blue-50 {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-green-50 {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-red-50 {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-orange-50 {
+    border-color: rgba(251, 146, 60, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-indigo-50 {
+    border-color: rgba(99, 102, 241, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-pink-50 {
+    border-color: rgba(236, 72, 153, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-teal-50 {
+    border-color: rgba(20, 184, 166, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-cyan-50 {
+    border-color: rgba(34, 211, 238, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-yellow-50 {
+    border-color: rgba(250, 204, 21, 0.3) !important;
+  }
+
+  /* Nested white cards inside colored gradients */
+  .bg-gradient-to-br.from-purple-50 > .bg-white {
+    border-color: rgba(109, 40, 217, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-blue-50 > .bg-white {
+    border-color: rgba(59, 130, 246, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-green-50 > .bg-white {
+    border-color: rgba(16, 185, 129, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-red-50 > .bg-white {
+    border-color: rgba(239, 68, 68, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-orange-50 > .bg-white {
+    border-color: rgba(251, 146, 60, 0.28) !important;
+  }
+}
+
+@layer components {
+  /* Diagnostic system — Neon Obsidian bento */
+  .pcode-diagnostic-bento {
+    @apply pcode-card-static relative isolate flex flex-col gap-4 min-w-0 overflow-hidden rounded-3xl
+      backdrop-blur-md border border-white/[0.05] bg-white/[0.02] text-[#D1D1D6]
+      p-5 md:p-6
+      shadow-[inset_0_1px_0_rgba(255,255,255,0.06),inset_0_0_28px_rgba(168,85,247,0.06)]
+      hover:border-purple-500/40 hover:bg-white/[0.04];
+  }
+
+  .pcode-diagnostic-grid {
+    @apply grid grid-cols-1 gap-6 p-4 sm:p-5 md:p-6 lg:gap-8 lg:p-8 overflow-visible;
+  }
+
+  body.pcode-app-bento .detection-card.pcode-diagnostic-bento {
+    @apply p-5 md:p-6 lg:p-8;
+  }
+
+  .pcode-bento-card-header {
+    @apply border-b border-white/10 pb-4 mb-4;
+  }
+
+  .pcode-bento-card-header__row {
+    @apply flex items-center gap-4 mb-4;
+  }
+
+  .pcode-bento-card-header__row h2,
+  .pcode-bento-card-header__row .pcode-card-title {
+    @apply mb-0;
+  }
+
+  /* Mobile drawer — airy nav padding & link alignment */
+  body.pcode-app-bento #mobile-menu > div,
+  body.xai-bento-page #mobile-menu > div,
+  body.login-bento-page #mobile-menu > div {
+    @apply px-6 py-8 space-y-4;
+  }
+
+  body.pcode-app-bento #mobile-menu-close-btn,
+  body.xai-bento-page #mobile-menu-close-btn {
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+
+  body.pcode-app-bento .mobile-nav-links a,
+  body.xai-bento-page .mobile-nav-links a,
+  body.login-bento-page .mobile-nav-links a {
+    @apply flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-colors;
+  }
+
+  /* Detection cards: uniform shell padding (overrides p-0) */
+  body.pcode-app-bento .detection-card.pcode-diagnostic-bento {
+    @apply p-5 md:p-6 lg:p-8;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-diagnostic-scroll {
+    @apply px-0 pt-0 pb-2 flex-none min-h-0 overflow-visible;
+  }
+
+  body.pcode-app-bento .detection-card input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+  body.pcode-app-bento .detection-card select,
+  body.pcode-app-bento .detection-card textarea,
+  body.pcode-app-bento #clinical-form input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']),
+  body.pcode-app-bento #clinical-form select,
+  body.pcode-app-bento #clinical-form textarea {
+    @apply py-3 rounded-xl border-white/10 bg-black/30 shadow-none
+      focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500;
+  }
+
+  .pcode-diagnostic-title {
+    @apply text-base sm:text-lg font-semibold tracking-tight text-white;
+  }
+
+  .pcode-diagnostic-muted {
+    @apply text-[#D1D1D6];
+  }
+
+  .pcode-diagnostic-scroll {
+    @apply flex-1 min-h-0 overflow-y-auto overflow-x-visible rounded-2xl;
+  }
+
+  .pcode-diagnostic-results-panel {
+    @apply hidden flex-col gap-4 w-full min-w-0 overflow-visible;
+  }
+
+  .pcode-diagnostic-stack {
+    @apply flex flex-col gap-4 w-full min-w-0 overflow-visible;
+  }
+
+  .pcode-diagnostic-results-panel.is-revealed {
+    @apply flex motion-safe:animate-fade-in;
+  }
+
+  .pcode-unit-pill {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-0.5;
+  }
+
+  .pcode-unit-pill__btn {
+    @apply rounded-full px-2.5 py-0.5 text-[0.6875rem] font-semibold text-[#D1D1D6]
+      transition-colors duration-200;
+  }
+
+  .pcode-unit-pill__btn.is-active {
+    @apply bg-white/10 text-white border border-white/20;
+  }
+
+  .pcb-cm-cell {
+    @apply rounded-2xl flex flex-col items-center justify-center gap-1 min-h-[5.5rem] p-4
+      isolate overflow-visible;
+  }
+
+  /* Diagnostic summary — Obsidian bento data shell (matches Edit Profile modal structure) */
+  .pcode-obsidian-data-shell {
+    @apply w-full min-w-0 flex flex-col gap-4 overflow-hidden bg-white/[0.02]
+      backdrop-blur-md border border-white/[0.05] rounded-[32px] p-5 md:p-6 sm:p-8
+      shadow-[inset_0_1px_0_rgba(255,255,255,0.06),inset_0_0_28px_rgba(168,85,247,0.06)];
+  }
+
+  .pcode-obsidian-data-card {
+    @apply flex flex-col gap-4 min-w-0 overflow-visible rounded-3xl border border-white/[0.05]
+      bg-white/[0.02] backdrop-blur-md p-5 md:p-6
+      shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_0_24px_rgba(168,85,247,0.05)];
+  }
+
+  .pcode-section-header {
+    @apply mb-2;
+  }
+
+  .pcode-section-header__title-row {
+    @apply flex items-center gap-3;
+  }
+
+  .pcode-section-header__icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl
+      border border-purple-500/30 bg-purple-500/10 text-purple-300;
+  }
+
+  .pcode-section-header__title {
+    @apply line-clamp-2 min-w-0 w-full max-w-full whitespace-normal break-words
+      text-base font-semibold tracking-tight text-white sm:text-lg;
+  }
+
+  .pcode-section-header__rule {
+    @apply mb-4 mt-3 h-px w-full bg-gradient-to-r from-purple-500/50 to-transparent;
+  }
+
+  .pcode-data-bento-grid {
+    @apply grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .pcode-data-bento-grid > * {
+    @apply min-w-0;
+  }
+
+  .pcode-kv-pill {
+    @apply flex min-w-0 flex-col gap-1 overflow-visible rounded-xl border
+      border-white/[0.05] bg-white/[0.02] p-4;
+  }
+
+  .pcode-kv-label {
+    @apply whitespace-normal break-words text-xs font-bold uppercase leading-snug
+      tracking-widest;
+    color: var(--text-label, #1e293b);
+  }
+
+  .pcode-kv-value {
+    @apply mt-1 w-full max-w-full overflow-visible whitespace-normal break-words
+      text-xl font-semibold leading-snug text-white md:text-2xl;
+  }
+
+  /* Diagnostic / results — typography safe zone inside bento cards */
+  .pcode-diagnostic-bento h1,
+  .pcode-diagnostic-bento h2,
+  .pcode-diagnostic-bento h3,
+  .pcode-diagnostic-bento h4,
+  .pcode-diagnostic-bento h5,
+  .pcode-diagnostic-bento h6,
+  .pcode-diagnostic-bento p,
+  .pcode-obsidian-data-card h1,
+  .pcode-obsidian-data-card h2,
+  .pcode-obsidian-data-card h3,
+  .pcode-obsidian-data-card h4,
+  .pcode-obsidian-data-card h5,
+  .pcode-obsidian-data-card h6,
+  .pcode-obsidian-data-card p,
+  .pcode-obsidian-data-shell h1,
+  .pcode-obsidian-data-shell h2,
+  .pcode-obsidian-data-shell h3,
+  .pcode-obsidian-data-shell p {
+    @apply min-w-0 max-w-full overflow-visible whitespace-normal break-words;
+  }
+
+  .pcode-diagnostic-title,
+  .pcode-diagnostic-bento .pcode-card-title,
+  .pcode-obsidian-data-card .pcode-card-title,
+  .pcode-obsidian-data-card .gauge-label,
+  .pcode-diagnostic-bento .gauge-label {
+    @apply line-clamp-2 min-w-0 w-full max-w-full whitespace-normal break-words;
+  }
+
+  .pcode-diagnostic-bento .pcode-stat-value,
+  .pcode-obsidian-data-card .pcode-stat-value,
+  #combined-results .pcode-stat-value,
+  #clinical-results .pcode-kv-value,
+  #image-results .pcode-kv-value,
+  #clinical-risk,
+  #follicle-count,
+  #clinical-probability,
+  #image-probability,
+  #final-combined-score {
+    @apply w-full max-w-full overflow-visible whitespace-normal break-words
+      text-xl font-semibold leading-snug md:text-2xl;
+  }
+
+  #analysis-results-panel > .flex.flex-col {
+    @apply gap-4;
+  }
+
+  .gauge-results-section .gauge-grid {
+    @apply grid w-full grid-cols-1 items-start gap-8 text-center md:grid-cols-3;
+  }
+
+  .gauge-results-section .gauge-card,
+  .gauge-results-section .final-gauge-card,
+  .gauge-results-section .gauge-column {
+    @apply flex min-w-0 w-full max-w-full flex-col items-center text-center overflow-visible;
+  }
+
+  .gauge-results-section .gauge-card__labels {
+    @apply flex w-full flex-col items-center gap-1 text-center;
+  }
+
+  .pcode-obsidian-data-footer {
+    @apply mt-8 border-t border-white/10 pt-6;
+  }
+
+  .pcode-obsidian-data-footer .analysis-actions {
+    @apply flex w-full flex-col flex-wrap justify-end gap-3 sm:flex-row;
+  }
+
+  /* Add Patient modal — pinned header/footer, scrollable body */
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-shell {
+    @apply flex max-h-[90vh] w-[95%] max-w-[95vw] flex-col min-h-0 md:w-[800px] md:max-w-[800px];
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+    @apply flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4 md:px-6 md:py-5 scrollbar-thin;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer {
+    @apply flex-shrink-0 border-t border-white/[0.05] bg-white/[0.03] p-4 backdrop-blur-md md:p-6;
+  }
+}
+
+@layer utilities {
+  /* Animation Utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-safe\:animate-fade-in {
+      animation: none !important;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  @keyframes aura-expand {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+      filter: blur(60px);
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.7;
+      filter: blur(80px);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      filter: blur(70px);
+    }
+  }
+
+  .animate-aura-spread {
+    animation: aura-expand 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-aura-spread {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: scale(1) !important;
+      filter: blur(70px) !important;
+    }
+  }
+
+  /* Scrollbar Styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #8B5CF6 #f1f1f1;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #8B5CF6;
+    border-radius: 3px;
+  }
+
+  /* FORCED COLOR OVERRIDES FOR METRIC CARDS */
+  
+  /* Purple cards - XGBoost, Clinical, SHAP */
+  .metric-card.border-purple-200:has(.text-purple-600),
+  .metric-card:has(.text-purple-600),
+  .border-purple-200:has(.text-purple-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(109, 40, 217, 0.35) !important;
+  }
+
+  /* Blue cards - CNN, Imaging, Ultrasound */
+  .metric-card.border-purple-200:has(.text-blue-600),
+  .metric-card:has(.text-blue-600),
+  .border-purple-200:has(.text-blue-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+  }
+
+  /* Green cards - Accuracy, Success, Negative */
+  .metric-card.border-purple-200:has(.text-green-600),
+  .metric-card:has(.text-green-600),
+  .border-purple-200:has(.text-green-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+  }
+
+  /* Red cards - Positive, Alert, Error */
+  .metric-card.border-purple-200:has(.text-red-600),
+  .metric-card:has(.text-red-600),
+  .border-purple-200:has(.text-red-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+  }
+
+  /* Orange cards - Datasets, Recall, Warning */
+  .metric-card.border-purple-200:has(.text-orange-600),
+  .metric-card:has(.text-orange-600),
+  .border-purple-200:has(.text-orange-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(251, 146, 60, 0.35) !important;
+  }
+
+  /* Indigo cards - Metrics, Precision, Confidence */
+  .metric-card.border-purple-200:has(.text-indigo-600),
+  .metric-card:has(.text-indigo-600),
+  .border-purple-200:has(.text-indigo-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(99, 102, 241, 0.35) !important;
+  }
+
+  /* Pink cards */
+  .metric-card.border-purple-200:has(.text-pink-600),
+  .metric-card:has(.text-pink-600),
+  .border-purple-200:has(.text-pink-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(236, 72, 153, 0.35) !important;
+  }
+
+  /* Teal cards */
+  .metric-card.border-purple-200:has(.text-teal-600),
+  .metric-card:has(.text-teal-600),
+  .border-purple-200:has(.text-teal-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(20, 184, 166, 0.35) !important;
+  }
+
+  /* Cyan cards */
+  .metric-card.border-purple-200:has(.text-cyan-600),
+  .metric-card:has(.text-cyan-600),
+  .border-purple-200:has(.text-cyan-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(34, 211, 238, 0.35) !important;
+  }
+
+  /* Yellow cards */
+  .metric-card.border-purple-200:has(.text-yellow-600),
+  .metric-card:has(.text-yellow-600),
+  .border-purple-200:has(.text-yellow-600) {
+    --tw-border-opacity: 1;
+    border-color: rgba(250, 204, 21, 0.35) !important;
+  }
+
+  /* Additional white cards with colors */
+  .bg-white.rounded-xl.border:has(.text-purple-600),
+  .bg-white.rounded-lg.border:has(.text-purple-600) {
+    border-color: rgba(109, 40, 217, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl.border:has(.text-blue-600),
+  .bg-white.rounded-lg.border:has(.text-blue-600) {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl.border:has(.text-green-600),
+  .bg-white.rounded-lg.border:has(.text-green-600) {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl.border:has(.text-red-600),
+  .bg-white.rounded-lg.border:has(.text-red-600) {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .bg-white.rounded-xl.border:has(.text-orange-600),
+  .bg-white.rounded-lg.border:has(.text-orange-600) {
+    border-color: rgba(251, 146, 60, 0.3) !important;
+  }
+
+  /* Gradient card color overrides */
+  .bg-gradient-to-br.from-purple-50 {
+    border-color: rgba(109, 40, 217, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-blue-50 {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-green-50 {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-red-50 {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .bg-gradient-to-br.from-orange-50 {
+    border-color: rgba(251, 146, 60, 0.3) !important;
+  }
+
+  /* Nested cards in gradients */
+  .bg-gradient-to-br.from-purple-50 .bg-white {
+    border-color: rgba(109, 40, 217, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-blue-50 .bg-white {
+    border-color: rgba(59, 130, 246, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-green-50 .bg-white {
+    border-color: rgba(16, 185, 129, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-red-50 .bg-white {
+    border-color: rgba(239, 68, 68, 0.28) !important;
+  }
+
+  .bg-gradient-to-br.from-orange-50 .bg-white {
+    border-color: rgba(251, 146, 60, 0.28) !important;
+  }
+
+  /* Dark mode text color fixes */
+}
+/* FINAL OVERRIDE - Force white text on headings */
+h1.text-white,
+h2.text-white,
+h3.text-white,
+h4.text-white,
+h5.text-white,
+h6.text-white {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}

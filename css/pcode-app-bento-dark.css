@@ -1,0 +1,4641 @@
+/**
+ * P-Code — OLED Black Bento Glassmorphism (global design system)
+ * Tokens: ink-black canvas (#030205), translucent glass cards, neutral silver body copy.
+ * Purple (#c4b5fd) reserved for accents, buttons, and active glows only.
+ * Use: <html class="pcode-app-bento-root dark"> (+ optional login / XAI body classes)
+ * Load after page-local <style> when present.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Design tokens (Tailwind-aligned names in comments)                          */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root,
+html.login-bento-page {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  --pcb-blur-md: 12px;
+  --pcb-blur-lg: 20px;
+  --pcb-radius-bento: 24px;
+  --pcb-radius-bento-lg: 32px;
+}
+
+/* Dark tokens — Neon Obsidian (html.dark only)
+   Soft lavender accents (lighter / lower glare) for photosensitivity */
+html.pcode-app-bento-root.dark,
+html.login-bento-page.dark {
+  color-scheme: dark;
+  --pcb-bg-deep: #030205;
+  --pcb-text-muted: #d1d1d6;
+  --pcb-text-title: #ffffff;
+  --pcb-card-glass: rgba(255, 255, 255, 0.02);
+  --pcb-card-border: rgba(255, 255, 255, 0.05);
+  --pcode-purple: #c4b5fd;
+  --pcode-purple-dim: #a78bfa;
+  --pcode-purple-glow: rgba(196, 181, 253, 0.28);
+  --pcode-dark: #030205;
+  --pcode-glass: rgba(255, 255, 255, 0.02);
+  --pcode-glass-border: rgba(255, 255, 255, 0.05);
+  --pcb-focus-border: rgba(196, 181, 253, 0.45);
+  --pcb-focus-glow: rgba(196, 181, 253, 0.16);
+  --pcb-chart-from: #c4b5fd;
+  --pcb-chart-to: #a5b4fc;
+  --pcb-ambient-purple: rgba(196, 181, 253, 0.05);
+  --pcb-ambient-indigo: rgba(165, 180, 252, 0.04);
+  --pcb-gauge-track: rgba(255, 255, 255, 0.06);
+  --pcb-accent: #c4b5fd;
+  --pcb-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 0 28px rgba(196, 181, 253, 0.04);
+  --pcb-card-shadow-hover: 0 0 22px rgba(196, 181, 253, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #d1d1d6;
+  --text-label: #d1d1d6;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Shell: app + XAI + login body                                              */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento,
+body.xai-bento-page,
+body.login-bento-page {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  margin: 0;
+  min-height: 100dvh;
+  min-height: 100vh;
+  height: auto;
+  max-width: 100vw;
+  background-color: var(--pcb-bg-deep) !important;
+  color: var(--pcb-text-muted) !important;
+  position: relative;
+  isolation: isolate;
+}
+
+body.pcode-app-bento,
+body.xai-bento-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Film grain */
+body.pcode-app-bento::before,
+body.xai-bento-page::before,
+body.login-bento-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Ambient glow — single faint top accent (no full-screen purple wash) */
+body.pcode-app-bento::after,
+body.xai-bento-page::after,
+body.login-bento-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% -10%, rgba(196, 181, 253, 0.08), transparent 70%);
+}
+
+body.pcode-app-bento > nav,
+body.pcode-app-bento > .gradient-bg,
+body.pcode-app-bento > div.max-w-7xl,
+body.pcode-app-bento > main,
+body.pcode-app-bento > footer,
+body.xai-bento-page .page-shell,
+body.xai-bento-page > nav,
+body.xai-bento-page > .gradient-bg,
+body.xai-bento-page > div.max-w-7xl,
+body.xai-bento-page > main,
+body.xai-bento-page > footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Overlay + drawer: fixed to viewport — never flex-grow or block-scroll the page */
+body.pcode-app-bento > nav {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+@media (min-width: 769px) {
+  body.pcode-app-bento > nav .flex.justify-between,
+  body.pcode-app-bento > nav .flex.justify-between.items-center,
+  body.xai-bento-page > nav .flex.justify-between,
+  body.xai-bento-page > nav .flex.justify-between.items-center {
+    height: 4rem;
+    min-height: 4rem;
+    max-height: 4rem;
+  }
+}
+
+body.pcode-app-bento #menu-overlay,
+body.pcode-app-bento #mobile-menu,
+body.xai-bento-page #menu-overlay,
+body.xai-bento-page #mobile-menu {
+  position: fixed !important;
+  flex: none !important;
+  margin: 0 !important;
+}
+
+body.pcode-app-bento #menu-overlay,
+body.xai-bento-page #menu-overlay {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+body.pcode-app-bento #mobile-menu,
+body.xai-bento-page #mobile-menu {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: min(320px, 85vw);
+  max-width: 90vw;
+  height: auto;
+  max-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 70;
+}
+
+body.pcode-app-bento #mobile-menu > div,
+body.xai-bento-page #mobile-menu > div {
+  height: auto;
+  min-height: 0;
+  padding: 2rem 1.5rem !important;
+}
+
+body.pcode-app-bento .mobile-nav-links a,
+body.xai-bento-page .mobile-nav-links a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.75rem !important;
+}
+
+body.pcode-app-bento.pcode-admin-shell .admin-sidebar {
+  padding: 2rem 1.5rem !important;
+}
+
+body.pcode-app-bento.pcode-admin-shell .sidebar-nav a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  padding: 0.75rem 1rem !important;
+}
+
+body.pcode-app-bento.pcode-admin-shell .sidebar-nav svg {
+  margin-right: 0 !important;
+  flex-shrink: 0;
+}
+
+/* Sticky footer: grow main band on large screens only (avoids mobile ghost scroll) */
+@media (min-width: 1024px) {
+  body.pcode-app-bento > div.max-w-7xl.mx-auto {
+    flex: 1 0 auto;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.pcode-app-bento > div.max-w-7xl.mx-auto,
+  body.pcode-app-bento .max-w-7xl.mx-auto.flex-1,
+  body.pcode-app-bento [id$='-main-content'],
+  body.xai-bento-page > div.max-w-7xl.mx-auto {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Typography — titles pure white; body neutral silver                       */
+/* -------------------------------------------------------------------------- */
+
+/* Typography — titles use token; dark forces white via --pcb-text-title on .dark */
+html.pcode-app-bento-root.dark body.pcode-app-bento h1,
+html.pcode-app-bento-root.dark body.pcode-app-bento h2,
+html.pcode-app-bento-root.dark body.pcode-app-bento h3,
+html.pcode-app-bento-root.dark body.pcode-app-bento h4,
+html.pcode-app-bento-root.dark body.pcode-app-bento .hero-title {
+  color: var(--pcb-text-title) !important;
+  letter-spacing: -0.025em;
+}
+
+html.pcode-app-bento-root.dark body.xai-bento-page .hero-title {
+  color: var(--pcb-text-title) !important;
+  letter-spacing: -0.025em;
+}
+
+body.pcode-app-bento p,
+body.pcode-app-bento li,
+body.pcode-app-bento label {
+  color: var(--pcb-text-muted);
+}
+
+body.xai-bento-page .hero-sub,
+body.xai-bento-page .modal-body-pad {
+  color: var(--pcb-text-muted) !important;
+}
+
+body.pcode-app-bento .text-gray-900,
+body.pcode-app-bento .text-gray-800 {
+  color: var(--pcb-text-title) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-gray-700 {
+  color: #d1d1d6 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-gray-500 {
+  color: var(--pcb-text-muted) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Nav — glass strip                                                           */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav.pcode-topnav,
+html.pcode-app-bento-root.dark body.xai-bento-page nav.xai-topnav {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border-bottom: 1px solid var(--pcb-card-border) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .shadow-lg {
+  box-shadow: none !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav h1.text-purple-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-purple-800 {
+  color: var(--pcb-text-title) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-gray-500 {
+  color: #d1d1d6 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .nav-desktop a {
+  color: #d1d1d6 !important;
+  border-color: transparent !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .nav-desktop a.text-purple-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .nav-desktop a.font-semibold.border-b-2 {
+  color: var(--pcb-text-title) !important;
+  border-color: var(--pcb-focus-border) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .nav-desktop a:hover {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav.pcode-topnav button {
+  color: rgba(235, 233, 245, 0.95) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav.pcode-topnav button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Topnav row — brand left, links centered, hamburger right (OB-GYN + community) */
+body.pcode-app-bento .pcode-topnav__inner,
+body.xai-bento-page .pcode-topnav__inner,
+body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between.items-center,
+body.xai-bento-page nav.pcode-topnav > .max-w-7xl > .flex.justify-between.items-center,
+body.xai-bento-page nav.xai-topnav > .max-w-7xl > .flex.justify-between.items-center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 4rem;
+  gap: 1.25rem;
+}
+
+/* Brand cluster — fixed size so title never collides with links */
+body.pcode-app-bento .pcode-topnav__brand,
+body.xai-bento-page .pcode-topnav__brand,
+body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .flex.items-center:first-child,
+body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .flex.items-center:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 0;
+  padding-right: 0.5rem;
+}
+
+body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .flex.items-center:first-child h1,
+body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .flex.items-center:first-child h1,
+body.pcode-app-bento .pcode-topnav__brand-title,
+body.xai-bento-page .pcode-topnav__brand-title {
+  white-space: nowrap;
+}
+
+/* Desktop links — fill the middle lane; sit toward the menu with even gaps */
+body.pcode-app-bento .pcode-topnav__inner > .nav-desktop,
+body.xai-bento-page .pcode-topnav__inner > .nav-desktop,
+body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .nav-desktop,
+body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .nav-desktop {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1.25rem;
+  min-width: 0;
+  padding-left: 0.75rem;
+  padding-right: 0.5rem;
+}
+
+@media (min-width: 1280px) {
+  body.pcode-app-bento .pcode-topnav__inner > .nav-desktop,
+  body.xai-bento-page .pcode-topnav__inner > .nav-desktop,
+  body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .nav-desktop,
+  body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .nav-desktop {
+    gap: 1.75rem;
+    justify-content: center;
+    padding-right: 0.75rem;
+  }
+}
+
+body.pcode-app-bento nav.pcode-topnav .nav-desktop a,
+body.xai-bento-page nav .nav-desktop a,
+body.pcode-app-bento nav.pcode-topnav .pcode-nav-link,
+body.xai-bento-page nav .pcode-nav-link {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Menu slot: always pin to the right edge of the nav row */
+body.pcode-app-bento .pcode-topnav__menu,
+body.xai-bento-page .pcode-topnav__menu,
+body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .flex.items-center:last-child,
+body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .flex.items-center:last-child {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 2.75rem;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: center;
+}
+
+/* Keep hamburger visible + square across community/clinical pages */
+body.pcode-app-bento #mobile-menu-btn,
+body.xai-bento-page #mobile-menu-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-width: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-width: 2.75rem !important;
+  max-height: 2.75rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  line-height: 0;
+}
+
+body.pcode-app-bento #mobile-menu-btn svg,
+body.xai-bento-page #mobile-menu-btn svg {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Brand title — works with OB-GYN justify-between nav and legacy __brand wrapper */
+body.pcode-app-bento .pcode-topnav__brand-title,
+body.xai-bento-page .pcode-topnav__brand-title,
+body.pcode-app-bento nav.pcode-topnav h1.pcode-topnav__brand-title,
+body.xai-bento-page nav.pcode-topnav h1.pcode-topnav__brand-title {
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+body.pcode-app-bento .pcode-nav-link,
+body.xai-bento-page .pcode-nav-link {
+  color: #d1d1d6 !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 0.15rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+body.pcode-app-bento .pcode-nav-link:hover,
+body.xai-bento-page .pcode-nav-link:hover {
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento .pcode-nav-link.is-active,
+body.xai-bento-page .pcode-nav-link.is-active {
+  color: #f3e8ff !important;
+  font-weight: 600;
+  border-bottom-color: var(--pcb-focus-border, rgba(196, 181, 253, 0.48)) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Hero band                                                                  */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .gradient-bg,
+html.pcode-app-bento-root.dark body.xai-bento-page .gradient-bg {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(196, 181, 253, 0.08), transparent 70%),
+    #030205 !important;
+  background-attachment: fixed;
+  border-bottom: 1px solid var(--pcb-card-border);
+}
+
+@media (max-width: 768px) {
+  html.pcode-app-bento-root.dark body.pcode-app-bento .gradient-bg,
+  html.pcode-app-bento-root.dark body.xai-bento-page .gradient-bg {
+    background-attachment: scroll !important;
+  }
+}
+
+body.pcode-app-bento .max-w-7xl.mx-auto.py-12,
+body.pcode-app-bento .max-w-7xl.mx-auto.py-14 {
+  color: var(--pcb-text-muted);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Bento glass cards (rounded-[24px] / 32px for large panels)                 */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .metric-card,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-bento-card,
+html.pcode-app-bento-root.dark body.pcode-app-bento #quick-actions-section,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .rounded-xl.shadow-lg.border.border-purple-200,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl,
+html.pcode-app-bento-root.dark body.xai-bento-page .metric-card,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-bento-card,
+html.pcode-app-bento-root.dark body.xai-bento-page .bento-card {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid var(--pcb-card-border) !important;
+  overflow: visible !important;
+  box-shadow: var(--pcb-card-shadow) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  color: var(--pcb-text-title);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #quick-actions-section,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl.shadow-lg.p-6,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .bg-white.rounded-xl.shadow-lg.p-8 {
+  border-radius: var(--pcb-radius-bento-lg) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .metric-card {
+  transform: none !important;
+}
+
+/* Detect (user/provider): stepper footer sits inside glass card with light inherited title color —
+   old bg-purple-50 + inherited text made “Previous” unreadable. */
+/* Clinical stepper footer — two-button row (Previous + morphing Next/Analyze) */
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn {
+  flex: 1 1 0;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  white-space: normal !important;
+  text-align: center;
+  min-height: 3rem;
+  height: auto !important;
+  padding-top: 0.625rem !important;
+  padding-bottom: 0.625rem !important;
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions {
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn {
+    min-height: 2.35rem !important;
+    padding-top: 0.4rem !important;
+    padding-bottom: 0.4rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn span {
+    font-size: inherit !important;
+  }
+}
+
+body.pcode-app-bento #next-btn[data-step-mode="next"] {
+  color: #c084fc !important;
+  border-color: rgba(196, 181, 253, 0.2) !important;
+  background-color: rgba(196, 181, 253, 0.05) !important;
+}
+
+body.pcode-app-bento #next-btn[data-step-mode="analyze"],
+body.pcode-app-bento #next-btn.pcode-step-next--analyze {
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+  background-color: rgba(16, 185, 129, 0.05) !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+  transition: all 0.3s ease;
+}
+
+body.pcode-app-bento #next-btn[data-step-mode="analyze"]:hover:not(:disabled),
+body.pcode-app-bento #next-btn.pcode-step-next--analyze:hover:not(:disabled) {
+  background-color: rgba(5, 150, 105, 0.2) !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25) !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn span {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Legacy grid fallback for other stepper footers (detect pages — not patient modal) */
+body.pcode-app-bento .clinical-stepper-footer.pcode-action-bar:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer),
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  width: 100%;
+  align-items: stretch;
+  justify-items: stretch;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  body.pcode-app-bento .clinical-stepper-footer.pcode-action-bar:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer),
+  body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer:has(#analyze-btn.hidden):not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section):not(:has(#analyze-ultrasound-btn)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  white-space: normal !important;
+  text-align: center;
+  min-height: 3rem;
+  height: auto !important;
+  padding-top: 0.625rem !important;
+  padding-bottom: 0.625rem !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn {
+  width: 100% !important;
+  flex: none !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn--analyze:not(.hidden) {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 640px) {
+  body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn--analyze:not(.hidden) {
+    grid-column: auto;
+  }
+}
+
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn span {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+body.pcode-app-bento .clinical-stepper-footer #prev-btn.btn-ghost-glass,
+body.pcode-app-bento .clinical-stepper-footer #prev-add-btn,
+body.pcode-app-bento .clinical-stepper-footer #cancel-add-btn {
+  color: var(--pcb-text-title) !important;
+  border-color: rgba(216, 189, 250, 0.4) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer #prev-btn:hover:not(:disabled),
+body.pcode-app-bento .clinical-stepper-footer #prev-add-btn:hover:not(:disabled),
+body.pcode-app-bento .clinical-stepper-footer #cancel-add-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.pcode-app-bento .clinical-stepper-footer #prev-btn:disabled,
+body.pcode-app-bento .clinical-stepper-footer #prev-add-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Stepper CTA colors: pcode-glass-buttons.css + pcode-design-system.css */
+
+/* Detect: XGBoost data-quality banner (#clinical-warning) — Tailwind yellow-50 + theme
+   typography produced illegible pale-on-pale; force dark glass + warm readable copy. */
+body.pcode-app-bento #clinical-warning {
+  background: rgba(42, 28, 8, 0.78) !important;
+  border-color: rgba(251, 191, 36, 0.42) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.pcode-app-bento #clinical-warning-text,
+body.pcode-app-bento #clinical-warning p {
+  color: #fef3c7 !important;
+}
+
+/* Index — Screening Results metric cards + disclaimer */
+body.pcode-app-bento .pcode-screening-metric-card,
+body.xai-bento-page .pcode-screening-metric-card {
+  position: relative;
+  isolation: isolate;
+  overflow: visible !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 16px rgba(196, 181, 253, 0.08) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--cnn,
+body.xai-bento-page .pcode-screening-metric-card--cnn {
+  border-color: transparent !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 18px rgba(59, 130, 246, 0.14) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--xg,
+body.xai-bento-page .pcode-screening-metric-card--xg {
+  border-color: transparent !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 18px rgba(196, 181, 253, 0.16) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--pending,
+body.xai-bento-page .pcode-screening-metric-card--pending {
+  border-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--positive,
+body.xai-bento-page .pcode-screening-metric-card--positive {
+  border-color: rgba(248, 113, 113, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(248, 113, 113, 0.12),
+    0 0 32px rgba(220, 38, 38, 0.18) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--negative,
+body.xai-bento-page .pcode-screening-metric-card--negative {
+  border-color: rgba(52, 211, 153, 0.38) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(52, 211, 153, 0.1),
+    0 0 32px rgba(16, 185, 129, 0.16) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card--borderline,
+body.xai-bento-page .pcode-screening-metric-card--borderline {
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(251, 191, 36, 0.1),
+    0 0 32px rgba(245, 158, 11, 0.14) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card .text-gray-800,
+body.xai-bento-page .pcode-screening-metric-card .text-gray-800,
+body.pcode-app-bento .pcode-screening-metric-card .text-gray-700,
+body.xai-bento-page .pcode-screening-metric-card .text-gray-700,
+body.pcode-app-bento .pcode-screening-metric-card .text-gray-600,
+body.xai-bento-page .pcode-screening-metric-card .text-gray-600,
+body.pcode-app-bento .pcode-screening-metric-card .text-gray-500,
+body.xai-bento-page .pcode-screening-metric-card .text-gray-500 {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-card #my-screening-cnn,
+body.xai-bento-page .pcode-screening-metric-card #my-screening-cnn,
+body.pcode-app-bento .pcode-screening-metric-card #my-screening-xg,
+body.xai-bento-page .pcode-screening-metric-card #my-screening-xg {
+  color: #f5f3ff !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-track,
+body.xai-bento-page .pcode-screening-metric-track,
+body.pcode-app-bento #my-screening-overall-track,
+body.xai-bento-page #my-screening-overall-track,
+body.pcode-app-bento .pcode-screening-metric-card .bg-gray-200,
+body.xai-bento-page .pcode-screening-metric-card .bg-gray-200,
+body.pcode-app-bento #my-screening-card .metric-card .bg-gray-200 {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(196, 181, 253, 0.18) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* Empty / pending fills stay invisible so tracks match across cards */
+body.pcode-app-bento .pcode-screening-metric-bar[style*="width: 0%"],
+body.pcode-app-bento .pcode-screening-metric-bar[style*="width:0%"],
+body.pcode-app-bento #my-screening-overall-bar[style*="width: 0%"],
+body.pcode-app-bento #my-screening-overall-bar[style*="width:0%"] {
+  opacity: 0 !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-bar--cnn,
+body.xai-bento-page .pcode-screening-metric-bar--cnn {
+  background: linear-gradient(90deg, #4338ca 0%, #6366f1 50%, #a5b4fc 100%) !important;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.9),
+    0 0 18px rgba(67, 56, 202, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+body.pcode-app-bento .pcode-screening-metric-bar--xg,
+body.xai-bento-page .pcode-screening-metric-bar--xg {
+  background: linear-gradient(90deg, #a78bfa 0%, #c4b5fd 100%) !important;
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.55),
+    0 0 18px rgba(167, 139, 250, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Overall + detection inline confidence bars — dark surfaces only */
+html.dark body.pcode-app-bento .pcode-neon-bar-track,
+html.dark body.xai-bento-page .pcode-neon-bar-track,
+html.dark body.pcode-app-bento .pcode-confidence-meter__track.pcode-neon-bar-track,
+html.dark body.pcode-app-bento #clinical-results .bg-gray-200,
+html.dark body.pcode-app-bento #image-results .bg-gray-200,
+html.dark body.pcode-app-bento #clinical-results .rounded-full.h-3.overflow-hidden,
+html.dark body.pcode-app-bento #image-results .rounded-full.h-3.overflow-hidden,
+html.dark body.pcode-app-bento #combined-results .pcode-confidence-meter__track {
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+body.pcode-app-bento #clinical-probability.pcode-confidence-meter__value,
+body.pcode-app-bento #image-probability.pcode-confidence-meter__value,
+body.pcode-app-bento #final-combined-percent.pcode-confidence-meter__value {
+  width: auto !important;
+  max-width: none !important;
+  margin-top: 0 !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill,
+body.xai-bento-page .pcode-neon-bar-fill {
+  min-height: 0.75rem;
+  box-sizing: border-box;
+  transition: width 0.35s ease, box-shadow 0.25s ease;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--clinical,
+body.xai-bento-page .pcode-neon-bar-fill--clinical,
+body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--clinical,
+body.xai-bento-page #clinical-progress.pcode-neon-bar-fill--clinical {
+  background: linear-gradient(90deg, #8b5cf6 0%, #c4b5fd 55%, #d8b4fe 100%) !important;
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.55),
+    0 0 18px rgba(167, 139, 250, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--imaging,
+body.xai-bento-page .pcode-neon-bar-fill--imaging,
+body.pcode-app-bento #image-progress.pcode-neon-bar-fill--imaging,
+body.xai-bento-page #image-progress.pcode-neon-bar-fill--imaging {
+  background: linear-gradient(90deg, #4338ca 0%, #6366f1 50%, #a5b4fc 100%) !important;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.9),
+    0 0 18px rgba(67, 56, 202, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--positive,
+body.xai-bento-page .pcode-neon-bar-fill--positive,
+body.pcode-app-bento #my-screening-overall-bar.pcode-neon-bar-fill--positive,
+body.xai-bento-page #my-screening-overall-bar.pcode-neon-bar-fill--positive,
+body.pcode-app-bento .pcode-screening-metric-bar--overall-positive,
+body.xai-bento-page .pcode-screening-metric-bar--overall-positive {
+  background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #fca5a5 100%) !important;
+  box-shadow:
+    0 0 8px rgba(248, 113, 113, 0.85),
+    0 0 18px rgba(220, 38, 38, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--negative,
+body.xai-bento-page .pcode-neon-bar-fill--negative,
+body.pcode-app-bento #my-screening-overall-bar.pcode-neon-bar-fill--negative,
+body.xai-bento-page #my-screening-overall-bar.pcode-neon-bar-fill--negative,
+body.pcode-app-bento .pcode-screening-metric-bar--overall-negative,
+body.xai-bento-page .pcode-screening-metric-bar--overall-negative {
+  background: linear-gradient(90deg, #14532d 0%, #16a34a 50%, #86efac 100%) !important;
+  box-shadow:
+    0 0 8px rgba(74, 222, 128, 0.75),
+    0 0 18px rgba(22, 163, 74, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--borderline,
+body.xai-bento-page .pcode-neon-bar-fill--borderline,
+body.pcode-app-bento #my-screening-overall-bar.pcode-neon-bar-fill--borderline,
+body.xai-bento-page #my-screening-overall-bar.pcode-neon-bar-fill--borderline,
+body.pcode-app-bento .pcode-screening-metric-bar--overall-borderline,
+body.xai-bento-page .pcode-screening-metric-bar--overall-borderline {
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fde68a 100%) !important;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.85),
+    0 0 18px rgba(217, 119, 6, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+body.pcode-app-bento .pcode-neon-bar-fill--pending,
+body.xai-bento-page .pcode-neon-bar-fill--pending,
+body.pcode-app-bento #my-screening-overall-bar.pcode-neon-bar-fill--pending,
+body.xai-bento-page #my-screening-overall-bar.pcode-neon-bar-fill--pending,
+body.pcode-app-bento .pcode-screening-metric-bar--overall-pending,
+body.xai-bento-page .pcode-screening-metric-bar--overall-pending {
+  background: linear-gradient(90deg, #8b5cf6 0%, #c4b5fd 55%, #d8b4fe 100%) !important;
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.55),
+    0 0 18px rgba(167, 139, 250, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+/* Detect results — diagnosis-colored confidence bars */
+body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--positive,
+body.pcode-app-bento #image-progress.pcode-neon-bar-fill--positive,
+body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--positive {
+  background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #fca5a5 100%) !important;
+  box-shadow:
+    0 0 8px rgba(248, 113, 113, 0.85),
+    0 0 18px rgba(220, 38, 38, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--negative,
+body.pcode-app-bento #image-progress.pcode-neon-bar-fill--negative,
+body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--negative {
+  background: linear-gradient(90deg, #14532d 0%, #16a34a 50%, #86efac 100%) !important;
+  box-shadow:
+    0 0 8px rgba(74, 222, 128, 0.75),
+    0 0 18px rgba(22, 163, 74, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+body.pcode-app-bento #clinical-progress.pcode-neon-bar-fill--borderline,
+body.pcode-app-bento #image-progress.pcode-neon-bar-fill--borderline,
+body.pcode-app-bento #bar-fill-combined.pcode-neon-bar-fill--borderline {
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fde68a 100%) !important;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.85),
+    0 0 18px rgba(217, 119, 6, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ECharts canvas glow — Neon Obsidian */
+body.pcode-app-bento .pcb-echart-host canvas,
+body.xai-bento-page .pcb-echart-host canvas,
+body.pcode-app-bento .gauge-container,
+body.pcode-app-bento .final-gauge-container {
+  position: relative;
+  z-index: 0;
+}
+
+body.pcode-app-bento .gauge-container::before,
+body.pcode-app-bento .final-gauge-container::before,
+body.xai-bento-page .gauge-container::before,
+body.xai-bento-page .final-gauge-container::before {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 10%;
+  bottom: 18%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 88% at 50% 100%, rgba(196, 181, 253, 0.05) 0%, rgba(167, 139, 250, 0.02) 48%, transparent 72%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Tone glow present — suppress the neutral base glow so colors don't mix into a muddy halo */
+body.pcode-app-bento .pcode-gauge-tone--clinical::before,
+body.pcode-app-bento .pcode-gauge-tone--imaging::before,
+body.pcode-app-bento .pcode-gauge-tone--positive::before,
+body.pcode-app-bento .pcode-gauge-tone--negative::before,
+body.pcode-app-bento .pcode-gauge-tone--muted::before,
+body.xai-bento-page .pcode-gauge-tone--clinical::before,
+body.xai-bento-page .pcode-gauge-tone--imaging::before,
+body.xai-bento-page .pcode-gauge-tone--positive::before,
+body.xai-bento-page .pcode-gauge-tone--negative::before,
+body.xai-bento-page .pcode-gauge-tone--muted::before {
+  background: none;
+  filter: none;
+}
+
+body.pcode-app-bento .pcode-gauge-tone--clinical::after,
+body.xai-bento-page .pcode-gauge-tone--clinical::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 92% at 50% 100%, rgba(192, 132, 252, 0.13) 0%, rgba(167, 139, 250, 0.05) 50%, transparent 76%);
+  filter: blur(9px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.pcode-app-bento .pcode-gauge-tone--imaging::after,
+body.xai-bento-page .pcode-gauge-tone--imaging::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 92% at 50% 100%, rgba(56, 189, 248, 0.13) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 76%);
+  filter: blur(9px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.pcode-app-bento .pcode-gauge-tone--positive::after,
+body.xai-bento-page .pcode-gauge-tone--positive::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 92% at 50% 100%, rgba(251, 113, 133, 0.13) 0%, rgba(225, 29, 72, 0.05) 50%, transparent 76%);
+  filter: blur(9px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.pcode-app-bento .pcode-gauge-tone--negative::after,
+body.xai-bento-page .pcode-gauge-tone--negative::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 92% at 50% 100%, rgba(52, 211, 153, 0.13) 0%, rgba(5, 150, 105, 0.05) 50%, transparent 76%);
+  filter: blur(9px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.pcode-app-bento .pcode-gauge-tone--muted::after,
+body.xai-bento-page .pcode-gauge-tone--muted::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: 14%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 100% 92% at 50% 100%, rgba(161, 161, 170, 0.1) 0%, transparent 76%);
+  filter: blur(9px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.pcode-app-bento .gauge-container canvas,
+body.xai-bento-page .gauge-container canvas,
+body.pcode-app-bento .final-gauge-container canvas,
+body.xai-bento-page .final-gauge-container canvas,
+body.pcode-app-bento [id$="-chart"] canvas,
+body.xai-bento-page [id$="-chart"] canvas,
+body.pcode-app-bento #shap-force-plot canvas,
+body.xai-bento-page #shap-force-plot canvas,
+body.pcode-app-bento #shap-importance-chart canvas,
+body.xai-bento-page #shap-importance-chart canvas,
+body.pcode-app-bento #consensus-chart canvas,
+body.xai-bento-page #consensus-chart canvas,
+body.pcode-app-bento #dashboard-comparative-chart canvas,
+body.pcode-app-bento .chart-well canvas {
+  position: relative;
+  z-index: 1;
+  filter: none !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-screening-disclaimer,
+html.dark body.pcode-app-bento .pcode-screening-disclaimer {
+  background: rgba(76, 29, 149, 0.28) !important;
+  border: 1px solid rgba(196, 181, 253, 0.42) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #ede9fe !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 24px rgba(109, 40, 217, 0.12);
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-screening-disclaimer p,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-screening-disclaimer .font-semibold,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-screening-disclaimer span,
+html.dark body.pcode-app-bento .pcode-screening-disclaimer p,
+html.dark body.pcode-app-bento .pcode-screening-disclaimer .font-semibold,
+html.dark body.pcode-app-bento .pcode-screening-disclaimer span {
+  color: #ede9fe !important;
+  -webkit-text-fill-color: #ede9fe !important;
+}
+
+/* Overall label states on dashboard cards */
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.metric-card--pending #my-screening-overall,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.pcode-screening-metric-card--pending #my-screening-overall {
+  color: #f5f3ff !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.metric-card--negative #my-screening-overall,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.pcode-screening-metric-card--negative #my-screening-overall {
+  color: #bbf7d0 !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.metric-card--borderline #my-screening-overall,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.pcode-screening-metric-card--borderline #my-screening-overall {
+  color: #fde68a !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.metric-card--positive #my-screening-overall,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-overall-card.pcode-screening-metric-card--positive #my-screening-overall {
+  color: #fecaca !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .bg-blue-100,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .bg-purple-100,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .bg-violet-100,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .bg-gray-100 {
+  background-color: rgba(139, 92, 246, 0.22) !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .text-blue-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .text-purple-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .text-violet-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento #my-screening-card .text-gray-600 {
+  color: #e9d5ff !important;
+}
+
+/* Index — Early Detection Guide inner cards (match outer mobile-card glass) */
+body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  box-shadow: var(--pcb-card-shadow) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  color: var(--pcb-text-title);
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  border-color: rgba(167, 139, 250, 0.22) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card:hover {
+  border-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card h2,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card h3,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-800 {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-600 {
+  color: #d1d1d6 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-gray-500 {
+  color: #d1d1d6 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card [class*="ring-"] {
+  --tw-ring-color: rgba(167, 139, 250, 0.25) !important;
+}
+
+/* Early-detection icon glyphs — light pastels on dark wells (dark only) */
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-red-800 {
+  color: #fda4af !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-yellow-800 {
+  color: #fde68a !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-blue-800 {
+  color: #93c5fd !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-green-800 {
+  color: #86efac !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .text-purple-800 {
+  color: #e9d5ff !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card .bg-gray-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card svg.text-gray-800 {
+  color: #e5e7eb !important;
+}
+
+body.pcode-app-bento #regular-user-early-detection #pcode-nearby-map {
+  border-color: rgba(167, 139, 250, 0.28) !important;
+  background: rgba(3, 2, 5, 0.65) !important;
+}
+
+/*
+ * Leaflet + ancestor backdrop-filter/overflow:visible causes the map to paint
+ * outside its grid cell and cover neighboring Early Detection cards.
+ */
+body.pcode-app-bento #regular-user-early-detection.pcode-bento-card,
+body.pcode-app-bento #regular-user-early-detection.mobile-card {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection.pcode-bento-card,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection.mobile-card {
+  background: rgba(12, 10, 18, 0.96) !important;
+}
+
+body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .pcode-bento-inner-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+body.pcode-app-bento #nearby-care-card {
+  overflow: hidden !important;
+  min-width: 0;
+}
+
+body.pcode-app-bento #nearby-care-card .grid {
+  align-items: stretch;
+  min-width: 0;
+}
+
+body.pcode-app-bento #nearby-care-card .grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.pcode-app-bento #pcode-nearby-map {
+  position: relative !important;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 20rem !important;
+  height: 22rem !important;
+  border-radius: 0.75rem;
+  transform: translateZ(0);
+  contain: layout paint;
+  color-scheme: light;
+}
+
+body.pcode-app-bento #pcode-nearby-map .gm-style-iw,
+body.pcode-app-bento #pcode-nearby-map .gm-style-iw-c,
+body.pcode-app-bento #pcode-nearby-map .gm-style-iw-d,
+body.pcode-app-bento #pcode-nearby-map .pcode-maps-iw {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+body.pcode-app-bento #pcode-nearby-map .gm-style-iw-c {
+  background: #ffffff !important;
+}
+
+body.pcode-app-bento #pcode-nearby-map .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  border-radius: inherit;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-map .leaflet-container {
+  background: #0b0912;
+}
+
+body.pcode-app-bento #nearby-care-card .pcode-nearby-list-panel {
+  min-height: 22rem;
+  max-height: 22rem !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Nearby places list — readable labels/links in dark mode */
+html.pcode-app-bento-root.dark body.pcode-app-bento #nearby-care-card .pcode-nearby-list-panel {
+  background: rgba(13, 11, 20, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #nearby-care-card .pcode-nearby-list-panel .text-xs.uppercase,
+html.pcode-app-bento-root.dark body.pcode-app-bento #nearby-care-card .pcode-nearby-list-panel .tracking-wide {
+  color: rgba(196, 181, 253, 0.75) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list > li {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list > li:hover {
+  background: rgba(167, 139, 250, 0.12) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .font-semibold,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .text-gray-800 {
+  color: #faf5ff !important;
+  -webkit-text-fill-color: #faf5ff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .text-gray-500 {
+  color: rgba(209, 196, 233, 0.82) !important;
+  -webkit-text-fill-color: rgba(209, 196, 233, 0.82) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .text-indigo-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list .text-indigo-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list a.text-indigo-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list a.text-indigo-700 {
+  color: #c4b5fd !important;
+  -webkit-text-fill-color: #c4b5fd !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list a.text-indigo-600:hover,
+html.pcode-app-bento-root.dark body.pcode-app-bento #pcode-nearby-list a.text-indigo-700:hover {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .border-gray-100,
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #regular-user-early-detection .bg-gray-50\/50 {
+  background: rgba(13, 11, 20, 0.45) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-purple-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento a.text-purple-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-purple-600,
+html.pcode-app-bento-root.dark body.xai-bento-page a.text-purple-600 {
+  color: #d8b4fe !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento a.text-purple-600:hover,
+html.pcode-app-bento-root.dark body.pcode-app-bento a.text-purple-800:hover,
+html.pcode-app-bento-root.dark body.xai-bento-page a.text-purple-600:hover,
+html.pcode-app-bento-root.dark body.xai-bento-page a.text-purple-800:hover {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento a.text-purple-800,
+html.pcode-app-bento-root.dark body.xai-bento-page a.text-purple-800 {
+  color: #e9d5ff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-purple-100 {
+  background: rgba(36, 32, 52, 0.85) !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-red-100,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-red-100 {
+  background: rgba(60, 24, 28, 0.75) !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-100,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-100 {
+  background: rgba(20, 45, 32, 0.75) !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-100 {
+  background: rgba(36, 28, 56, 0.72) !important;
+}
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-yellow-100,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-yellow-100 {
+  background: rgba(55, 40, 12, 0.85) !important;
+}
+
+/* Legacy “clinical blue” wells — map to violet glass (model-performance, etc.) */
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-50,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-50 {
+  background: rgba(49, 46, 129, 0.2) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-50,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-50 {
+  background: rgba(6, 78, 59, 0.22) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-blue-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-blue-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-blue-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-blue-700 {
+  color: #d8b4fe !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-green-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-green-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-green-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-green-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-green-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-green-800 {
+  color: #86efac !important;
+}
+
+body.pcode-app-bento .border-blue-200,
+body.pcode-app-bento .border-blue-300 {
+  border-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+body.pcode-app-bento .border-b-2.border-blue-200 {
+  border-color: rgba(167, 139, 250, 0.35) !important;
+}
+
+body.pcode-app-bento .bg-blue-600 {
+  background: linear-gradient(155deg, #8b5cf6 0%, #4338ca 100%) !important;
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento .bg-gradient-to-br.from-blue-50.to-blue-100 {
+  background-image: linear-gradient(
+    to bottom right,
+    rgba(139, 92, 246, 0.34),
+    rgba(49, 46, 129, 0.48)
+  ) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-purple-600 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-purple-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-purple-600 svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-purple-600 {
+  color: #d8b4fe !important;
+}
+
+body.pcode-app-bento .bg-gray-50.rounded-lg {
+  background: rgba(13, 11, 20, 0.45) !important;
+  border: 1px solid var(--pcb-card-border);
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+}
+
+body.pcode-app-bento .hover\:bg-gray-100:hover {
+  background: rgba(32, 28, 48, 0.65) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Model performance — glass shells + neon metric tiles (model-performance)   */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento .bento-glass-card {
+  position: relative;
+  isolation: isolate;
+  overflow: visible !important;
+  background: rgba(13, 11, 20, 0.4) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--pcb-radius-bento);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 14px rgba(196, 181, 253, 0.08);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+body.pcode-app-bento .bento-glass-card h3,
+body.pcode-app-bento .bento-glass-card > h3 {
+  color: var(--pcb-text-title) !important;
+}
+
+body.pcode-app-bento .mp-metric-tile {
+  background: rgba(17, 11, 30, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.pcode-app-bento .mp-metric-label {
+  color: #d1d1d6 !important;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+body.pcode-app-bento .mp-metric-value {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+body.pcode-app-bento .mp-metric-desc {
+  color: #d1d1d6 !important;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+body.pcode-app-bento .mp-glass-inset {
+  background: rgba(3, 2, 5, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+}
+
+body.pcode-app-bento .mp-glass-inset,
+body.pcode-app-bento .mp-glass-inset p,
+body.pcode-app-bento .mp-glass-inset li {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento .mp-glass-inset strong {
+  color: #ffffff !important;
+}
+
+/* Model performance — Test Set Results column only (contrast shell + tiles) */
+body.pcode-app-bento .mp-test-set-shell {
+  background: rgba(13, 11, 20, 0.4) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid transparent !important;
+  border-radius: 0.75rem;
+  overflow: visible !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 12px rgba(196, 181, 253, 0.06);
+}
+
+body.pcode-app-bento .mp-test-set-shell > h3 {
+  color: var(--pcb-text-title) !important;
+}
+
+body.pcode-app-bento .mp-test-set-tile {
+  background: rgba(3, 2, 5, 0.6) !important;
+  border: 1px solid rgba(196, 181, 253, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.pcode-app-bento .mp-test-set-tile .mp-test-set-label {
+  color: #b4acc5 !important;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+body.pcode-app-bento .mp-test-set-tile .mp-test-set-value {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+body.pcode-app-bento .mp-test-set-tile .mp-test-set-desc {
+  color: #d1d1d6 !important;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+/* Confusion matrix summary tiles — TP/TN labels must stay high-contrast on purple fills */
+body.pcode-app-bento .max-w-7xl .bg-purple-600.rounded-lg > p.text-sm.font-semibold.text-white {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* -------------------------------------------------------------------------- */
+/* XAI bento primitives — align with global tokens                            */
+/* -------------------------------------------------------------------------- */
+
+body.xai-bento-page .bento-card,
+body.xai-bento-page .bento-loading-panel {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid var(--pcb-card-border) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 28px 72px rgba(0, 0, 0, 0.52) !important;
+}
+
+/* XAI interpretability loading overlay — stack above bento panels & nav */
+body.xai-bento-page #xai-loading-spinner,
+body.pcode-app-bento #xai-loading-spinner {
+  z-index: 50 !important;
+  background-color: rgba(2, 6, 23, 0.8) !important;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.3s ease-out;
+  opacity: 1;
+}
+
+body.xai-bento-page #xai-loading-spinner.opacity-0,
+body.pcode-app-bento #xai-loading-spinner.opacity-0 {
+  opacity: 0 !important;
+}
+
+body.xai-bento-page .bento-inner {
+  background: rgba(3, 2, 5, 0.55) !important;
+  border: 1px solid var(--pcb-card-border) !important;
+  border-radius: 18px;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+}
+
+body.xai-bento-page .chart-well,
+body.xai-bento-page .img-well {
+  background: rgba(3, 2, 5, 0.65) !important;
+  border: 1px solid var(--pcb-card-border) !important;
+  border-radius: var(--pcb-radius-bento);
+}
+
+body.xai-bento-page .bento-input,
+body.xai-bento-page select.bento-input {
+  background: rgba(3, 2, 5, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--pcb-text-title) !important;
+}
+
+body.xai-bento-page .bento-input:focus,
+body.xai-bento-page select.bento-input:focus {
+  outline: none;
+  border-color: var(--pcb-focus-border) !important;
+  box-shadow: 0 0 0 3px var(--pcb-focus-glow) !important;
+}
+
+body.xai-bento-page .bento-card h2,
+body.xai-bento-page .bento-card h3,
+body.xai-bento-page .bento-card h4 {
+  color: var(--pcb-text-title) !important;
+  letter-spacing: -0.025em;
+}
+
+body.xai-bento-page .bento-card .text-gray-600,
+body.xai-bento-page .bento-card .text-gray-500,
+body.xai-bento-page .bento-card .text-gray-700 {
+  color: var(--pcb-text-muted) !important;
+}
+
+body.xai-bento-page .hero-sub {
+  color: var(--pcb-text-muted) !important;
+}
+
+body.xai-bento-page .modal-content {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  border: 1px solid var(--pcb-card-border) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  color: var(--pcb-text-title) !important;
+}
+
+body.xai-bento-page footer.xai-footer {
+  background: var(--pcb-bg-deep) !important;
+  border-top: 1px solid var(--pcb-card-border) !important;
+  color: var(--pcb-text-muted);
+}
+
+body.xai-bento-page .mobile-menu {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  border-left: 1px solid var(--pcb-card-border) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Footer                                                                     */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento footer,
+body.pcode-app-bento footer.bg-white {
+  background: var(--pcb-bg-deep) !important;
+  border-top: 1px solid var(--pcb-card-border) !important;
+  color: var(--pcb-text-muted);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile drawer                                                              */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento .mobile-menu {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  border-left: 1px solid var(--pcb-card-border) !important;
+  box-shadow: -12px 0 52px rgba(0, 0, 0, 0.55) !important;
+}
+
+body.pcode-app-bento #mobile-menu:not(.active),
+body.xai-bento-page #mobile-menu:not(.active) {
+  transform: translate3d(100%, 0, 0) !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.pcode-app-bento #mobile-menu.active,
+body.xai-bento-page #mobile-menu.active {
+  transform: translate3d(0, 0, 0) !important;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+body.pcode-app-bento .mobile-menu-overlay,
+body.xai-bento-page .mobile-menu-overlay,
+body.pcode-app-bento #menu-overlay.mobile-menu-overlay,
+body.xai-bento-page #menu-overlay.mobile-menu-overlay {
+  background: rgba(0, 0, 0, 0.62) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+}
+
+body.pcode-app-bento .mobile-menu-overlay.active,
+body.xai-bento-page .mobile-menu-overlay.active,
+body.pcode-app-bento #menu-overlay.mobile-menu-overlay.active,
+body.xai-bento-page #menu-overlay.mobile-menu-overlay.active {
+  -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+}
+
+body.pcode-app-bento.pcode-mobile-nav-open,
+body.xai-bento-page.pcode-mobile-nav-open {
+  overflow: hidden;
+}
+
+/* Blur page content behind the drawer (more reliable than overlay backdrop-filter alone).
+   Never lock dialogs appended to body (Edit Profile opens from the drawer). */
+body.pcode-app-bento.pcode-mobile-nav-open > *:not(#mobile-menu):not(#menu-overlay):not(#mobile-menu-overlay):not(.mobile-menu):not(.mobile-menu-overlay):not(#edit-profile-modal):not(.edit-profile-modal),
+body.xai-bento-page.pcode-mobile-nav-open > *:not(#mobile-menu):not(#menu-overlay):not(#mobile-menu-overlay):not(.mobile-menu):not(.mobile-menu-overlay):not(#edit-profile-modal):not(.edit-profile-modal) {
+  filter: blur(8px);
+  transition: filter 0.3s ease-out;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Edit Profile must stay interactive even if the drawer class is still on <body> */
+body.pcode-app-bento #edit-profile-modal.edit-profile-modal.is-open,
+body.xai-bento-page #edit-profile-modal.edit-profile-modal.is-open,
+body.pcode-app-bento.pcode-mobile-nav-open #edit-profile-modal,
+body.xai-bento-page.pcode-mobile-nav-open #edit-profile-modal {
+  pointer-events: auto !important;
+  filter: none !important;
+  user-select: auto !important;
+  z-index: 1100 !important;
+}
+
+/* Desktop: top bar carries primary nav — never duplicate links in the drawer */
+@media (min-width: 769px) {
+  body.pcode-app-bento #mobile-menu .mobile-nav-links,
+  body.xai-bento-page #mobile-menu .mobile-nav-links,
+  body.pcode-app-bento #mobile-menu.pcode-sidebar-layout .pcode-sidebar-scroll .mobile-nav-links,
+  body.xai-bento-page #mobile-menu.pcode-sidebar-layout .pcode-sidebar-scroll .mobile-nav-links {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Forms — recessed dark + neon purple focus                                  */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
+body.pcode-app-bento select,
+body.pcode-app-bento textarea {
+  background: rgba(3, 2, 5, 0.92) !important;
+  color: var(--pcb-text-title) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.pcode-app-bento input:focus,
+body.pcode-app-bento select:focus,
+body.pcode-app-bento textarea:focus {
+  outline: none;
+  border-color: var(--pcb-focus-border) !important;
+  box-shadow: 0 0 0 3px var(--pcb-focus-glow) !important;
+}
+
+body.pcode-app-bento input::placeholder,
+body.pcode-app-bento textarea::placeholder {
+  color: rgba(158, 154, 169, 0.65) !important;
+}
+
+/* Hide browser number-input spinners on clinical/detect forms */
+body.pcode-app-bento input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+body.pcode-app-bento input[type='number']::-webkit-outer-spin-button,
+body.pcode-app-bento input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Native <select> — closed control + dropdown list (readable on dark UI)    */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root.dark body.pcode-app-bento select,
+html.pcode-app-bento-root.dark body.xai-bento-page select,
+html.login-bento-page.dark body.login-bento-page select,
+html.login-bento-page.dark select,
+html.pcode-app-bento-root.dark body.pcode-admin-shell select {
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: rgba(13, 11, 20, 0.94) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d1d1d6' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2.5rem !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento select option,
+html.pcode-app-bento-root.dark body.xai-bento-page select option,
+html.login-bento-page.dark select option,
+html.pcode-app-bento-root.dark body.pcode-admin-shell select option {
+  background-color: #0d0b14 !important;
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento select option:checked,
+html.pcode-app-bento-root.dark body.xai-bento-page select option:checked,
+html.login-bento-page.dark select option:checked,
+html.pcode-app-bento-root.dark body.pcode-app-bento select option:hover,
+html.pcode-app-bento-root.dark body.xai-bento-page select option:hover {
+  background-color: #4c1d95 !important;
+  color: #ffffff !important;
+}
+
+/* Tailwind utility classes on selects must not force light dropdown chrome */
+html.pcode-app-bento-root.dark body.pcode-app-bento select.bg-white,
+html.pcode-app-bento-root.dark body.xai-bento-page select.bg-white,
+html.pcode-app-bento-root.dark body.pcode-app-bento select.text-gray-900,
+html.pcode-app-bento-root.dark body.xai-bento-page select.text-gray-900,
+html.pcode-app-bento-root.dark body.pcode-app-bento select.border-gray-300,
+html.pcode-app-bento-root.dark body.xai-bento-page select.border-gray-300,
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-select,
+html.pcode-app-bento-root.dark body.pcode-app-bento #filter-diagnosis,
+html.pcode-app-bento-root.dark body.xai-bento-page #patient-selector {
+  background-color: rgba(13, 11, 20, 0.94) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento select:disabled,
+html.pcode-app-bento-root.dark body.xai-bento-page select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Panels (exclude nav.bg-white) */
+body.pcode-app-bento .max-w-7xl .bg-white,
+body.pcode-app-bento main .bg-white,
+body.pcode-app-bento .mobile-card.bg-white,
+body.pcode-app-bento table .bg-white {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  color: var(--pcb-text-title);
+}
+
+body.pcode-app-bento .border-gray-200,
+body.pcode-app-bento .border-purple-200,
+body.pcode-app-bento .border-purple-300 {
+  border-color: var(--pcb-card-border) !important;
+}
+
+body.pcode-app-bento nav .shadow-lg {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.pcode-app-bento .pcode-bento-card.shadow-lg,
+body.pcode-app-bento .metric-card.shadow-lg,
+body.pcode-app-bento .mobile-card.shadow-lg,
+body.pcode-app-bento .bento-glass-card.shadow-lg,
+body.pcode-app-bento .detection-card.shadow-lg,
+body.pcode-app-bento .pcode-screening-metric-card.shadow-lg,
+body.xai-bento-page .pcode-bento-card.shadow-lg,
+body.xai-bento-page .bento-card.shadow-lg {
+  box-shadow: var(--pcb-card-shadow) !important;
+}
+
+body.pcode-app-bento .shadow:not(.pcode-bento-card):not(.metric-card),
+body.pcode-app-bento .shadow-md:not(.pcode-bento-card):not(.metric-card),
+body.pcode-app-bento .shadow-lg:not(.pcode-bento-card):not(.metric-card):not(nav *) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.pcode-app-bento .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Tables */
+body.pcode-app-bento table {
+  color: var(--pcb-text-title);
+}
+
+body.pcode-app-bento tbody tr:hover {
+  background: rgba(196, 181, 253, 0.08) !important;
+}
+
+/* Modals */
+body.pcode-app-bento .modal-content {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  color: var(--pcb-text-title) !important;
+  border: 1px solid var(--pcb-card-border) !important;
+  border-radius: var(--pcb-radius-bento-lg) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 28px 72px rgba(0, 0, 0, 0.58) !important;
+}
+
+body.pcode-app-bento .modal .modal-content .text-gray-800,
+body.pcode-app-bento .modal .modal-content .text-gray-700 {
+  color: var(--pcb-text-title) !important;
+}
+
+body.pcode-app-bento .modal .modal-content .text-gray-600 {
+  color: var(--pcb-text-muted) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Login shell — glass card + container (html.login-bento-page linked here)   */
+/* -------------------------------------------------------------------------- */
+
+html.login-bento-page.pcode-app-bento-root.dark {
+  --pcb-focus-border: rgba(196, 181, 253, 0.45);
+  --pcb-focus-glow: rgba(196, 181, 253, 0.16);
+}
+
+html.login-bento-page .auth-page-container {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(196, 181, 253, 0.08), transparent 70%),
+    #030205 !important;
+}
+
+html.login-bento-page.dark .auth-main-card {
+  position: relative;
+  isolation: isolate;
+  overflow: visible !important;
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid transparent !important;
+  border-radius: 2.5rem !important;
+  box-shadow: var(--pcb-card-shadow) !important;
+}
+
+html.login-bento-page.dark .auth-main-card h1,
+html.login-bento-page.dark .auth-main-card h2,
+html.login-bento-page.dark .auth-main-card h3 {
+  color: var(--pcb-text-title) !important;
+  letter-spacing: -0.025em;
+}
+
+html.login-bento-page.dark .auth-main-card p,
+html.login-bento-page.dark .auth-main-card .text-sm {
+  color: var(--pcb-text-muted) !important;
+}
+
+html.login-bento-page.dark .input-medical:focus,
+html.login-bento-page.dark select.input-medical:focus,
+html.login-bento-page.dark input:focus:not([type="checkbox"]):not([type="hidden"]) {
+  border-color: var(--pcb-focus-border) !important;
+  box-shadow: 0 0 0 3px var(--pcb-focus-glow) !important;
+}
+
+/* Login inputs: keep typed text / caret light (Tailwind autofill uses dark -webkit-text-fill on dark wells). */
+html.login-bento-page.dark .auth-main-card .input-medical,
+html.login-bento-page.dark .auth-main-card input.input-medical:not([type="checkbox"]):not([type="hidden"]) {
+  color: #ffffff !important;
+  caret-color: #ffffff;
+}
+
+html.login-bento-page.dark .auth-main-card .input-medical:-webkit-autofill,
+html.login-bento-page.dark .auth-main-card .input-medical:-webkit-autofill:hover,
+html.login-bento-page.dark .auth-main-card .input-medical:-webkit-autofill:focus,
+html.login-bento-page.dark .auth-main-card .input-medical:-webkit-autofill:active,
+html.login-bento-page.dark .auth-main-card input.input-medical:-webkit-autofill,
+html.login-bento-page.dark .auth-main-card input.input-medical:-webkit-autofill:hover,
+html.login-bento-page.dark .auth-main-card input.input-medical:-webkit-autofill:focus,
+html.login-bento-page.dark .auth-main-card input.input-medical:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px rgba(3, 2, 5, 0.96) inset !important;
+  box-shadow: 0 0 0 40px rgba(3, 2, 5, 0.96) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  transition: background-color 99999s ease-out;
+}
+
+/* Role / portal tiles — dark UI only (light: pcode-theme.css) */
+html.login-bento-page.dark .entry-card {
+  background: rgba(19, 17, 28, 0.6) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 2rem !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 28px rgba(0, 0, 0, 0.35) !important;
+  transform: none !important;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease !important;
+}
+
+html.login-bento-page.dark .entry-card:hover,
+html.login-bento-page.dark .entry-card:focus-visible {
+  border-color: rgba(196, 181, 253, 0.4) !important;
+  background: rgba(22, 19, 32, 0.72) !important;
+  transform: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.login-bento-page.dark .entry-icon-slot {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.75rem;
+  margin: 0 auto 1rem !important;
+  border-radius: 1.25rem;
+  background-color: rgba(59, 7, 100, 0.4) !important;
+  color: #c084fc !important;
+}
+
+html.login-bento-page.dark .entry-icon-slot .entry-icon {
+  color: inherit !important;
+}
+
+html.login-bento-page.dark .entry-card:hover .entry-card-title {
+  color: #f3e8ff !important;
+}
+
+html.login-bento-page .auth-tabs {
+  border-bottom: 1px solid rgba(230, 220, 255, 0.12) !important;
+}
+
+html.login-bento-page .password-requirements {
+  background: rgba(3, 2, 5, 0.55) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid rgba(216, 189, 250, 0.16) !important;
+  border-radius: 12px !important;
+  color: var(--pcb-text-muted) !important;
+}
+
+html.login-bento-page.dark #login-loading-modal .panel {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  border: 1px solid rgba(230, 220, 255, 0.12) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 28px 72px rgba(0, 0, 0, 0.55) !important;
+  color: var(--pcb-text-title) !important;
+}
+
+html.login-bento-page.dark #login-loading-modal .title {
+  color: var(--pcb-text-title) !important;
+}
+
+html.login-bento-page.dark #login-modal-error-alert .login-modal-error-inner {
+  background: rgba(60, 24, 28, 0.72) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border: 1px solid rgba(248, 113, 113, 0.35) !important;
+  border-radius: 12px !important;
+}
+
+html.login-bento-page.dark #login-modal-error-text {
+  color: #fecaca !important;
+}
+
+html.login-bento-page.dark #login-modal-error-alert .login-modal-error-icon {
+  color: #f87171 !important;
+}
+
+/* Light login — signing-in modal */
+html.login-bento-page:not(.dark) #login-loading-modal {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+html.login-bento-page:not(.dark) #login-loading-modal .panel {
+  background: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+html.login-bento-page:not(.dark) #login-loading-modal .title {
+  color: #0f172a !important;
+}
+
+html.login-bento-page:not(.dark) #login-loading-modal .msg {
+  color: #475569 !important;
+}
+
+html.login-bento-page:not(.dark) #login-modal-error-alert .login-modal-error-inner {
+  background: #fef2f2 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 0.75rem !important;
+}
+
+html.login-bento-page:not(.dark) #login-modal-error-text {
+  color: #991b1b !important;
+}
+
+html.login-bento-page:not(.dark) #login-modal-error-alert .login-modal-error-icon {
+  color: #dc2626 !important;
+}
+
+html.login-bento-page .entry-access-message:not(.hidden) {
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border-radius: 14px !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ECharts / chart containers — hook for JS (colors = --pcb-chart-*)         */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento .echarts,
+body.pcode-app-bento [id$='chart'],
+body.pcode-app-bento [id*='-chart'] {
+  border-radius: var(--pcb-radius-bento);
+}
+
+/* -------------------------------------------------------------------------- */
+/* prefers-color-scheme guard (tailwind “force light body”)                   */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  html.pcode-app-bento-root body.pcode-app-bento,
+  html.pcode-app-bento-root body.xai-bento-page {
+    background-color: var(--pcb-bg-deep) !important;
+    color: var(--pcb-text-muted) !important;
+  }
+}
+
+/* Admin dashboard: horizontal shell */
+body.pcode-app-bento.pcode-admin-shell {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+body.pcode-app-bento.pcode-admin-shell > main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Admin sidebar: keep fixed on desktop (do not flatten to in-flow relative) */
+@media (min-width: 1024px) {
+  body.pcode-app-bento.pcode-admin-shell > aside.admin-sidebar,
+  body.pcode-app-bento.pcode-admin-shell > aside.admin-sidebar.pcode-sidebar-layout {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* Off-canvas drawer: always show nav/footer when open (overrides legacy inline admin CSS) */
+body.pcode-app-bento.pcode-admin-shell.pcode-admin-nav-open .sidebar-nav,
+body.pcode-app-bento.pcode-admin-shell.pcode-admin-nav-open .sidebar-footer {
+  display: block !important;
+}
+
+@media (max-width: 1023px) {
+  body.pcode-app-bento.pcode-admin-shell .sidebar-nav {
+    display: block !important;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .sidebar-footer {
+    display: block !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile layout — reduce overflow, overlap, and oversized chrome             */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root,
+html.login-bento-page,
+body.login-bento-page {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  body.pcode-app-bento,
+  body.xai-bento-page {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* Main columns: stop flex/grid children from forcing horizontal scroll */
+  body.pcode-app-bento .max-w-7xl > *,
+  body.pcode-app-bento .max-w-7xl .flex > *,
+  body.pcode-app-bento .max-w-7xl .grid > *,
+  body.xai-bento-page .max-w-7xl > *,
+  body.xai-bento-page .max-w-7xl .flex > *,
+  body.xai-bento-page .max-w-7xl .grid > * {
+    min-width: 0;
+  }
+
+  body.pcode-app-bento .max-w-7xl,
+  body.xai-bento-page .max-w-7xl {
+    overflow-wrap: break-word;
+  }
+
+  body.pcode-app-bento .max-w-7xl.mx-auto,
+  body.xai-bento-page .max-w-7xl.mx-auto {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
+    box-sizing: border-box;
+  }
+
+  body.pcode-app-bento nav .max-w-7xl.mx-auto,
+  body.xai-bento-page nav .max-w-7xl.mx-auto {
+    padding-left: max(1rem, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(1rem, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  /* Navbar: single row — never clip hamburger behind max-height */
+  body.pcode-app-bento > nav,
+  body.xai-bento-page > nav {
+    position: sticky !important;
+    top: 0;
+    z-index: 55 !important;
+    overflow: visible !important;
+  }
+
+  body.pcode-app-bento > nav .flex.justify-between,
+  body.pcode-app-bento > nav .flex.justify-between.items-center,
+  body.pcode-app-bento nav .flex.justify-between.items-center,
+  body.xai-bento-page > nav .flex.justify-between,
+  body.xai-bento-page > nav .flex.justify-between.items-center,
+  body.xai-bento-page nav .flex.justify-between.items-center {
+    height: auto !important;
+    min-height: 3.5rem !important;
+    max-height: none !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem;
+    align-items: center;
+    overflow: visible !important;
+  }
+
+  body.pcode-app-bento nav .flex.items-center.space-x-2,
+  body.pcode-app-bento nav .flex.items-center.space-x-4,
+  body.xai-bento-page nav .flex.items-center.space-x-2,
+  body.xai-bento-page nav .flex.items-center.space-x-4 {
+    flex-shrink: 0;
+  }
+
+  /* Only the trailing actions cluster (hamburger) pins right — not the brand row */
+  body.pcode-app-bento nav .flex.justify-between > .flex.items-center.space-x-2:last-child,
+  body.pcode-app-bento nav .flex.justify-between > .flex.items-center.space-x-4:last-child,
+  body.xai-bento-page nav .flex.justify-between > .flex.items-center.space-x-2:last-child,
+  body.xai-bento-page nav .flex.justify-between > .flex.items-center.space-x-4:last-child,
+  body.pcode-app-bento .pcode-topnav__menu,
+  body.xai-bento-page .pcode-topnav__menu {
+    margin-left: auto;
+  }
+
+  body.pcode-app-bento nav .flex-shrink-0 img,
+  body.xai-bento-page nav .flex-shrink-0 img {
+    max-height: 2.5rem;
+    width: auto;
+  }
+
+  body.pcode-app-bento #mobile-menu-btn,
+  body.xai-bento-page #mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    min-width: 2.75rem !important;
+    min-height: 2.75rem !important;
+    max-width: 2.75rem !important;
+    max-height: 2.75rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    z-index: 2;
+    line-height: 0;
+  }
+
+  html.pcode-app-bento-root.dark body.pcode-app-bento #mobile-menu-btn,
+  html.pcode-app-bento-root.dark body.xai-bento-page #mobile-menu-btn {
+    color: #f5f3ff !important;
+    border: 1px solid rgba(233, 213, 254, 0.35) !important;
+    background: rgba(13, 11, 20, 0.65) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  html.pcode-app-bento-root.dark body.pcode-app-bento #mobile-menu-btn svg,
+  html.pcode-app-bento-root.dark body.xai-bento-page #mobile-menu-btn svg {
+    color: #f5f3ff !important;
+    stroke: #f5f3ff !important;
+  }
+
+  body.pcode-app-bento #mobile-menu,
+  body.xai-bento-page #mobile-menu {
+    z-index: 70 !important;
+  }
+
+  body.pcode-app-bento #menu-overlay,
+  body.xai-bento-page #menu-overlay {
+    z-index: 65 !important;
+  }
+
+  body.pcode-app-bento nav h1.text-xl,
+  body.pcode-app-bento nav h1.text-2xl,
+  body.pcode-app-bento nav .text-xl,
+  body.pcode-app-bento nav .text-2xl,
+  body.xai-bento-page nav h1 {
+    font-size: clamp(1rem, 4.2vw, 1.35rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  body.pcode-app-bento .gradient-bg h1,
+  body.xai-bento-page .gradient-bg h1,
+  body.pcode-app-bento .gradient-bg .text-4xl,
+  body.xai-bento-page .gradient-bg .hero-title {
+    font-size: clamp(1.35rem, 5.5vw, 2.25rem) !important;
+    line-height: 1.12 !important;
+  }
+
+  body.pcode-app-bento .metric-card {
+    transform: none !important;
+  }
+
+  body.pcode-app-bento .overflow-x-auto {
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.pcode-app-bento [id$='chart'],
+  body.pcode-app-bento [id*='-chart'],
+  body.pcode-app-bento .echarts {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  body.pcode-app-bento .modal .modal-content,
+  body.pcode-app-bento .modal-content {
+    width: min(100%, calc(100vw - 1.5rem)) !important;
+    max-width: min(100%, calc(100vw - 1.5rem)) !important;
+    box-sizing: border-box;
+  }
+
+  body.xai-bento-page .bento-card,
+  body.xai-bento-page .bento-loading-panel,
+  body.xai-bento-page .mobile-card.bento-card {
+    padding: 1.1rem !important;
+    border-radius: 20px !important;
+  }
+
+  body.xai-bento-page .bento-card .flex.flex-wrap,
+  body.xai-bento-page .mobile-card .flex.flex-wrap {
+    gap: 0.65rem;
+  }
+
+  /* Tight hero subcopy */
+  body.xai-bento-page .hero-sub {
+    font-size: clamp(0.9rem, 3.5vw, 1.05rem) !important;
+    line-height: 1.45 !important;
+  }
+}
+
+/* XAI provider — labeled patient / screening selectors */
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-row,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-field,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-field,
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-action,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-action {
+  min-width: 0;
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-label,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(237, 233, 254, 0.88);
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-label--action,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-label--action {
+  visibility: hidden;
+  user-select: none;
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-control,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-control {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  border-radius: 0.75rem;
+  background: rgba(15, 10, 30, 0.72);
+  color: #f5f3ff;
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-control:focus,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-control:focus {
+  outline: none;
+  border-color: rgba(196, 181, 253, 0.65);
+  box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.22);
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-control:disabled,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-control:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+body.pcode-app-bento #xai-patient-selection-card .xai-selection-btn,
+body.xai-bento-page #xai-patient-selection-card .xai-selection-btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  body.pcode-app-bento .max-w-7xl .grid,
+  body.xai-bento-page .max-w-7xl .grid {
+    gap: 0.75rem;
+  }
+
+  /* XAI user + provider: patient row stacks on narrow screens */
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-row,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-row {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-label--action,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-label--action {
+    display: none;
+  }
+
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-row,
+  body.xai-bento-page #xai-patient-selection-card .flex.gap-4.items-center,
+  body.xai-bento-page #xai-patient-selection-card .flex.gap-4,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-row,
+  body.pcode-app-bento #xai-patient-selection-card .flex.gap-4.items-center,
+  body.pcode-app-bento #xai-patient-selection-card .flex.gap-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-row > select,
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-row > button,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-row > select,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-row > button,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-control,
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-control,
+  body.pcode-app-bento #xai-patient-selection-card .xai-selection-btn,
+  body.xai-bento-page #xai-patient-selection-card .xai-selection-btn,
+  body.xai-bento-page #xai-patient-selection-card .flex.gap-4 > button,
+  body.xai-bento-page #xai-patient-selection-card .flex.gap-4 > .btn-accent,
+  body.pcode-app-bento #xai-patient-selection-card .flex.gap-4 > button,
+  body.pcode-app-bento #xai-patient-selection-card .flex.gap-4 > .btn-accent {
+    width: 100%;
+  }
+
+  body.pcode-app-bento table {
+    font-size: 0.8125rem;
+  }
+
+  body.pcode-app-bento .max-w-7xl img,
+  body.xai-bento-page .max-w-7xl img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Center alerts from auth.js (logout, PDF, session, loading) */
+html.pcode-app-bento-root #pcode-center-alert-overlay,
+html.pcode-app-bento-root .pcode-center-alert-overlay,
+html.pcode-app-bento-root #pcode-export-loading-overlay,
+body.pcode-app-bento .pcode-center-alert-overlay,
+body.xai-bento-page .pcode-center-alert-overlay,
+body.pcode-app-bento #pcode-center-alert-overlay,
+body.xai-bento-page #pcode-center-alert-overlay,
+body.pcode-app-bento #pcode-export-loading-overlay,
+body.xai-bento-page #pcode-export-loading-overlay {
+  z-index: 9999 !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Dark theme overlay + card */
+html.pcode-app-bento-root.dark #pcode-center-alert-overlay,
+html.pcode-app-bento-root.dark .pcode-center-alert-overlay,
+html.pcode-app-bento-root.dark #pcode-export-loading-overlay,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-center-alert-overlay,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-center-alert-overlay {
+  background-color: rgba(0, 0, 0, 0.72) !important;
+}
+
+html.pcode-app-bento-root.dark #pcode-center-alert-inner > div[role="status"],
+html.pcode-app-bento-root.dark .pcode-center-alert-card,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-center-alert-card,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-center-alert-card,
+html.pcode-app-bento-root.dark #pcode-export-loading-overlay .pcode-center-alert-card,
+html.pcode-app-bento-root.dark #pcode-center-alert-inner > div.bg-white[role="status"] {
+  background: rgba(13, 11, 20, 0.96) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-lg));
+  backdrop-filter: blur(var(--pcb-blur-lg));
+  border: 1px solid rgba(196, 181, 253, 0.28) !important;
+  border-radius: var(--pcb-radius-bento) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 48px rgba(139, 92, 246, 0.22),
+    0 28px 72px rgba(0, 0, 0, 0.55) !important;
+  color: #f5f3ff !important;
+}
+
+html.pcode-app-bento-root.dark .pcode-center-alert-title,
+html.pcode-app-bento-root.dark #pcode-center-alert-inner .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-center-alert-title,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-center-alert-title,
+html.pcode-app-bento-root.dark #pcode-export-loading-overlay .pcode-center-alert-title {
+  color: #f5f3ff !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root.dark .pcode-center-alert-sub,
+html.pcode-app-bento-root.dark #pcode-center-alert-inner .text-gray-500,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-center-alert-sub,
+html.pcode-app-bento-root.dark body.xai-bento-page .pcode-center-alert-sub,
+html.pcode-app-bento-root.dark #pcode-export-loading-overlay .pcode-center-alert-sub {
+  color: #d1d1d6 !important;
+}
+
+/* Light theme — white modal, dark text (login / logout / session / PDF) */
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-overlay,
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-overlay,
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay,
+html.login-bento-page:not(.dark) #pcode-center-alert-overlay,
+html[data-pcode-theme="light"] #pcode-center-alert-overlay,
+html[data-pcode-theme="light"] #pcode-export-loading-overlay {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-inner > div[role="status"],
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-card,
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay .pcode-center-alert-card,
+html.login-bento-page:not(.dark) .pcode-center-alert-card,
+html[data-pcode-theme="light"] .pcode-center-alert-card,
+html[data-pcode-theme="light"] #pcode-center-alert-inner > div[role="status"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-title,
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-inner .text-gray-700,
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay .pcode-center-alert-title,
+html.login-bento-page:not(.dark) .pcode-center-alert-title,
+html[data-pcode-theme="light"] .pcode-center-alert-title {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-center-alert-sub,
+html.pcode-app-bento-root:not(.dark) #pcode-center-alert-inner .text-gray-500,
+html.pcode-app-bento-root:not(.dark) #pcode-export-loading-overlay .pcode-center-alert-sub,
+html.login-bento-page:not(.dark) .pcode-center-alert-sub,
+html[data-pcode-theme="light"] .pcode-center-alert-sub {
+  color: #475569 !important;
+}
+
+@media (max-width: 768px) {
+  #pcode-center-alert-overlay .max-w-md,
+  #pcode-center-alert-inner > div,
+  #pcode-export-loading-overlay .max-w-md {
+    max-width: calc(100vw - 1.25rem) !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+}
+
+/* Login shell — safe areas + readable card width on phones */
+@media (max-width: 768px) {
+  html.login-bento-page .auth-page-container {
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+
+  html.login-bento-page .auth-page-right {
+    max-width: min(26rem, calc(100vw - 2rem)) !important;
+    width: 100% !important;
+  }
+
+  html.login-bento-page.dark .auth-main-card,
+  html.login-bento-page:not(.dark) .auth-main-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.25rem 1.1rem 1.35rem !important;
+    border-radius: 1.5rem !important;
+  }
+}
+
+/* ==========================================================================
+   Global UX system — fluid charts, scroll shells, glass inversion, safe text
+   Applies across body.pcode-app-bento + body.xai-bento-page (+ shared nav).
+   ========================================================================== */
+
+/* --- 1) Fluid chart / gauge roots (ECharts reads offsetHeight; min-height suffices) --- */
+.pcb-echart-host {
+  width: 100% !important;
+  max-width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 320px;
+}
+
+.pcode-chart-panel > .pcb-echart-host,
+.pcode-chart-panel > .pcode-chart-host {
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+@media (min-width: 640px) {
+  .pcb-echart-host {
+    min-height: 420px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pcb-echart-host {
+    min-height: 480px;
+  }
+}
+
+/* Heatmaps / 2×2 confusion matrix — compact; no overflow from hidden visualMap */
+.pcb-scroll-x:has(.pcb-echart-host--heatmap) {
+  overflow: hidden !important;
+}
+
+.pcb-echart-host--heatmap {
+  min-height: 200px;
+  max-height: 320px;
+  height: min(42vw, 280px);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .pcb-echart-host--heatmap {
+    min-height: 220px;
+    height: 260px;
+    max-height: 280px;
+  }
+}
+
+/* --- 2) Horizontal scroll: dense tables & chart strips without clipping shell --- */
+body.pcode-app-bento .pcb-scroll-x,
+body.xai-bento-page .pcb-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.28) rgba(13, 11, 20, 0.35);
+}
+
+body.pcode-app-bento .pcb-scroll-x::-webkit-scrollbar,
+body.xai-bento-page .pcb-scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+body.pcode-app-bento .pcb-scroll-x::-webkit-scrollbar-thumb,
+body.xai-bento-page .pcb-scroll-x::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 999px;
+}
+
+body.pcode-app-bento .overflow-x-auto,
+body.xai-bento-page .overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.28) rgba(13, 11, 20, 0.35);
+}
+
+body.pcode-app-bento .overflow-x-auto::-webkit-scrollbar,
+body.xai-bento-page .overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+body.pcode-app-bento .overflow-x-auto::-webkit-scrollbar-thumb,
+body.xai-bento-page .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.35);
+  border-radius: 999px;
+}
+
+/* --- 3) Invert legacy Tailwind “white cards” inside dark bento shells --- */
+html.pcode-app-bento-root.dark body.pcode-app-bento nav.bg-white.shadow-lg,
+html.pcode-app-bento-root.dark body.xai-bento-page nav.bg-white.shadow-lg {
+  background: rgba(13, 11, 20, 0.72) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+body.pcode-app-bento footer.bg-white,
+body.xai-bento-page footer.bg-white {
+  background: rgba(13, 11, 20, 0.88) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--pcb-text-muted) !important;
+}
+
+body.pcode-app-bento .bg-white.rounded-xl.shadow-lg,
+body.pcode-app-bento .mobile-card.bg-white,
+body.pcode-app-bento .detection-card,
+body.pcode-app-bento .detection-card.bg-white,
+body.pcode-app-bento .bg-white.rounded-xl.shadow-lg.border,
+body.xai-bento-page .bg-white.rounded-xl.shadow-lg,
+body.xai-bento-page .bg-white.rounded-xl.shadow-lg.border {
+  background: var(--pcb-card-glass) !important;
+  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
+  backdrop-filter: blur(var(--pcb-blur-md));
+  border-color: transparent !important;
+  overflow: visible !important;
+  box-shadow: var(--pcb-card-shadow) !important;
+}
+
+/* Provider dashboard — headline metric values (dark UI only; light uses slate) */
+html.pcode-app-bento-root.dark body.pcode-app-bento #metrics-grid .metric-card p.text-3xl,
+html.pcode-app-bento-root.dark body.pcode-app-bento #metrics-grid .metric-card .pcode-metric-figure {
+  color: #ffffff !important;
+}
+
+/* Light callouts on dark pages */
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-50.rounded-lg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .p-4.bg-blue-50,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-50.rounded-lg,
+html.pcode-app-bento-root.dark body.xai-bento-page .p-4.bg-blue-50 {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(96, 165, 250, 0.28) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-50.rounded-lg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .p-4.bg-green-50,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-50.rounded-lg,
+html.pcode-app-bento-root.dark body.xai-bento-page .p-4.bg-green-50 {
+  background: rgba(16, 185, 129, 0.14) !important;
+  border: 1px solid rgba(52, 211, 153, 0.28) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-50 .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-50 .text-gray-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-50 .text-gray-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-50 .text-gray-600 {
+  color: #c8d7f0 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-50 .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-50 .text-gray-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-50 .text-gray-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-50 .text-gray-600 {
+  color: #bbf7d0 !important;
+}
+
+/* Confusion matrix / icon wells — remove paper-white panels (dark only) */
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100.rounded-lg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100.rounded-lg,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-purple-100.rounded-lg,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-100.rounded-lg {
+  background: rgba(167, 139, 250, 0.14) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100 .text-purple-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100 .text-blue-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-purple-100 .text-purple-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-100 .text-blue-700 {
+  color: #ede9fe !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100 .text-sm.text-purple-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100 .text-sm.text-blue-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-purple-100 .text-sm.text-purple-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-100 .text-sm.text-blue-700 {
+  color: rgba(237, 233, 254, 0.92) !important;
+}
+
+/* --- 4) Typographic hierarchy + wrapping (labels, lists, clinical copy) --- */
+body.pcode-app-bento main,
+body.pcode-app-bento .max-w-7xl,
+body.xai-bento-page main,
+body.xai-bento-page .page-shell,
+body.xai-bento-page .max-w-7xl {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento main h1,
+html.pcode-app-bento-root.dark body.pcode-app-bento main h2,
+html.pcode-app-bento-root.dark body.pcode-app-bento main h3,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl h1,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl h2,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl h3,
+html.pcode-app-bento-root.dark body.xai-bento-page main h1,
+html.pcode-app-bento-root.dark body.xai-bento-page main h2,
+html.pcode-app-bento-root.dark body.xai-bento-page main h3,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell h1,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell h2,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell h3 {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento main .text-gray-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento main .text-gray-900,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .text-gray-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .text-gray-900,
+html.pcode-app-bento-root.dark body.xai-bento-page main .text-gray-800,
+html.pcode-app-bento-root.dark body.xai-bento-page main .text-gray-900,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell .text-gray-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell .text-gray-900 {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento main .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento main .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento main .text-gray-500,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .text-gray-700,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento .max-w-7xl .text-gray-500,
+html.pcode-app-bento-root.dark body.xai-bento-page main .text-gray-700,
+html.pcode-app-bento-root.dark body.xai-bento-page main .text-gray-600,
+html.pcode-app-bento-root.dark body.xai-bento-page main .text-gray-500,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell .text-gray-700,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell .text-gray-600,
+html.pcode-app-bento-root.dark body.xai-bento-page .page-shell .text-gray-500 {
+  color: #d1d1d6 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-gray-600,
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-gray-700,
+html.pcode-app-bento-root.dark body.xai-bento-page nav .text-gray-600,
+html.pcode-app-bento-root.dark body.xai-bento-page nav .text-gray-700 {
+  color: rgba(224, 220, 255, 0.82) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento nav .text-purple-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento nav h1.text-purple-800,
+html.pcode-app-bento-root.dark body.xai-bento-page nav .text-purple-800,
+html.pcode-app-bento-root.dark body.xai-bento-page nav h1.text-purple-800 {
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento ul.space-y-2 li,
+body.xai-bento-page ul.space-y-2 li {
+  white-space: normal;
+}
+
+/* --- 5) Detection gauges: fluid square inside card (override page-local !important) --- */
+body.pcode-app-bento #analysis-results-panel.pcode-obsidian-data-shell,
+body.pcode-app-bento #combined-results,
+body.pcode-app-bento .gauge-results-section,
+body.pcode-app-bento .gauge-grid,
+body.pcode-app-bento .gauge-card,
+body.pcode-app-bento .final-gauge-card {
+  overflow: visible !important;
+}
+
+body.pcode-app-bento .gauge-container,
+body.pcode-app-bento .final-gauge-container {
+  width: min(100%, 240px) !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: min(100vw - 2rem, 280px) !important;
+  max-height: none !important;
+  aspect-ratio: 1.18 / 1;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  overflow: visible !important;
+  padding: 14px 10px 4px !important;
+  box-sizing: border-box;
+  isolation: isolate;
+}
+
+body.pcode-app-bento .gauge-label {
+  color: #d1d1d6 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  max-width: 100% !important;
+}
+
+/* Diagnostic results — safe zone padding & text containment */
+body.pcode-app-bento .pcode-diagnostic-bento,
+body.pcode-app-bento .pcode-obsidian-data-card {
+  padding: 1.25rem !important;
+}
+
+@media (min-width: 768px) {
+  body.pcode-app-bento .pcode-diagnostic-bento,
+  body.pcode-app-bento .pcode-obsidian-data-card {
+    padding: 1.5rem !important;
+  }
+}
+
+body.pcode-app-bento .pcode-obsidian-data-shell {
+  padding: 1.25rem !important;
+  overflow: visible !important;
+}
+
+@media (min-width: 640px) {
+  body.pcode-app-bento .pcode-obsidian-data-shell {
+    padding: 2rem !important;
+  }
+}
+
+body.pcode-app-bento .pcode-kv-pill {
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+body.pcode-app-bento .pcode-kv-label,
+body.pcode-app-bento .pcode-kv-value,
+body.pcode-app-bento #clinical-results p,
+body.pcode-app-bento #image-results p,
+body.pcode-app-bento #combined-results p {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  overflow: visible !important;
+  max-width: 100% !important;
+}
+
+body.pcode-app-bento #combined-results .gauge-sublabel {
+  color: #d1d1d6 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.35 !important;
+  margin: 0 !important;
+}
+
+body.pcode-app-bento #combined-results .gauge-card__labels {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  gap: 0.25rem !important;
+}
+
+body.pcode-app-bento #combined-results .gauge-grid {
+  align-items: start !important;
+  text-align: center !important;
+}
+
+body.pcode-app-bento #final-combined-score {
+  font-size: 0.85rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.06em !important;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+body.pcode-app-bento #final-combined-percent {
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+}
+
+body.pcode-app-bento .pcode-kv-value:not(.pcode-xai-summary-value),
+body.pcode-app-bento #clinical-probability,
+body.pcode-app-bento #image-probability,
+body.pcode-app-bento #final-combined-percent,
+body.pcode-app-bento #clinical-risk,
+body.pcode-app-bento #follicle-count {
+  font-size: 1.25rem !important;
+  line-height: 1.35 !important;
+}
+
+@media (min-width: 768px) {
+  body.pcode-app-bento .pcode-kv-value:not(.pcode-xai-summary-value),
+  body.pcode-app-bento #clinical-probability,
+  body.pcode-app-bento #image-probability,
+  body.pcode-app-bento #final-combined-percent,
+  body.pcode-app-bento #clinical-risk,
+  body.pcode-app-bento #follicle-count {
+    font-size: 1.5rem !important;
+  }
+}
+
+body.pcode-app-bento .pcode-section-header__title,
+body.pcode-app-bento .pcode-diagnostic-bento .pcode-card-title {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media (max-width: 640px) {
+  body.pcode-app-bento .gauge-container,
+  body.pcode-app-bento .final-gauge-container {
+    max-width: min(100vw - 1.5rem, 220px) !important;
+  }
+}
+
+/* XAI provider: legacy gray chart wells → glass (complements .chart-well on user) */
+body.xai-bento-page .bg-gray-50.rounded-lg {
+  background: rgba(13, 11, 20, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #d1d1d6;
+}
+
+/* ==========================================================================
+   Patients — Add Patient glass modal + bento table (no white card policy)
+   ========================================================================== */
+
+body.pcode-app-bento #patient-modal .modal-content,
+body.pcode-app-bento #patient-modal .pcode-patient-modal-shell,
+body.pcode-app-bento #guest-registration-modal .modal-content {
+  background: rgba(13, 11, 20, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1.25rem !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 20px 50px rgba(0, 0, 0, 0.8) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+  max-height: 90dvh !important;
+  width: 95% !important;
+  max-width: 95vw !important;
+  min-height: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  overflow: hidden !important;
+}
+
+@media (min-width: 768px) {
+  body.pcode-app-bento #patient-modal .modal-content,
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-shell {
+    width: 800px !important;
+    max-width: 800px !important;
+  }
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-header {
+  flex-shrink: 0 !important;
+  z-index: 2;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, 0.35) transparent;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(196, 181, 253, 0.3);
+  border-radius: 9999px;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 181, 253, 0.45);
+}
+
+body.pcode-app-bento #patient-modal #modal-footer-section.clinical-stepper-footer,
+body.pcode-app-bento #patient-modal .pcode-patient-modal-footer {
+  flex-shrink: 0 !important;
+  background: rgba(13, 11, 20, 0.9) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 0.75rem 1.25rem !important;
+  position: relative;
+  z-index: 10;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-header {
+  background: rgba(13, 11, 20, 0.94) !important;
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-header__stepper-band {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-header__status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Patient modal stepper — segment connectors (lines between dots, not through them) */
+body.pcode-app-bento #patient-modal .pcode-patient-stepper {
+  --patient-step-dot-size: 40px;
+  --patient-step-connector-h: 4px;
+  padding: 0.5rem 0.35rem 0.35rem;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-stepper-track {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-stepper-rail {
+  display: none !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Connector spans only the gap between dot edges */
+body.pcode-app-bento #patient-modal .pcode-step-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--patient-step-dot-size) / 2);
+  left: calc(50% + var(--patient-step-dot-size) / 2);
+  width: calc(100% - var(--patient-step-dot-size));
+  height: var(--patient-step-connector-h);
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  z-index: 0;
+  pointer-events: none;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-item.is-segment-complete:not(:last-child)::after {
+  background: linear-gradient(90deg, #c4b5fd 0%, #a78bfa 55%, #c084fc 100%);
+  box-shadow: 0 0 8px rgba(196, 181, 253, 0.35);
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-stepper-steps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass,
+body.pcode-app-bento #patient-modal .pcode-step-dot {
+  width: var(--patient-step-dot-size) !important;
+  height: var(--patient-step-dot-size) !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 0 0 3px rgba(13, 11, 20, 0.98);
+  transition:
+    background-color 0.5s ease-in-out,
+    border-color 0.5s ease-in-out,
+    box-shadow 0.5s ease-in-out,
+    color 0.5s ease-in-out,
+    transform 0.2s ease;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass:hover {
+  transform: none !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass.active-step {
+  background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%) !important;
+  border: 2px solid #c4b5fd !important;
+  box-shadow:
+    0 0 0 3px rgba(13, 11, 20, 0.98),
+    0 0 15px rgba(196, 181, 253, 0.45) !important;
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step {
+  background: #a78bfa !important;
+  border: none !important;
+  box-shadow:
+    0 0 0 3px rgba(13, 11, 20, 0.98),
+    0 0 12px rgba(167, 139, 250, 0.28) !important;
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass.inactive-step {
+  background: #16141f !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 0 0 3px rgba(13, 11, 20, 0.98) !important;
+  color: #64748b !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-label {
+  position: relative;
+  z-index: 2;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  max-width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass .pcode-step-icon,
+body.pcode-app-bento #patient-modal .pcode-step-dot .pcode-step-icon {
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step .pcode-step-icon--check {
+  width: 1.3rem !important;
+  height: 1.3rem !important;
+  stroke-width: 2.75;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-label--active {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+}
+
+body.pcode-app-bento #patient-modal .pcode-step-label--inactive {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+body.pcode-app-bento #patient-modal #add-patient-form {
+  background: transparent !important;
+  overflow: visible !important;
+  flex: none !important;
+  min-height: 0 !important;
+}
+
+body.pcode-app-bento #patient-modal #add-patient-form .step-content {
+  background: rgba(13, 11, 20, 0.45) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.pcode-app-bento #patient-modal #footer-step-info {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento #patient-modal h3.text-lg,
+body.pcode-app-bento #patient-modal #modal-title {
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento #patient-modal h4.text-sm {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento #patient-modal label.block {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento #patient-modal .text-gray-500 {
+  color: #d1d1d6 !important;
+}
+
+body.pcode-app-bento #patient-modal .text-gray-700,
+body.pcode-app-bento #patient-modal .text-gray-800 {
+  color: #d1d1d6 !important;
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento #patient-modal.modal {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2.5vh 2.5vw !important;
+  }
+
+  body.pcode-app-bento #patient-modal .modal-content,
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-shell {
+    width: 95% !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    max-height: 90dvh !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    border-radius: 20px !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer,
+  body.pcode-app-bento #patient-modal #modal-footer-section {
+    padding: 0.75rem 1rem !important;
+    flex-wrap: wrap;
+    gap: 0.75rem !important;
+  }
+}
+
+/* Add Patient — ultrasound dropzone (Tailwind hover:bg-gray-50 was a white flash on dark) */
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone {
+  background: rgba(13, 11, 20, 0.72) !important;
+  border-color: rgba(167, 139, 250, 0.38) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone:hover,
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone:focus-within {
+  background: rgba(139, 92, 246, 0.34) !important;
+  border-color: rgba(216, 189, 250, 0.75) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(196, 181, 253, 0.32),
+    0 0 36px rgba(167, 139, 250, 0.3);
+}
+
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone svg {
+  color: rgba(196, 181, 253, 0.78) !important;
+}
+
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone:hover svg,
+body.pcode-app-bento #patient-modal .pcode-ultrasound-dropzone:focus-within svg {
+  color: #faf5ff !important;
+}
+
+/* Step 3 — “Open Camera” outline control: avoid hover:bg-purple-50 on dark glass */
+body.pcode-app-bento #patient-modal #step-3-content button.border.border-purple-300:hover {
+  background: rgba(139, 92, 246, 0.42) !important;
+  border-color: rgba(196, 181, 253, 0.55) !important;
+}
+
+body.pcode-app-bento #patient-modal .border-gray-200,
+body.pcode-app-bento #patient-modal .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.pcode-app-bento #patient-modal .input-medical,
+body.pcode-app-bento #patient-modal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+body.pcode-app-bento #patient-modal select,
+body.pcode-app-bento #patient-modal textarea {
+  background: rgba(3, 2, 5, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+  color: #ffffff !important;
+}
+
+body.pcode-app-bento #patient-modal .input-medical:focus,
+body.pcode-app-bento #patient-modal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+body.pcode-app-bento #patient-modal select:focus,
+body.pcode-app-bento #patient-modal textarea:focus {
+  outline: none !important;
+  border-color: #c4b5fd !important;
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, 0.65) !important;
+}
+
+body.pcode-app-bento #patient-modal #patient-age[readonly] {
+  opacity: 0.9;
+  cursor: default;
+  color: rgba(237, 233, 254, 0.92) !important;
+}
+
+body.pcode-app-bento #patient-modal select option {
+  background: #0d0b14;
+  color: #ffffff;
+}
+
+body.pcode-app-bento #patient-modal input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  display: inline-grid;
+  place-content: center;
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  min-width: 1.125rem;
+  min-height: 1.125rem;
+  margin: 0;
+  border-radius: 0.3rem;
+  border: 1.5px solid rgba(196, 181, 253, 0.5) !important;
+  background: rgba(3, 2, 5, 0.9) !important;
+  box-shadow: none;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+body.pcode-app-bento #patient-modal input[type="checkbox"]:hover {
+  border-color: rgba(196, 181, 253, 0.8) !important;
+}
+
+body.pcode-app-bento #patient-modal input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.45);
+}
+
+body.pcode-app-bento #patient-modal input[type="checkbox"]:checked {
+  background-color: #7c3aed !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2L6.4 11.1L12.5 4.5' stroke='%23ffffff' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-size: 0.75rem 0.75rem !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: none;
+}
+
+body.pcode-app-bento #patient-modal input[type="checkbox"]:checked::after {
+  content: none;
+  display: none;
+}
+
+body.pcode-app-bento #patient-modal label[for],
+body.pcode-app-bento #patient-modal .flex.items-center label.ml-2 {
+  color: #c5c2d6 !important;
+}
+
+/* Patients toolbar — aligned control heights on desktop */
+body.pcode-app-bento .pcode-patients-toolbar__control {
+  min-height: 2.75rem;
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento .pcode-patients-toolbar__control {
+    padding-top: 0.625rem !important;
+    padding-bottom: 0.625rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  body.pcode-app-bento .pcode-patients-toolbar {
+    align-items: center;
+  }
+
+  body.pcode-app-bento .pcode-patients-toolbar__actions {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  body.pcode-app-bento .pcode-patients-toolbar__control {
+    height: 2.875rem;
+    min-height: 2.875rem;
+    box-sizing: border-box;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    border-radius: 0.75rem !important;
+  }
+
+  body.pcode-app-bento .pcode-patients-toolbar #search-input,
+  body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  body.pcode-app-bento .pcode-patients-toolbar #filter-diagnosis {
+    min-width: 11rem;
+  }
+
+  body.pcode-app-bento .pcode-patients-toolbar .pcode-patients-toolbar__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    white-space: nowrap;
+    border-width: 1px !important;
+  }
+}
+
+/* Patients table — single cohesive surface (no tile gaps between cells/rows) */
+body.pcode-app-bento .pcode-patients-table-wrap.pcode-bento-card {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+body.pcode-app-bento .pcode-patients-table-wrap .overflow-x-auto {
+  overflow-x: auto;
+  border-radius: calc(var(--pcb-radius-bento) - 6px);
+}
+
+body.pcode-app-bento .pcode-patients-table-wrap .pcb-scroll-x,
+body.pcode-app-bento .pcode-patients-table-wrap .overflow-x-auto {
+  margin: 0;
+  padding: 0;
+}
+
+/* Patient list pagination — not a topnav strip; keep footer flush with page */
+body.pcode-app-bento #patients-pagination,
+body.pcode-app-bento #patients-pagination #page-numbers {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.pcode-app-bento table.patients-data-table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+}
+
+body.pcode-app-bento .patients-data-table th,
+body.pcode-app-bento .patients-data-table td {
+  min-width: 0 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Even column distribution on desktop */
+@media (min-width: 768px) {
+  body.pcode-app-bento .patients-data-table col.col-patient-id { width: 7%; }
+  body.pcode-app-bento .patients-data-table col.col-patient-name { width: 12%; }
+  body.pcode-app-bento .patients-data-table col.col-patient-age { width: 4%; }
+  body.pcode-app-bento .patients-data-table col.col-patient-date { width: 8%; }
+  body.pcode-app-bento .patients-data-table col.col-clinical-score { width: 9%; }
+  body.pcode-app-bento .patients-data-table col.col-xgboost { width: 7%; }
+  body.pcode-app-bento .patients-data-table col.col-imaging-score { width: 9%; }
+  body.pcode-app-bento .patients-data-table col.col-ultrasound { width: 7%; }
+  body.pcode-app-bento .patients-data-table col.col-final-score { width: 10%; }
+  body.pcode-app-bento .patients-data-table col.col-final-diag { width: 7%; }
+  body.pcode-app-bento .patients-data-table col.col-latest-screening { width: 11%; }
+  body.pcode-app-bento .patients-data-table col.col-actions { width: 10%; }
+}
+
+body.pcode-app-bento .patients-data-table th.pcode-latest-screening-col,
+body.pcode-app-bento .patients-data-table td.pcode-latest-screening-cell {
+  min-width: 8.75rem !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+body.pcode-app-bento .patients-data-table th.pcode-latest-screening-col {
+  white-space: nowrap;
+}
+
+body.pcode-app-bento .patients-data-table th.pcode-actions-col,
+body.pcode-app-bento .patients-data-table td.pcode-actions-cell {
+  min-width: 7rem !important;
+}
+
+body.pcode-app-bento table.patients-data-table > :not([hidden]) ~ :not([hidden]) {
+  border-top-width: 0 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento table.patients-data-table thead.patients-table-thead tr {
+  background: rgba(28, 22, 53, 0.55) !important;
+  background-image: none !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento table.patients-data-table thead.patients-table-thead th {
+  color: rgba(196, 181, 253, 0.55) !important;
+  font-weight: 600;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: normal;
+  word-break: break-word;
+  padding: 0.75rem 0.5rem !important;
+  margin: 0 !important;
+}
+
+body.pcode-app-bento #patient-table-body tr {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.pcode-app-bento #patient-table-body tr:last-child {
+  border-bottom: none !important;
+}
+
+body.pcode-app-bento #patient-table-body tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+body.pcode-app-bento #patient-table-body tr:nth-child(odd) {
+  background: transparent !important;
+}
+
+body.pcode-app-bento #patient-table-body tr:hover {
+  background: rgba(196, 181, 253, 0.08) !important;
+  box-shadow: none !important;
+}
+
+/* Layout only — colors scoped to dark below so light mode stays readable */
+body.pcode-app-bento #patient-table-body td {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0.65rem 0.5rem !important;
+  vertical-align: middle;
+  background: transparent !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-table-body td {
+  color: #d1d1d6 !important;
+  overflow-wrap: anywhere;
+}
+
+body.pcode-app-bento #patient-table-body td.pcode-score-cell,
+body.pcode-app-bento #patient-table-body td.pcode-actions-cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  text-align: center !important;
+}
+
+body.pcode-app-bento .patients-data-table td.pcode-score-cell,
+body.pcode-app-bento #patient-table-body td.pcode-score-cell {
+  text-align: center !important;
+}
+
+body.pcode-app-bento .patients-data-table td.pcode-score-cell .pcode-score-meter,
+body.pcode-app-bento #patient-table-body td.pcode-score-cell .pcode-score-meter {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  width: 5.5rem !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  vertical-align: middle !important;
+}
+
+body.pcode-app-bento .patients-data-table td.pcode-score-cell .pcode-patient-score-track,
+body.pcode-app-bento #patient-table-body td.pcode-score-cell .pcode-patient-score-track {
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  max-width: 2.75rem !important;
+  flex: 0 0 2.75rem !important;
+}
+
+body.pcode-app-bento .patients-data-table td.pcode-score-cell .pcode-score-value,
+body.pcode-app-bento #patient-table-body td.pcode-score-cell .pcode-score-value {
+  flex: 0 0 2.35rem !important;
+  min-width: 2.35rem !important;
+  text-align: left !important;
+}
+
+body.pcode-app-bento #patient-table-body td.pcode-actions-cell .pcode-actions-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  width: 6.1rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+body.pcode-app-bento #patient-table-body td.pcode-actions-cell .pcode-actions-toolbar button,
+body.pcode-app-bento #patient-table-body td.pcode-actions-cell .pcode-action-btn {
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+}
+
+body.pcode-app-bento .patients-data-table td.pcode-actions-cell,
+body.pcode-app-bento .patients-data-table th.pcode-actions-col {
+  padding-left: 0.4rem !important;
+  padding-right: 0.4rem !important;
+  border-left: none !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-table-body .text-gray-900 {
+  color: #ffffff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-table-body .bg-red-100 {
+  background: rgba(127, 29, 29, 0.38) !important;
+  color: #fecaca !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-table-body .bg-green-100 {
+  background: rgba(20, 83, 45, 0.38) !important;
+  color: #bbf7d0 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #patient-table-body .bg-yellow-100 {
+  background: rgba(113, 63, 18, 0.42) !important;
+  color: #fef08a !important;
+}
+
+/* XAI decision-factor mini bars */
+body.pcode-app-bento #decision-factor-clinical-bar,
+body.xai-bento-page #decision-factor-clinical-bar {
+  min-height: 8px;
+}
+
+body.pcode-app-bento #decision-factor-ultrasound-bar,
+body.xai-bento-page #decision-factor-ultrasound-bar {
+  min-height: 8px;
+}
+
+body.pcode-app-bento #decision-factor-confidence-bar,
+body.xai-bento-page #decision-factor-confidence-bar {
+  min-height: 8px;
+}
+
+body.pcode-app-bento #decision-factor-clinical-bar.pcode-neon-bar-fill--clinical,
+body.xai-bento-page #decision-factor-clinical-bar.pcode-neon-bar-fill--clinical,
+body.xai-bento-page #decision-factor-clinical-bar.pcode-neon-bar-fill--clinical {
+  background: linear-gradient(90deg, #8b5cf6 0%, #c4b5fd 55%, #d8b4fe 100%) !important;
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.55),
+    0 0 16px rgba(167, 139, 250, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+body.pcode-app-bento #decision-factor-ultrasound-bar.pcode-neon-bar-fill--imaging,
+body.xai-bento-page #decision-factor-ultrasound-bar.pcode-neon-bar-fill--imaging,
+body.xai-bento-page #decision-factor-ultrasound-bar.pcode-neon-bar-fill--imaging {
+  background: linear-gradient(90deg, #4338ca 0%, #6366f1 50%, #a5b4fc 100%) !important;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.9),
+    0 0 16px rgba(67, 56, 202, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+body.pcode-app-bento #decision-factor-confidence-bar.pcode-neon-bar-fill--positive,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--positive,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--positive,
+body.pcode-app-bento #decision-factor-confidence-bar.pcode-neon-bar-fill--negative,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--negative,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--negative,
+body.pcode-app-bento #decision-factor-confidence-bar.pcode-neon-bar-fill--borderline,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--borderline,
+body.xai-bento-page #decision-factor-confidence-bar.pcode-neon-bar-fill--borderline {
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.48),
+    0 0 16px rgba(167, 139, 250, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Patients — mini score bars: table + mobile cards (clinical / imaging / final) */
+body.pcode-app-bento .pcode-patient-score-track,
+body.xai-bento-page .pcode-patient-score-track {
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+body.pcode-app-bento #patient-table-body .pcode-patient-score-track {
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  max-width: 2.75rem !important;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+body.pcode-app-bento .pcode-patient-score-fill,
+body.xai-bento-page .pcode-patient-score-fill {
+  min-height: 8px;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill {
+  min-height: 8px;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--clinical,
+body.xai-bento-page .pcode-patient-score-fill--clinical,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--clinical {
+  background: linear-gradient(90deg, #8b5cf6 0%, #c4b5fd 55%, #d8b4fe 100%) !important;
+  box-shadow:
+    0 0 8px rgba(196, 181, 253, 0.55),
+    0 0 18px rgba(167, 139, 250, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--imaging,
+body.xai-bento-page .pcode-patient-score-fill--imaging,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--imaging {
+  background: linear-gradient(90deg, #4338ca 0%, #6366f1 50%, #a5b4fc 100%) !important;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.9),
+    0 0 18px rgba(67, 56, 202, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--final-positive,
+body.xai-bento-page .pcode-patient-score-fill--final-positive,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--final-positive {
+  background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #fca5a5 100%) !important;
+  box-shadow:
+    0 0 8px rgba(248, 113, 113, 0.85),
+    0 0 18px rgba(220, 38, 38, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--final-negative,
+body.xai-bento-page .pcode-patient-score-fill--final-negative,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--final-negative {
+  background: linear-gradient(90deg, #14532d 0%, #16a34a 50%, #86efac 100%) !important;
+  box-shadow:
+    0 0 8px rgba(74, 222, 128, 0.75),
+    0 0 18px rgba(22, 163, 74, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--final-borderline,
+body.xai-bento-page .pcode-patient-score-fill--final-borderline,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--final-borderline {
+  background: linear-gradient(90deg, #92400e 0%, #f59e0b 50%, #fde68a 100%) !important;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.75),
+    0 0 18px rgba(245, 158, 11, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.pcode-app-bento .pcode-patient-score-fill--final-pending,
+body.xai-bento-page .pcode-patient-score-fill--final-pending,
+body.pcode-app-bento #patient-table-body .pcode-patient-score-fill--final-pending {
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fde68a 100%) !important;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.85),
+    0 0 18px rgba(217, 119, 6, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+body.pcode-app-bento main p,
+body.pcode-app-bento main li,
+body.pcode-app-bento .max-w-7xl p,
+body.pcode-app-bento .max-w-7xl li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Defensive vertical scaling — mobile / narrow viewports                      */
+/* -------------------------------------------------------------------------- */
+
+html.pcode-app-bento-root,
+html.login-bento-page {
+  height: auto;
+}
+
+body.pcode-app-bento footer,
+body.xai-bento-page footer,
+body.login-bento-page footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+body.pcode-app-bento .gradient-bg,
+body.xai-bento-page .gradient-bg {
+  flex-shrink: 0;
+  height: auto;
+  min-height: 0;
+}
+
+/* Page grids: collapse empty rows; do not stretch siblings on mobile */
+@media (max-width: 1023px) {
+  body.pcode-app-bento .grid,
+  body.xai-bento-page .grid,
+  body.pcode-app-bento .detection-grid {
+    grid-auto-rows: min-content;
+    align-content: start;
+    align-items: start;
+  }
+
+  body.pcode-app-bento .grid.items-stretch,
+  body.pcode-app-bento .grid[class*='items-stretch'] {
+    align-items: start !important;
+  }
+
+  body.pcode-app-bento .max-w-7xl.mx-auto.py-12,
+  body.pcode-app-bento .max-w-7xl.mx-auto.py-14,
+  body.xai-bento-page .max-w-7xl.mx-auto.py-12,
+  body.xai-bento-page .max-w-7xl.mx-auto.py-14 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  body.pcode-app-bento .gradient-bg.py-12,
+  body.xai-bento-page .gradient-bg.py-12 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
+
+/* Detect: equal-height columns only on lg+ */
+@media (max-width: 1023px) {
+  body.pcode-app-bento .detection-grid > div {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  body.pcode-app-bento .detection-grid .detection-card {
+    flex: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.pcode-app-bento .detection-card[class*='min-h-'] {
+    min-height: 0 !important;
+  }
+
+  body.pcode-app-bento .upload-area {
+    min-height: 11rem !important;
+    padding: 1.25rem !important;
+  }
+}
+
+/* Detection cards — equal height / stable steps handled in pcode-detect-layout.css */
+body.pcode-app-bento .detection-grid .detection-card,
+body.pcode-app-bento .detection-card.detection-card--tall {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.pcode-app-bento .detection-card .pcode-diagnostic-scroll,
+body.pcode-app-bento .detection-card #clinical-form.pcode-diagnostic-scroll {
+  min-height: 0 !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Chart / canvas hosts: shrink on mobile instead of vh clamps */
+@media (max-width: 768px) {
+  body.pcode-app-bento .pcb-echart-host,
+  body.pcode-app-bento .chart-well .pcb-echart-host,
+  body.pcode-app-bento [id$='-chart']:not(nav *),
+  body.xai-bento-page .pcb-echart-host,
+  body.xai-bento-page #shap-force-plot,
+  body.xai-bento-page #shap-importance-chart,
+  body.xai-bento-page #consensus-chart,
+  body.pcode-app-bento #shap-force-plot,
+  body.pcode-app-bento #shap-importance-chart,
+  body.pcode-app-bento #consensus-chart {
+    height: auto !important;
+    min-height: 200px !important;
+    max-height: min(320px, 48dvh) !important;
+  }
+
+  body.xai-bento-page .chart-well {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Login: keep chooser vertically centered on phones */
+@media (max-width: 768px) {
+  body.login-bento-page .auth-page-container {
+    min-height: 100vh;
+    min-height: 100dvh;
+    justify-content: center !important;
+    align-items: center;
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  html.login-bento-page .auth-page-right {
+    max-width: min(26rem, calc(100vw - 2rem)) !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* Drawer off-screen must not widen the page on mobile */
+@media (max-width: 1023px) {
+  html.pcode-app-bento-root,
+  body.pcode-app-bento,
+  body.xai-bento-page {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive excellence — tablet & phone                                       */
+/* -------------------------------------------------------------------------- */
+
+/* Admin: persistent sidebar on large screens */
+@media (min-width: 1024px) {
+  body.pcode-app-bento.pcode-admin-shell .admin-sidebar,
+  body.pcode-app-bento.pcode-admin-shell .admin-sidebar.pcode-sidebar-layout {
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* —— Admin: off-canvas sidebar + full-width main on tablet/phone —— */
+@media (max-width: 1023px) {
+  body.pcode-app-bento.pcode-admin-shell {
+    flex-direction: column !important;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .admin-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 88vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    z-index: 70;
+    transform: translate3d(-100%, 0, 0);
+    transition: transform 0.28s ease;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell.pcode-admin-nav-open .admin-sidebar {
+    transform: translate3d(0, 0, 0);
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .admin-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1rem !important;
+    padding-top: 4.25rem !important;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .admin-header {
+    padding: 1.25rem !important;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .admin-header h1 {
+    font-size: 1.35rem !important;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .admin-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.pcode-app-bento.pcode-admin-shell .search-box {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.pcode-admin-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  background: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 1023px) {
+  .pcode-admin-nav-overlay.active {
+    display: block;
+  }
+}
+
+.pcode-admin-nav-toggle {
+  display: none;
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top, 0px));
+  left: max(0.75rem, env(safe-area-inset-left, 0px));
+  z-index: 68;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(233, 213, 254, 0.35);
+  background: rgba(13, 11, 20, 0.92);
+  color: #f5f3ff;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 1023px) {
+  .pcode-admin-nav-toggle {
+    display: inline-flex;
+  }
+}
+
+/* —— Patients: card list on phone, table on tablet+ —— */
+.pcode-patient-cards {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.pcode-patient-card {
+  background: rgba(13, 11, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1rem;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.pcode-patient-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.pcode-patient-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.pcode-patient-card__id {
+  font-size: 0.75rem;
+  color: rgba(200, 196, 210, 0.9);
+}
+
+.pcode-patient-card__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--pcb-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.pcode-patient-card__scores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.pcode-patient-card__score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: rgba(200, 196, 210, 0.95);
+}
+
+.pcode-patient-card__score-row .pcode-patient-score-track {
+  flex: 1;
+  max-width: 7rem;
+  min-width: 4rem;
+}
+
+.pcode-patient-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pcode-patient-card__actions button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.35rem !important;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 767px) {
+  .pcode-patients-table-wrap {
+    display: none !important;
+  }
+
+  .pcode-patient-cards {
+    display: flex;
+  }
+
+  body.pcode-app-bento #patients-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.pcode-app-bento #patients-main-content #page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  body.pcode-app-bento table.patients-data-table thead.patients-table-thead th,
+  body.pcode-app-bento #patient-table-body td {
+    padding: 0.7rem 0.35rem !important;
+  }
+
+  body.pcode-app-bento .pcode-patients-table-wrap .pcb-scroll-x,
+  body.pcode-app-bento .pcode-patients-table-wrap .overflow-x-auto {
+    overflow-x: hidden !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.pcode-app-bento .patients-data-table {
+    font-size: 0.7rem;
+  }
+
+  body.pcode-app-bento .patients-data-table th,
+  body.pcode-app-bento .patients-data-table td {
+    padding: 0.45rem 0.3rem !important;
+  }
+}
+
+/* —— Detect: single-column forms on mobile —— */
+@media (max-width: 767px) {
+  body.pcode-app-bento .detection-grid,
+  body.pcode-app-bento .pcode-diagnostic-grid {
+    gap: 1rem !important;
+  }
+
+  body.pcode-app-bento .detection-card.pcode-diagnostic-bento {
+    padding: 0.875rem !important;
+  }
+
+  body.pcode-app-bento .detection-card .grid-cols-2,
+  body.pcode-app-bento #clinical-form .grid-cols-2,
+  body.pcode-app-bento .detection-card .grid.grid-cols-2,
+  body.pcode-app-bento .detection-card .grid.md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.pcode-app-bento .detection-card .pcode-diagnostic-scroll,
+  body.pcode-app-bento .detection-card #clinical-form,
+  body.pcode-app-bento .detection-card .step-content {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+  }
+
+  body.pcode-app-bento .gauge-results-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  body.pcode-app-bento .gauge-results-section .gauge-card,
+  body.pcode-app-bento .gauge-results-section .final-gauge-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body.pcode-app-bento #clinical-results,
+  body.pcode-app-bento #image-results {
+    margin-top: 0.75rem;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section),
+  body.pcode-app-bento .detection-card > .border-t {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer__nav:not(.pcode-clinical-actions__nav):not(.pcode-patient-modal-footer__nav) {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn,
+  body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions):not(.pcode-patient-modal-footer):not(#modal-footer-section) .clinical-stepper-btn--analyze,
+  body.pcode-app-bento .detection-card > .border-t button {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0 !important;
+  }
+}
+
+/* —— XAI / dashboard grids —— */
+@media (max-width: 767px) {
+  body.pcode-app-bento .max-w-7xl .grid.grid-cols-2:not(.grid-cols-1):not(.pcb-cm-grid):not(.pcb-cm-labels),
+  body.xai-bento-page .max-w-7xl .grid.grid-cols-2:not(.grid-cols-1):not(.pcb-cm-grid):not(.pcb-cm-labels) {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.pcode-app-bento #my-inputs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  body.pcode-app-bento #my-inputs-grid .pcode-my-input-tile {
+    padding: 0.55rem 0.65rem !important;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  body.pcode-app-bento #my-inputs-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento .metric-card {
+    padding: 1rem !important;
+  }
+}
+
+/* —— Pagination & filters touch targets —— */
+@media (max-width: 640px) {
+  body.pcode-app-bento select,
+  body.pcode-app-bento input[type='text'],
+  body.pcode-app-bento input[type='search'] {
+    font-size: 1rem !important;
+  }
+
+  body.pcode-app-bento #patients-main-content .pcode-patients-toolbar__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  body.pcode-app-bento #patients-main-content .pcode-patients-toolbar__actions select,
+  body.pcode-app-bento #patients-main-content .pcode-patients-toolbar__actions button {
+    width: 100%;
+  }
+}
+
+/* —— Phone + tablet nav: hamburger only (desktop links need ≥1024px) —— */
+@media (max-width: 1023px) {
+  body.pcode-app-bento nav .nav-desktop,
+  body.xai-bento-page nav .nav-desktop,
+  body.login-bento-page nav .nav-desktop {
+    display: none !important;
+  }
+
+  body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .flex.items-center:last-child,
+  body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .flex.items-center:last-child,
+  body.pcode-app-bento .pcode-topnav__menu,
+  body.xai-bento-page .pcode-topnav__menu {
+    margin-left: auto !important;
+  }
+
+  body.pcode-app-bento #mobile-menu-btn,
+  body.xai-bento-page #mobile-menu-btn {
+    display: inline-flex !important;
+  }
+}
+
+/* —— Charts & gauges: compact on phones —— */
+@media (max-width: 767px) {
+  body.pcode-app-bento .pcb-echart-host,
+  body.xai-bento-page .pcb-echart-host,
+  body.pcode-app-bento [id$='-chart']:not(nav *),
+  body.xai-bento-page [id$='-chart']:not(nav *),
+  body.pcode-app-bento .chart-well .pcb-echart-host,
+  body.xai-bento-page .chart-well .pcb-echart-host {
+    min-height: 160px !important;
+    max-height: 200px !important;
+    height: 200px !important;
+  }
+
+  body.pcode-app-bento .gauge-container,
+  body.pcode-app-bento .final-gauge-container,
+  body.xai-bento-page .gauge-container,
+  body.xai-bento-page .final-gauge-container {
+    width: min(100%, 180px) !important;
+    max-width: min(72vw, 200px) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 1.18 / 1;
+    overflow: visible !important;
+    padding: 12px 8px 4px !important;
+  }
+
+  body.pcode-app-bento .gauge-card h3,
+  body.pcode-app-bento .final-gauge-card h3 {
+    font-size: 1rem !important;
+  }
+
+  body.pcode-app-bento .analysis-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+    margin-top: 1rem !important;
+  }
+
+  body.pcode-app-bento .analysis-actions button {
+    width: 100% !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 9999px !important;
+  }
+
+  body.pcode-app-bento .text-5xl,
+  body.pcode-app-bento .text-6xl,
+  body.xai-bento-page .text-5xl,
+  body.xai-bento-page .text-6xl {
+    font-size: 1.875rem !important;
+    line-height: 2.25rem !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  body.pcode-app-bento .metric-card .text-2xl,
+  body.pcode-app-bento .metric-card .text-3xl,
+  body.pcode-app-bento .mp-test-set-value,
+  body.pcode-app-bento .mp-metric-value,
+  body.pcode-app-bento .pcode-screening-metric-card .text-2xl,
+  body.pcode-app-bento .pcode-screening-metric-card .text-3xl {
+    font-size: 1.875rem !important;
+    line-height: 2.25rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  body.pcode-app-bento #combined-results-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  body.pcode-app-bento .gauge-results-section .gauge-grid,
+  body.pcode-app-bento .gauge-results-section .grid {
+    gap: 1.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.pcode-app-bento .pcb-echart-host,
+  body.xai-bento-page .pcb-echart-host {
+    min-height: 260px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* SVG / icon wells — dark mode contrast (currentColor stroke glyphs)         */
+/* -------------------------------------------------------------------------- */
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-red-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-red-100 .text-red-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-red-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-red-100 svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-red-800 {
+  color: #fda4af !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-yellow-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-yellow-100 .text-yellow-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-yellow-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-amber-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-yellow-100 svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-yellow-800 {
+  color: #fde68a !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-blue-100 .text-blue-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-blue-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-blue-100 svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-green-100 .text-green-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-green-100 svg {
+  color: #86efac !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-purple-100 .text-purple-800,
+html.pcode-app-bento-root.dark body.pcode-app-bento .text-purple-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-purple-100 svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .text-purple-800 {
+  color: #e9d5ff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-gray-100 svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .bg-gray-100 .text-gray-800,
+html.pcode-app-bento-root.dark body.xai-bento-page .bg-gray-100 svg {
+  color: #e5e7eb !important;
+}
+
+/* Ensure stroke icons pick up remapped color */
+html.pcode-app-bento-root.dark body.pcode-app-bento [class*='bg-'][class*='-100'] > svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento [class*='bg-'][class*='-100'] svg,
+html.pcode-app-bento-root.dark body.xai-bento-page [class*='bg-'][class*='-100'] > svg,
+html.pcode-app-bento-root.dark body.xai-bento-page [class*='bg-'][class*='-100'] svg {
+  stroke: currentColor;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile__icon,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile__icon svg,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile__svg {
+  color: inherit !important;
+  stroke: currentColor;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile--accent-purple .pcode-metric-tile__icon {
+  color: #c4b5fd !important;
+  background: rgba(168, 85, 247, 0.22) !important;
+  border-color: rgba(196, 181, 253, 0.35) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile--accent-red .pcode-metric-tile__icon {
+  color: #fb7185 !important;
+  background: rgba(244, 63, 94, 0.2) !important;
+  border-color: rgba(251, 113, 133, 0.35) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile--accent-green .pcode-metric-tile__icon {
+  color: #4ade80 !important;
+  background: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(74, 222, 128, 0.35) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-metric-tile--accent-blue .pcode-metric-tile__icon {
+  color: #60a5fa !important;
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(96, 165, 250, 0.35) !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-section-header__icon,
+html.pcode-app-bento-root.dark body.xai-bento-page .bento-icon-wrap {
+  color: #e9d5ff !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-section-header__icon svg,
+html.pcode-app-bento-root.dark body.xai-bento-page .bento-icon-wrap svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dropzone__icon,
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-dropzone svg.pcode-dropzone__icon {
+  color: #c4b5fd !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento .pcode-action-btn svg {
+  stroke: currentColor !important;
+  fill: none !important;
+  opacity: 1 !important;
+}
+
+html.pcode-app-bento-root.dark body.pcode-app-bento #mobile-menu-btn svg,
+html.pcode-app-bento-root.dark body.xai-bento-page #mobile-menu-btn svg {
+  color: #f5f3ff !important;
+  stroke: #f5f3ff !important;
+}

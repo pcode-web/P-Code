@@ -1,0 +1,341 @@
+/**
+ * P-Code — Unified action bars & hierarchical CTAs
+ * Load after pcode-glass-buttons.css
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Action bar layout                                                          */
+/* -------------------------------------------------------------------------- */
+
+.pcode-action-bar,
+body.pcode-app-bento .clinical-stepper-footer.pcode-action-bar,
+body.pcode-app-bento #patient-modal .pcode-action-bar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.pcode-action-bar__meta {
+  flex: 1 1 100%;
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #d1d1d6;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-action-bar__meta {
+  color: #000000 !important;
+}
+
+@media (min-width: 768px) {
+  .pcode-action-bar__meta {
+    flex: 0 1 auto;
+    text-align: left;
+    order: 0;
+  }
+}
+
+.pcode-action-bar__cluster {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pcode-action-bar__slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Results — equal-width three-up grid */
+.pcode-results-action-bar,
+body.pcode-app-bento .analysis-actions.pcode-results-action-bar {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .pcode-results-action-bar,
+  body.pcode-app-bento .analysis-actions.pcode-results-action-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile — primary on top */
+@media (max-width: 767px) {
+  .pcode-action-bar:not(.pcode-clinical-actions),
+  body.pcode-app-bento .clinical-stepper-footer.pcode-action-bar:not(.pcode-clinical-actions) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .pcode-action-bar__cluster,
+  .pcode-action-bar__slot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .pcode-action-bar:not(.pcode-clinical-actions) .pcode-btn-primary,
+  .pcode-action-bar:not(.pcode-clinical-actions) .pcode-btn-secondary,
+  .pcode-action-bar:not(.pcode-clinical-actions) .pcode-btn-danger,
+  .pcode-action-bar:not(.pcode-clinical-actions) .btn-purple-glass,
+  .pcode-action-bar:not(.pcode-clinical-actions) .btn-teal-glass,
+  .pcode-action-bar:not(.pcode-clinical-actions) .btn-blue-glass,
+  .pcode-action-bar:not(.pcode-clinical-actions) .btn-ghost-glass,
+  .pcode-action-bar:not(.pcode-clinical-actions) .clinical-stepper-btn,
+  .pcode-results-action-bar .btn-purple-glass,
+  .pcode-results-action-bar .btn-teal-glass,
+  .pcode-results-action-bar .btn-blue-glass,
+  .pcode-results-action-bar .btn-ghost-glass {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Unified button sizing in action bars                                       */
+/* -------------------------------------------------------------------------- */
+
+.pcode-action-bar .clinical-stepper-btn,
+.pcode-action-bar .pcode-btn-primary,
+.pcode-action-bar .pcode-btn-secondary,
+.pcode-action-bar .pcode-btn-danger,
+.pcode-action-bar .btn-purple-glass,
+.pcode-action-bar .btn-teal-glass,
+.pcode-action-bar .btn-blue-glass,
+.pcode-action-bar .btn-ghost-glass,
+.pcode-results-action-bar .btn-purple-glass,
+.pcode-results-action-bar .btn-teal-glass,
+.pcode-results-action-bar .btn-blue-glass,
+.pcode-results-action-bar .btn-ghost-glass,
+.pcode-results-action-bar .pcode-btn-primary,
+.pcode-results-action-bar .pcode-btn-secondary {
+  min-height: 3rem;
+  height: 3rem;
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .pcode-action-bar .clinical-stepper-btn,
+  .pcode-action-bar .pcode-btn-primary,
+  .pcode-action-bar .pcode-btn-secondary,
+  .pcode-results-action-bar .btn-purple-glass,
+  .pcode-results-action-bar .btn-teal-glass,
+  .pcode-results-action-bar .btn-blue-glass,
+  .pcode-results-action-bar .btn-ghost-glass {
+    min-height: 3.5rem;
+    height: 3.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .pcode-action-bar .clinical-stepper-btn,
+  .pcode-action-bar .pcode-btn-primary,
+  .pcode-action-bar .pcode-btn-secondary,
+  .pcode-action-bar .pcode-btn-danger,
+  .pcode-action-bar .btn-purple-glass,
+  .pcode-action-bar .btn-teal-glass,
+  .pcode-action-bar .btn-blue-glass,
+  .pcode-action-bar .btn-ghost-glass,
+  .pcode-results-action-bar .btn-purple-glass,
+  .pcode-results-action-bar .btn-teal-glass,
+  .pcode-results-action-bar .btn-blue-glass,
+  .pcode-results-action-bar .btn-ghost-glass {
+    min-height: 2.35rem !important;
+    height: auto !important;
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+.pcode-btn-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  margin-left: 0;
+  display: block;
+  align-self: center;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Hierarchical CTA — colors from pcode-glass-buttons.css (dashboard pills)   */
+/* -------------------------------------------------------------------------- */
+
+.pcode-btn-primary,
+.pcode-btn-secondary,
+.pcode-btn-danger,
+body.pcode-app-bento .pcode-action-bar .btn-purple-glass,
+body.pcode-app-bento .pcode-action-bar .btn-teal-glass,
+body.pcode-app-bento .pcode-action-bar .btn-blue-glass,
+body.pcode-app-bento .pcode-action-bar .btn-ghost-glass,
+body.pcode-app-bento .pcode-results-action-bar .btn-purple-glass,
+body.pcode-app-bento .pcode-results-action-bar .btn-teal-glass,
+body.pcode-app-bento .pcode-results-action-bar .btn-blue-glass,
+body.pcode-app-bento .pcode-results-action-bar .btn-ghost-glass {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9999px !important;
+}
+
+/* Clinical stepper footer shell */
+body.pcode-app-bento .clinical-stepper-footer.pcode-action-bar {
+  padding: 1.5rem !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: var(--pcb-text-muted);
+}
+
+body.pcode-app-bento .clinical-stepper-footer:not(.pcode-clinical-actions) .clinical-stepper-btn--analyze:not(.hidden) {
+  margin-left: 0 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-btn-secondary,
+html.pcode-app-bento-root:not(.dark) .pcode-action-bar .btn-ghost-glass {
+  border-color: #d1d5db !important;
+  color: #64748b !important;
+  background: #ffffff !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-btn-secondary:hover:not(:disabled) {
+  border-color: #94a3b8 !important;
+  color: #1a102d !important;
+}
+
+html.pcode-app-bento-root:not(.dark) .pcode-btn-primary,
+html.pcode-app-bento-root:not(.dark) .pcode-action-bar .btn-purple-glass {
+  background-color: #6d28d9 !important;
+  border-color: #5b21b6 !important;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.25) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Add Patient modal — compact footer (prevent flex-grow button blowout)      */
+/* -------------------------------------------------------------------------- */
+
+body.pcode-app-bento #patient-modal #modal-footer-section,
+body.pcode-app-bento #patient-modal .pcode-patient-modal-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: stretch;
+  flex-shrink: 0;
+  grid-template-columns: none !important;
+  gap: 0 !important;
+  margin-top: 0 !important;
+  width: 100%;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-modal-footer__nav {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-footer-step {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  color: #d1d1d6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.pcode-app-bento #patient-modal .pcode-patient-footer-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  width: auto !important;
+  max-width: none;
+}
+
+body.pcode-app-bento #patient-modal #modal-footer-section .clinical-stepper-btn,
+body.pcode-app-bento #patient-modal .pcode-patient-modal-footer .clinical-stepper-btn,
+body.pcode-app-bento #patient-modal #prev-add-btn,
+body.pcode-app-bento #patient-modal #next-add-btn,
+body.pcode-app-bento #patient-modal #cancel-add-btn,
+body.pcode-app-bento #patient-modal #save-patient-btn,
+body.pcode-app-bento #patient-modal #refresh-history-btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 6.5rem;
+  max-width: 12rem;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
+  padding: 0.5rem 1.25rem !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+}
+
+body.pcode-app-bento #patient-modal #save-patient-btn {
+  max-width: none;
+}
+
+@media (max-width: 767px) {
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer__nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-footer-step {
+    order: -1;
+    white-space: normal;
+    flex: 0 0 auto;
+  }
+
+  body.pcode-app-bento #patient-modal .pcode-patient-footer-actions {
+    width: 100% !important;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.pcode-app-bento #patient-modal #modal-footer-section .clinical-stepper-btn,
+  body.pcode-app-bento #patient-modal .pcode-patient-modal-footer .clinical-stepper-btn,
+  body.pcode-app-bento #patient-modal #prev-add-btn,
+  body.pcode-app-bento #patient-modal #next-add-btn,
+  body.pcode-app-bento #patient-modal #cancel-add-btn,
+  body.pcode-app-bento #patient-modal #save-patient-btn,
+  body.pcode-app-bento #patient-modal #refresh-history-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-footer-step {
+  color: #000000;
+}

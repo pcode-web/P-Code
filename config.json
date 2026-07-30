@@ -1,0 +1,138 @@
+{
+  "app": {
+    "name": "PMOS Decision Support System",
+    "version": "2.1.4",
+    "environment": "production",
+    "apiBaseUrl": "./api/",
+    "frontendUrl": "./"
+  },
+  "authentication": {
+    "enabled": true,
+    "methods": ["email", "google", "microsoft"],
+    "sessionTimeout": 3600,
+    "tokenRefreshInterval": 1800,
+    "maxLoginAttempts": 5,
+    "lockoutDuration": 900
+  },
+  "mlModels": {
+    "xgboost": {
+      "endpoint": "/api/v1/models/xgboost/predict",
+      "version": "2.1.4",
+      "features": [
+        "age",
+        "bmi",
+        "lh",
+        "fsh",
+        "amh",
+        "testosterone",
+        "cycle_length",
+        "acne_score",
+        "hirsutism_score",
+        "menstrual_regularity",
+        "fasting_glucose",
+        "fasting_insulin",
+        "tsh"
+      ],
+      "threshold": 0.5,
+      "confidenceThreshold": 0.85
+    },
+    "cnn": {
+      "endpoint": "/api/v1/models/cnn/predict",
+      "version": "2.1.4",
+      "inputSize": [224, 224],
+      "channels": 3,
+      "preprocessing": {
+        "normalize": true,
+        "resize": [224, 224],
+        "augmentation": false
+      },
+      "threshold": 0.5,
+      "confidenceThreshold": 0.90
+    },
+    "xai": {
+      "shap": {
+        "endpoint": "/api/v1/xai/shap/explain",
+        "plotTypes": ["force", "summary", "dependence"],
+        "maxDisplayFeatures": 10
+      },
+      "gradcam++": {
+        "endpoint": "/api/v1/xai/gradcam++/explain",
+        "numSamples": 1000,
+        "numFeatures": 10,
+        "segmentation": "quickshift"
+      }
+    }
+  },
+  "database": {
+    "type": "postgresql",
+    "host": "${DB_HOST}",
+    "port": 5432,
+    "name": "pcos_dss_db",
+    "ssl": true,
+    "poolSize": 20,
+    "timeout": 30000
+  },
+  "storage": {
+    "images": {
+      "provider": "aws-s3",
+      "bucket": "pcos-ultrasound-images",
+      "region": "us-east-1",
+      "encryption": "AES-256",
+      "maxFileSize": 10485760,
+      "allowedFormats": ["jpg", "jpeg", "png", "dcm"]
+    },
+    "models": {
+      "provider": "aws-s3",
+      "bucket": "pcos-ml-models",
+      "region": "us-east-1",
+      "versioning": true
+    }
+  },
+  "security": {
+    "encryption": {
+      "algorithm": "AES-256-GCM",
+      "keyRotationInterval": 2592000
+    },
+    "cors": {
+      "enabled": true,
+      "allowedOrigins": ["https://pcos-ai.com", "https://app.pcos-ai.com"],
+      "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allowedHeaders": ["Content-Type", "Authorization", "X-API-Key"]
+    },
+    "rateLimit": {
+      "enabled": true,
+      "windowMs": 60000,
+      "maxRequests": 100
+    },
+    "hipaa": {
+      "enabled": true,
+      "auditLogging": true,
+      "dataRetentionDays": 2555,
+      "accessLogging": true
+    }
+  },
+  "features": {
+    "realTimeUpdates": true,
+    "notifications": {
+      "email": true,
+      "push": true,
+      "sms": false
+    },
+    "export": {
+      "pdf": true,
+      "csv": true,
+      "json": true
+    },
+    "integrations": {
+      "hl7": true,
+      "fhir": true,
+      "dicom": true
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "destination": "cloudwatch",
+    "retentionDays": 90
+  }
+}
