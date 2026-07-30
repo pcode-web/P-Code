@@ -118,16 +118,31 @@ def _ensure_cors_headers(response):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Vary"] = "Origin"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type, Authorization, Accept, X-Requested-With"
+        )
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        # Prevent intermediaries from caching a credentials-less CORS response
+        response.headers["Access-Control-Max-Age"] = "86400"
     return response
 
 
 @app.route("/api/<path:_any>", methods=["OPTIONS"])
 @app.route("/<path:_any>", methods=["OPTIONS"])
 def _cors_preflight(_any: str = ""):
-    # after_request attaches ACAO / ACAC for allowed Firebase origins
-    return ("", 204)
+    """Explicit preflight so credentialed Firebase calls always get ACAC=true."""
+    origin = request.headers.get("Origin", "")
+    resp = app.make_response(("", 204))
+    if _cors_origin_allowed(origin):
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        resp.headers["Vary"] = "Origin"
+        resp.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type, Authorization, Accept, X-Requested-With"
+        )
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        resp.headers["Access-Control-Max-Age"] = "86400"
+    return resp
 
 # --- ML model paths ----------------------------------------------------------
 CNN_MODEL_PATH = Path(
