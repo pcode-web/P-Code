@@ -195,20 +195,27 @@ _INTERPRETER: Any = None
 _INPUT_DETAILS: Any = None
 _OUTPUT_DETAILS: Any = None
 _INTERPRETER_BACKEND: str = ""
+_INTERPRETER_PRESERVE_TENSORS: bool = False
+_GAP_FEATURE_INDEX: Optional[int] = None
 
 
 def load_tflite_interpreter(
     tflite_path: Union[str, Path] = TFLITE_MODEL_PATH,
     *,
     num_threads: int = 1,
+    preserve_all_tensors: Optional[bool] = None,
 ) -> Any:
     """
     Create (or reuse) a single TFLite Interpreter.
 
     Tries LiteRT first, then TensorFlow Lite, then legacy tflite-runtime.
     ``num_threads=1`` keeps RAM/CPU predictable on small VMs.
+
+    When Mahalanobis params are present, ``preserve_all_tensors=True`` so the
+    MobileNetV2 global-average-pooling (1280-d) activations can be read for OOD.
     """
     global _INTERPRETER, _INPUT_DETAILS, _OUTPUT_DETAILS, _INTERPRETER_BACKEND
+    global _INTERPRETER_PRESERVE_TENSORS, _GAP_FEATURE_INDEX
 
     tflite_path = Path(tflite_path).resolve()
     if not tflite_path.is_file():
@@ -217,25 +224,58 @@ def load_tflite_interpreter(
             "Run conversion first (python cnn_tflite.py)."
         )
 
-    if _INTERPRETER is not None:
+    if preserve_all_tensors is None:
+        try:
+            from mahalanobis_ood import mahalanobis_params_available
+
+            preserve_all_tensors = bool(mahalanobis_params_available())
+        except Exception:
+            preserve_all_tensors = False
+
+    if _INTERPRETER is not None and bool(preserve_all_tensors) == bool(
+        _INTERPRETER_PRESERVE_TENSORS
+    ):
         return _INTERPRETER
+
+    # Reload if preserve flag changed (needed to expose GAP features).
+    _INTERPRETER = None
+    _INPUT_DETAILS = None
+    _OUTPUT_DETAILS = None
+    _GAP_FEATURE_INDEX = None
 
     errors: list[str] = []
     for name, Interpreter in _interpreter_candidates():
         try:
+            kwargs: dict = {
+                "model_path": str(tflite_path),
+                "num_threads": max(1, int(num_threads)),
+            }
+            if preserve_all_tensors:
+                kwargs["experimental_preserve_all_tensors"] = True
             try:
-                interpreter = Interpreter(
-                    model_path=str(tflite_path),
-                    num_threads=max(1, int(num_threads)),
-                )
+                interpreter = Interpreter(**kwargs)
             except TypeError:
-                interpreter = Interpreter(model_path=str(tflite_path))
+                # Older Interpreter APIs may not accept num_threads / preserve flag.
+                try:
+                    interpreter = Interpreter(
+                        model_path=str(tflite_path),
+                        experimental_preserve_all_tensors=bool(preserve_all_tensors),
+                    )
+                except TypeError:
+                    interpreter = Interpreter(model_path=str(tflite_path))
+                    preserve_all_tensors = False
             interpreter.allocate_tensors()
             _INTERPRETER = interpreter
             _INPUT_DETAILS = interpreter.get_input_details()
             _OUTPUT_DETAILS = interpreter.get_output_details()
             _INTERPRETER_BACKEND = name
-            print(f"[cnn_tflite] Using interpreter backend: {name}")
+            _INTERPRETER_PRESERVE_TENSORS = bool(preserve_all_tensors)
+            _GAP_FEATURE_INDEX = _find_gap_feature_index(interpreter)
+            print(
+                f"[cnn_tflite] Using interpreter backend: {name}"
+                f" (preserve_all_tensors={_INTERPRETER_PRESERVE_TENSORS},"
+                f" gap_index={_GAP_FEATURE_INDEX})"
+            )
             return interpreter
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{name}: {type(exc).__name__}: {exc}")
@@ -245,6 +285,76 @@ def load_tflite_interpreter(
         "Install ai-edge-litert on the server (Python 3.9–3.12). Details: "
         + " | ".join(errors)
     )
+
+
+def _find_gap_feature_index(interpreter: Any) -> Optional[int]:
+    """Locate MobileNetV2 GlobalAveragePooling2D tensor (prefer name match)."""
+    import numpy as np
+
+    preferred = None
+    fallback = None
+    for d in interpreter.get_tensor_details():
+        name = str(d.get("name") or "").lower()
+        shape = d.get("shape")
+        try:
+            dims = [int(x) for x in np.asarray(shape).tolist()] if shape is not None else []
+        except Exception:
+            dims = []
+        looks_gap = (
+            "global_average_pooling" in name
+            or name.endswith("/mean")
+            or "globalaveragepooling" in name.replace("_", "")
+        )
+        if looks_gap and dims in ([1, 1280], [1280]):
+            preferred = int(d["index"])
+            break
+        if dims in ([1, 1280], [1280]) and fallback is None:
+            # Skip obvious weight tensors (no batch dim and non-activation-looking names)
+            if dims == [1280] and "convolution" in name:
+                continue
+            fallback = int(d["index"])
+    return preferred if preferred is not None else fallback
+
+
+def extract_gap_features(interpreter: Any, expected_dim: int = 1280) -> Optional[Any]:
+    """
+    Read 1280-d GAP features after ``interpreter.invoke()``.
+    Requires ``experimental_preserve_all_tensors=True`` on LiteRT/TFLite.
+    """
+    import numpy as np
+
+    global _GAP_FEATURE_INDEX
+    expected_dim = int(expected_dim) if expected_dim else 1280
+
+    indices: list[int] = []
+    if _GAP_FEATURE_INDEX is not None:
+        indices.append(int(_GAP_FEATURE_INDEX))
+    else:
+        found = _find_gap_feature_index(interpreter)
+        if found is not None:
+            _GAP_FEATURE_INDEX = found
+            indices.append(found)
+
+    # Last-resort scan for any live tensor of the expected feature size.
+    for d in interpreter.get_tensor_details():
+        try:
+            indices.append(int(d["index"]))
+        except Exception:
+            continue
+
+    seen = set()
+    for idx in indices:
+        if idx in seen:
+            continue
+        seen.add(idx)
+        try:
+            tensor = np.asarray(interpreter.get_tensor(idx), dtype=np.float64).reshape(-1)
+        except Exception:
+            continue
+        if tensor.size == expected_dim:
+            _GAP_FEATURE_INDEX = idx
+            return tensor
+    return None
 
 def preprocess_image(
     image_path: Union[str, Path],
@@ -284,11 +394,20 @@ def preprocess_image_bytes(
     return np.expand_dims(arr, axis=0)
 
 
-def _raw_positive_probability(x: "Any", tflite_path: Union[str, Path]) -> Tuple[float, list]:
-    """Run interpreter; return (P(positive), raw_output_list)."""
+def _raw_positive_probability(
+    x: "Any",
+    tflite_path: Union[str, Path],
+    *,
+    return_features: bool = False,
+    feature_dim: int = 1280,
+) -> Tuple[float, list, Optional[Any]]:
+    """Run interpreter; return (P(positive), raw_output_list, optional GAP features)."""
     import numpy as np
 
-    interpreter = load_tflite_interpreter(tflite_path)
+    interpreter = load_tflite_interpreter(
+        tflite_path,
+        preserve_all_tensors=True if return_features else None,
+    )
     input_details = _INPUT_DETAILS
     output_details = _OUTPUT_DETAILS
 
@@ -323,7 +442,11 @@ def _raw_positive_probability(x: "Any", tflite_path: Union[str, Path]) -> Tuple[
             out = e / e.sum()
         positive_prob = float(out[-1])
 
-    return positive_prob, out.tolist()
+    features = None
+    if return_features:
+        features = extract_gap_features(interpreter, expected_dim=feature_dim)
+
+    return positive_prob, out.tolist(), features
 
 
 def _to_percentage(
@@ -379,6 +502,10 @@ def build_api_result(
     smoothing_factor: float = 0.90,
     model_name: str = "pcos_detection_modelv4.tflite",
     generate_gradcam: bool = False,
+    mahalanobis: Optional[dict] = None,
+    image_validation: Optional[dict] = None,
+    ultrasound_check: Optional[dict] = None,
+    features_shape: Optional[int] = None,
 ) -> dict:
     """Shape compatible with cnn_predict.predict() for Detect / XAI frontends."""
     pct = _to_percentage(
@@ -396,6 +523,10 @@ def build_api_result(
     else:
         diagnosis = 0
 
+    reliable = bool(classification["reliable"])
+    if isinstance(image_validation, dict) and "passed" in image_validation:
+        reliable = reliable and bool(image_validation.get("passed", True))
+
     result = {
         "success": True,
         "probability_percentage": round(pct, 2),
@@ -406,7 +537,7 @@ def build_api_result(
         "diagnosis": diagnosis,
         "prediction": diagnosis,
         "label": label,
-        "reliable": True,
+        "reliable": reliable,
         "smoothing_applied": bool(apply_smoothing),
         "smoothing_factor": float(smoothing_factor) if apply_smoothing else None,
         "model": model_name,
@@ -414,6 +545,14 @@ def build_api_result(
         "raw_output": raw_output or [],
         "classification_threshold_pct": 75.0,
     }
+    if features_shape is not None:
+        result["features_shape"] = int(features_shape)
+    if ultrasound_check is not None:
+        result["ultrasound_check"] = ultrasound_check
+    if mahalanobis is not None:
+        result["mahalanobis"] = mahalanobis
+    if image_validation is not None:
+        result["image_validation"] = image_validation
     if generate_gradcam:
         # Grad-CAM needs intermediate Keras layers — not available under TFLite.
         result["gradcam_error"] = (
@@ -421,6 +560,34 @@ def build_api_result(
             "Probability score still uses pcos_detection_modelv4.tflite."
         )
     return result
+
+
+def _attach_mahalanobis_validation(
+    image_bytes: bytes,
+    features: Optional[Any],
+) -> Tuple[dict, dict, dict]:
+    """Score GAP features with mahalanobis_inv_cov.pkl / mahalanobis_mu.pkl."""
+    from mahalanobis_ood import (
+        image_validation_payload,
+        score_features,
+        try_load_mahalanobis_params,
+        ultrasound_likeness_check,
+    )
+
+    us_check = ultrasound_likeness_check(image_bytes)
+    mu, inv_cov, meta = try_load_mahalanobis_params()
+    if features is None:
+        maha_result = {
+            "available": False,
+            "meta": {
+                **dict(meta or {}),
+                "feature_extract_error": "gap_features_unavailable",
+            },
+        }
+    else:
+        maha_result = score_features(features, mu=mu, inv_cov=inv_cov, meta=meta)
+    image_validation = image_validation_payload(us_check, maha_result)
+    return us_check, maha_result, image_validation
 
 
 def predict_pcos(
@@ -437,14 +604,16 @@ def predict_pcos(
     Returns an API-shaped dict (probability_percentage, classification, …).
     """
     try:
-        x = preprocess_image(image_path)
-        prob, raw = _raw_positive_probability(x, tflite_path)
-        return build_api_result(
-            prob,
-            raw_output=raw,
+        from pathlib import Path as _Path
+
+        image_path = _Path(image_path)
+        with open(image_path, "rb") as fh:
+            image_bytes = fh.read()
+        return predict_pcos_bytes(
+            image_bytes,
+            tflite_path=tflite_path,
             apply_smoothing=apply_smoothing,
             smoothing_factor=smoothing_factor,
-            model_name=str(Path(tflite_path).name),
             generate_gradcam=generate_gradcam,
         )
     except Exception as exc:  # noqa: BLE001
@@ -463,8 +632,22 @@ def predict_pcos_bytes(
     """Flask / Render entry: classify from raw upload bytes (no full TensorFlow)."""
     del user_mode  # reserved for parity with cnn_predict.predict signature
     try:
+        from mahalanobis_ood import try_load_mahalanobis_params
+
+        mu, _inv, _meta = try_load_mahalanobis_params()
+        feature_dim = int(mu.shape[0]) if mu is not None else 1280
+        want_maha = mu is not None
+
         x = preprocess_image_bytes(image_bytes)
-        prob, raw = _raw_positive_probability(x, tflite_path)
+        prob, raw, features = _raw_positive_probability(
+            x,
+            tflite_path,
+            return_features=want_maha,
+            feature_dim=feature_dim,
+        )
+        us_check, maha_result, image_validation = _attach_mahalanobis_validation(
+            image_bytes, features if want_maha else None
+        )
         return build_api_result(
             prob,
             raw_output=raw,
@@ -472,6 +655,10 @@ def predict_pcos_bytes(
             smoothing_factor=smoothing_factor,
             model_name=str(Path(tflite_path).name),
             generate_gradcam=generate_gradcam,
+            mahalanobis=maha_result,
+            image_validation=image_validation,
+            ultrasound_check=us_check,
+            features_shape=(int(features.size) if features is not None else None),
         )
     except Exception as exc:  # noqa: BLE001
         return {"success": False, "error": str(exc), "backend": "tflite"}
