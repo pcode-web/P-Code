@@ -57,7 +57,10 @@ logger = logging.getLogger("pcode")
 app = Flask(__name__)
 
 # --- CORS --------------------------------------------------------------------
+# Explicit Firebase hosts + pattern fallbacks (Render → browser preflight)
 _default_origin_patterns = [
+    "https://pcode.web.app",
+    "https://project-a3473fa6-d957-4693-96a.web.app",
     r"^https://.*\.web\.app$",
     r"^https://.*\.firebaseapp.com$",
     r"^https://.*$",
@@ -86,7 +89,10 @@ def _ensure_cors_headers(response):
     origin = request.headers.get("Origin", "")
     allow = False
     if origin:
-        if origin in _extra:
+        if origin in _extra or origin in (
+            "https://pcode.web.app",
+            "https://project-a3473fa6-d957-4693-96a.web.app",
+        ):
             allow = True
         elif re.match(r"^https://.*\.web\.app$", origin):
             allow = True
@@ -677,6 +683,98 @@ def api_login():
     ), 200
 
 
+@app.get("/api/sync_session")
+@app.post("/api/sync_session")
+@app.get("/api/sync_session.php")
+@app.post("/api/sync_session.php")
+@app.get("/api/sync-session")
+@app.post("/api/sync-session")
+def api_sync_session():
+    """
+    Validate the provider JWT and optionally renew it.
+    Replaces PHP api/sync_session.php for Firebase → Render.
+    Accepts GET or POST with Authorization: Bearer <token>.
+    """
+    payload = request.get_json(silent=True) if request.method == "POST" else None
+    if not isinstance(payload, dict):
+        payload = {}
+
+    auth_header = request.headers.get("Authorization") or ""
+    token = auth_header
+    if not token:
+        token = str(payload.get("token") or request.args.get("token") or "")
+
+    try:
+        decoded = decode_jwt(token)
+    except ValueError as exc:
+        # Grace renew: accept recently-expired tokens and issue a fresh JWT
+        try:
+            raw = (token or "").strip()
+            if raw.lower().startswith("bearer "):
+                raw = raw[7:].strip()
+            parts = raw.split(".")
+            if len(parts) != 3:
+                raise ValueError(str(exc))
+            import json as _json
+
+            soft = _json.loads(_b64decode_pad(parts[1]))
+            if not isinstance(soft, dict) or not soft.get("id"):
+                raise ValueError(str(exc))
+            # Verify signature even if expired
+            import hmac as _hmac
+
+            expected = _hmac.new(
+                JWT_SECRET.encode("utf-8"),
+                f"{parts[0]}.{parts[1]}".encode("utf-8"),
+                hashlib.sha256,
+            ).digest()
+            if not _hmac.compare_digest(expected, _b64decode_pad(parts[2])):
+                raise ValueError("Invalid token signature")
+            decoded = soft
+            renewed = True
+        except Exception:  # noqa: BLE001
+            return _json_error(str(exc), 401)
+    else:
+        renewed = False
+
+    uid = int(decoded.get("id") or 0)
+    if uid <= 0:
+        return _json_error("Unauthorized: invalid token payload", 401)
+
+    role = str(decoded.get("role") or "")
+    source = str(decoded.get("auth_source") or "")
+    is_provider = source == "clinical_providers" or role.lower() not in (
+        "regular user",
+        "patient",
+        "user",
+        "guest",
+    )
+
+    body: dict[str, Any] = {
+        "success": True,
+        "message": "Session synchronized",
+        "provider_id": uid if is_provider else None,
+        "user_id": uid if not is_provider else None,
+        "role": role,
+        "auth_source": source,
+    }
+    if renewed or request.args.get("renew") == "1":
+        body["token"] = generate_jwt(
+            {
+                "id": uid,
+                "email": str(decoded.get("email") or ""),
+                "name": str(decoded.get("name") or ""),
+                "role": role,
+                "auth_source": source,
+                **({"isGuest": True} if decoded.get("isGuest") else {}),
+            }
+        )
+        body["expiresIn"] = JWT_EXPIRY
+        body["renewed"] = True
+
+    return jsonify(body), 200
+
+
 @app.post("/api/auth/google")
 @app.post("/api/auth/google_callback.php")
 def api_google_auth():
@@ -1087,6 +1185,16 @@ def api_get_patients_list():
     return jsonify({"success": True, "data": patients, "count": len(patients)}), 200
 
 
+@app.get("/api/get_patients")
+@app.get("/api/get_patients.php")
+def api_get_patients():
+    """
+    Dashboard-friendly patient list (alias of get_patients_list).
+    Replaces PHP api/get_patients.php for Firebase → Render.
+    """
+    return api_get_patients_list()
+
+
 @app.post("/api/delete_patient")
 @app.post("/api/delete_patient.php")
 def api_delete_patient():
@@ -1386,6 +1494,240 @@ def api_create_diagnosis():
         message="Diagnosis parameters saved",
         parameter_id=parameter_id,
     )
+
+
+# =============================================================================
+# Combined predict + persist (Firebase-friendly single endpoint)
+# =============================================================================
+@app.post("/api/predict")
+@app.post("/api/predict.php")
+def api_predict():
+    """
+    Run server-side XGBoost + CNN inference, optionally persist to
+    patient_diagnosis_results, and return prediction metrics.
+
+    JSON body:
+      {
+        "patient_id": 123,                 # optional — saves when present
+        "clinical": { ... },               # XGBoost features (or top-level fields)
+        "image" | "image_base64": "...",   # ultrasound for CNN (optional)
+        "smoothing_factor": 0.9,
+        "save": true
+      }
+    """
+    import json as _json
+    import uuid as _uuid
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not payload:
+        return _json_error("Request body must be a non-empty JSON object", 400)
+
+    # Auth is recommended for save; allow anonymous inference without save
+    decoded = None
+    try:
+        auth_header = request.headers.get("Authorization") or ""
+        if auth_header:
+            decoded = decode_jwt(auth_header)
+    except ValueError:
+        decoded = None
+
+    clinical_in = payload.get("clinical") if isinstance(payload.get("clinical"), dict) else dict(payload)
+    for drop in (
+        "patient_id",
+        "image",
+        "image_base64",
+        "Ultrasound_image",
+        "save",
+        "clinical",
+        "generate_gradcam",
+        "apply_smoothing",
+        "user_mode",
+        "smoothing_factor",
+        "success",
+        "error",
+        "message",
+    ):
+        clinical_in.pop(drop, None)
+
+    try:
+        smoothing_factor = float(payload.get("smoothing_factor", 0.90))
+    except (TypeError, ValueError):
+        smoothing_factor = 0.90
+    smoothing_factor = max(0.50, min(1.0, smoothing_factor))
+
+    xgb_result: dict[str, Any] = {"success": False, "skipped": True}
+    cnn_result: dict[str, Any] = {"success": False, "skipped": True}
+
+    # --- XGBoost ---
+    if clinical_in and XGB_MODEL_PATH.is_file():
+        cycle = clinical_in.get("Cycle_R_I") or clinical_in.get("CycleR_I")
+        if isinstance(cycle, str):
+            c = cycle.strip().lower()
+            if c == "regular":
+                clinical_in["Cycle_R_I"] = 1
+            elif c in ("irregular", "amenorrhea", "amenorrhoea"):
+                clinical_in["Cycle_R_I"] = 0
+        try:
+            xgb = _load_xgb()
+            xgb_result = xgb.convert_to_python_types(
+                xgb.predict(clinical_in, str(XGB_MODEL_PATH), smoothing_factor=smoothing_factor)
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Predict XGBoost failed")
+            xgb_result = {"success": False, "error": str(exc)}
+    elif clinical_in and not XGB_MODEL_PATH.is_file():
+        xgb_result = {"success": False, "error": f"XGBoost model missing at {XGB_MODEL_PATH}"}
+
+    # --- CNN ---
+    has_image = bool(
+        payload.get("image") or payload.get("image_base64") or payload.get("Ultrasound_image")
+    )
+    if has_image and CNN_MODEL_PATH.is_file():
+        try:
+            image_bytes = _decode_image_payload(payload)
+            cnn = _load_cnn()
+            cnn_result = cnn.predict(
+                image_bytes,
+                str(CNN_MODEL_PATH),
+                generate_gradcam=bool(payload.get("generate_gradcam", False)),
+                apply_smoothing=bool(payload.get("apply_smoothing", True)),
+                smoothing_factor=max(0.50, min(0.95, smoothing_factor)),
+                user_mode=str(payload.get("user_mode") or ""),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Predict CNN failed")
+            cnn_result = {"success": False, "error": str(exc)}
+    elif has_image and not CNN_MODEL_PATH.is_file():
+        cnn_result = {"success": False, "error": f"CNN model missing at {CNN_MODEL_PATH}"}
+
+    def _label_to_code(label: Any, probability: Any = None) -> Optional[int]:
+        if label is None:
+            return None
+        if isinstance(label, (int, float)) and not isinstance(label, bool):
+            return int(label)
+        s = str(label).strip().lower()
+        if s in ("1", "positive", "pmos", "pcos"):
+            return 1
+        if s in ("0", "negative", "normal"):
+            return 0
+        if s in ("2", "borderline"):
+            return 2
+        try:
+            p = float(probability)
+            return 1 if p >= 0.5 else 0
+        except (TypeError, ValueError):
+            return None
+
+    def _prob_percent(result: dict) -> Optional[float]:
+        for key in (
+            "probability_percentage",
+            "probability_percent",
+            "PMOS_probability_percentage",
+            "positive_probability_percentage",
+            "confidence_percentage",
+            "probability",
+            "confidence",
+        ):
+            if key in result and result[key] is not None:
+                try:
+                    n = float(result[key])
+                except (TypeError, ValueError):
+                    continue
+                if n <= 1.0:
+                    n *= 100.0
+                return round(n, 2)
+        return None
+
+    xgb_code = _label_to_code(
+        xgb_result.get("diagnosis") or xgb_result.get("prediction") or xgb_result.get("label"),
+        xgb_result.get("probability"),
+    )
+    cnn_code = _label_to_code(
+        cnn_result.get("diagnosis") or cnn_result.get("prediction") or cnn_result.get("label"),
+        cnn_result.get("probability"),
+    )
+    xgb_pct = _prob_percent(xgb_result) if xgb_result.get("success") else None
+    cnn_pct = _prob_percent(cnn_result) if cnn_result.get("success") else None
+
+    # Overall: average available model probabilities; label by majority / threshold
+    probs = [p for p in (xgb_pct, cnn_pct) if p is not None]
+    overall_pct = round(sum(probs) / len(probs), 2) if probs else None
+    codes = [c for c in (xgb_code, cnn_code) if c is not None]
+    if len(codes) == 2 and codes[0] == codes[1]:
+        overall_code = codes[0]
+    elif overall_pct is not None:
+        overall_code = 1 if overall_pct >= 50.0 else 0
+    elif codes:
+        overall_code = codes[0]
+    else:
+        overall_code = None
+
+    patient_id = payload.get("patient_id")
+    try:
+        patient_id = int(patient_id) if patient_id not in (None, "") else 0
+    except (TypeError, ValueError):
+        patient_id = 0
+
+    should_save = bool(payload.get("save", True)) and patient_id > 0
+    diagnosis_id = None
+    screening_id = str(payload.get("screening_id") or _uuid.uuid4())
+
+    if should_save:
+        if not decoded:
+            return _json_error("Authorization required to save diagnosis results", 401)
+        created_by = "Physician"
+        role = str(decoded.get("role") or "").lower()
+        if role in ("regular user", "patient", "user"):
+            created_by = "Patient"
+        try:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO patient_diagnosis_results
+                        (patient_id, XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                         CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                         Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                         created_by, clinical_inputs_snapshot, screening_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            patient_id,
+                            xgb_code,
+                            xgb_pct,
+                            cnn_code,
+                            cnn_pct,
+                            overall_code,
+                            overall_pct,
+                            created_by,
+                            _json.dumps(clinical_in, default=str),
+                            screening_id,
+                        ),
+                    )
+                    diagnosis_id = int(cur.lastrowid)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Predict save failed")
+            return _json_error("Inference succeeded but saving diagnosis failed", 500, detail=str(exc))
+
+    return jsonify(
+        {
+            "success": bool(xgb_result.get("success") or cnn_result.get("success")),
+            "message": "Prediction complete",
+            "patient_id": patient_id or None,
+            "diagnosis_id": diagnosis_id,
+            "screening_id": screening_id if should_save else None,
+            "xgboost": xgb_result,
+            "cnn": cnn_result,
+            "metrics": {
+                "xgboost_diagnosis": _diagnosis_label(xgb_code),
+                "xgboost_probability_percentage": xgb_pct,
+                "cnn_diagnosis": _diagnosis_label(cnn_code),
+                "cnn_probability_percentage": cnn_pct,
+                "overall_diagnosis": _diagnosis_label(overall_code),
+                "overall_probability_percentage": overall_pct,
+            },
+        }
+    ), 200
 
 
 # =============================================================================

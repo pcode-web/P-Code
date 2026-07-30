@@ -741,13 +741,14 @@ class AuthManager {
         'guest_login.php': 'guest-login',
         'auth/google_callback.php': 'auth/google',
         'auth/firebase_callback.php': 'auth/firebase',
-        'sync_session.php': 'sync-session',
-        'update_profile.php': 'update-profile',
+        'sync_session.php': 'sync_session',
+        'sync-session': 'sync_session',
         'patients/get_patients_list.php': 'patients/get_patients_list',
+        'get_patients.php': 'get_patients',
         'delete_patient.php': 'delete_patient',
         'save_patient.php': 'save_patient',
-        'get_patients.php': 'patients/get_patients_list',
-        'get_patients_simple.php': 'patients/get_patients_list',
+        'get_patients_simple.php': 'get_patients',
+        'predict.php': 'predict',
       };
       p = map[p] || p.replace(/\.php$/i, '');
     }
@@ -3223,13 +3224,17 @@ class AuthManager {
     return resp;
   }
 
-  /** Mirror JWT identity into PHP $_SESSION; renew expired tokens within server grace. */
+  /** Mirror JWT identity into Flask session endpoint; renew expired tokens within grace. */
   async syncServerSession() {
     if (!this.isAuthenticated()) {
       return false;
     }
     try {
-      const resp = await fetch(this.apiBaseUrl + 'sync_session.php', {
+      if (!/onrender\.com/i.test(String(this.apiBaseUrl || ''))) {
+        try { await this.loadConfig(); } catch (_) {}
+      }
+      const url = this.resolveApiUrl('sync_session.php');
+      const resp = await fetch(url, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -3240,7 +3245,7 @@ class AuthManager {
       });
       if (!resp.ok) {
         if (resp.status === 401) {
-          console.warn('[Auth] Session sync rejected â€” sign in again if API calls keep failing');
+          console.warn('[Auth] Session sync rejected — sign in again if API calls keep failing');
         }
         return false;
       }
