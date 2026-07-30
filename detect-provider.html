@@ -1101,7 +1101,7 @@
             <h2 class="pcode-card-title pcode-diagnostic-title mb-3 sm:mb-4">Patient Selection</h2>
             <div class="pcode-patient-selection-row flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
                 <select id="patient-select" class="w-full sm:flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="">? Loading patients...</option>
+                    <option value="">Loading patients...</option>
                 </select>
                 <div class="pcode-patient-selection-actions">
                 <button type="button" onclick="loadPatientsList()" class="btn-blue-glass min-w-0 text-sm">
@@ -1514,7 +1514,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="clinical-note-ultrasound-modality-upload" class="clinical-note-badge clinical-note-badge--primary-modality" role="note">?? Primary Modality: Transvaginal Ultrasound (TVUS) scans are highly preferred for optimal follicle boundary detection and classification by our imaging AI model. Transabdominal/Pelvic scan inputs are permitted but may result in diminished feature extraction resolution.</div>
+                        <div id="clinical-note-ultrasound-modality-upload" class="clinical-note-badge clinical-note-badge--primary-modality" role="note">Primary Modality: Transvaginal Ultrasound (TVUS) scans are highly preferred for optimal follicle boundary detection and classification by our imaging AI model. Transabdominal/Pelvic scan inputs are permitted but may result in diminished feature extraction resolution.</div>
                     </div>
                 </div>
 
@@ -1832,7 +1832,7 @@
             }
             
             console.log('Starting patient load... (attempt ' + (retryCount + 1) + ')');
-            select.innerHTML = '<option value="">? Loading patients...</option>';
+            select.innerHTML = '<option value="">Loading patients...</option>';
             
             const token = getDetectAuthToken();
             const sessionUser = getDetectSessionUser();
