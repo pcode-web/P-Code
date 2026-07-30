@@ -778,7 +778,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/auth.js?v=20260730-nqak"></script>
+  <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js?v=20260730-apiscan"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
@@ -942,7 +943,7 @@
         // Show loading spinner
         setXaiLoading(true);
 
-        const resp = await fetch('./api/get_user_diagnosis.php', {
+        const resp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/get_user_diagnosis.php'):'./api/get_user_diagnosis.php'), {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });

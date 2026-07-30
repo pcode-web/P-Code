@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="fonts/fonts.css">
     <!-- Local JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
-    <script src="js/auth.js" defer></script>
+    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js" defer></script>
     <style>
         * { box-sizing: border-box; }
         html { width: 100%; max-width: 100%; overflow-x: hidden; }
@@ -940,7 +941,7 @@
 
         async function loadUsers() {
             try {
-                const response = await fetch('api/get_users.php', {
+                const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/get_users.php'):'api/get_users.php'), {
                     method: 'GET',
                     credentials: 'include',
                     headers: adminAuthHeaders()
@@ -1073,7 +1074,7 @@
             };
 
             try {
-                const response = await fetch('api/save_user.php', {
+                const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/save_user.php'):'api/save_user.php'), {
                     method: 'POST',
                     credentials: 'include',
                     headers: adminAuthHeaders(),
@@ -1102,7 +1103,7 @@
             }
 
             try {
-                const response = await fetch('api/delete_user.php', {
+                const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/delete_user.php'):'api/delete_user.php'), {
                     method: 'POST',
                     credentials: 'include',
                     headers: adminAuthHeaders(),

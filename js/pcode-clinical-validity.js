@@ -122,7 +122,7 @@
   }
 
   function validateBeforeInference() {
-    return fetch('api/validate_clinical_timing.php', {
+    return fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/validate_clinical_timing.php'):'api/validate_clinical_timing.php'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(collectValidityPayload()),

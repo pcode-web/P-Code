@@ -163,7 +163,7 @@
           typeof global.auth.hashPasswordForApi === 'function'
             ? await global.auth.hashPasswordForApi(a)
             : a;
-        await fetch('./api/update_profile.php', {
+        await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/update_profile.php'):'./api/update_profile.php'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

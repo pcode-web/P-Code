@@ -2056,7 +2056,7 @@
             
             if (found) {
                 // Fetch and load the patient data
-                fetch(`api/get_patient.php?id=${patientId}`)
+                fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl(`api/get_patient.php?id=${patientId}`):`api/get_patient.php?id=${patientId}`))
                     .then(response => response.json())
                     .then(result => {
                         if (result.success) {
@@ -2731,7 +2731,7 @@
             try {
                 const token = sessionStorage.getItem('PMOS_auth_token');
                 if (!token) return;
-                const resp = await fetch('./api/get_user_diagnosis.php', {
+                const resp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/get_user_diagnosis.php'):'./api/get_user_diagnosis.php'), {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -3350,7 +3350,7 @@
             console.log('DEBUG: Not a guest temporary patient - attempting database patient fetch');
             console.log('DEBUG: Patient ID is:', selectedPatient);
             
-            fetch(`api/get_patient.php?id=${selectedPatient}`)
+            fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl(`api/get_patient.php?id=${selectedPatient}`):`api/get_patient.php?id=${selectedPatient}`))
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
@@ -5294,7 +5294,7 @@
 
                     console.log('[SAVE][REGULAR USER] Saving payload:', payload);
 
-                    fetch('./api/save_user_diagnosis.php', {
+                    fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/save_user_diagnosis.php'):'./api/save_user_diagnosis.php'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -5546,7 +5546,7 @@
 
                 try {
                     console.log('[SAVE] Updating patient parameters via save_patient.php');
-                    const pResp = await fetch('./api/save_patient.php', {
+                    const pResp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/save_patient.php'):'./api/save_patient.php'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -5565,7 +5565,7 @@
                 }
 
                 // Then save diagnosis results
-                fetch('./api/save_diagnosis_results.php', {
+                fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/save_diagnosis_results.php'):'./api/save_diagnosis_results.php'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -5734,7 +5734,7 @@
                     window.pcodeShowExportLoading('Generating PDF report…');
                 }
 
-                const response = await fetch('api/export_xai_pdf.php', {
+                const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(exportData)
@@ -5807,7 +5807,8 @@
     </script>
     <!-- Auth Module -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/auth.js?v=20260730-nqak"></script>
+    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js?v=20260730-apiscan"></script>
     <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
     <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>

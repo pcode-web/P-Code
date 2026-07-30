@@ -1018,7 +1018,8 @@
 
   <!-- Auth Module -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="js/auth.js?v=20260730-nqak"></script>
+  <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js?v=20260730-apiscan"></script>
   <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
   <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
@@ -1217,7 +1218,7 @@
       }
       homeHistoryAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
 
-      fetch("./api/diagnostics/get_user_history.php", {
+      fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl("./api/diagnostics/get_user_history.php"):"./api/diagnostics/get_user_history.php"), {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -1374,7 +1375,7 @@
         }
         homeScreeningAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
 
-        const resp = await fetch("./api/get_user_diagnosis.php", {
+        const resp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl("./api/get_user_diagnosis.php"):"./api/get_user_diagnosis.php"), {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` },
           signal: homeScreeningAbort ? homeScreeningAbort.signal : undefined

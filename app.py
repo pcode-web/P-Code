@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import sys
+import uuid
 from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
@@ -127,10 +128,14 @@ def _ensure_cors_headers(response):
     return response
 
 
-@app.route("/api/<path:_any>", methods=["OPTIONS"])
-@app.route("/<path:_any>", methods=["OPTIONS"])
-def _cors_preflight(_any: str = ""):
-    """Explicit preflight so credentialed Firebase calls always get ACAC=true."""
+@app.before_request
+def _cors_preflight():
+    """
+    Handle OPTIONS without registering a catch-all route.
+    (A methods=['OPTIONS'] /api/<path> rule steals unmatched GETs as 405.)
+    """
+    if request.method != "OPTIONS":
+        return None
     origin = request.headers.get("Origin", "")
     resp = app.make_response(("", 204))
     if _cors_origin_allowed(origin):
@@ -1220,6 +1225,1305 @@ def api_get_patients():
     Replaces PHP api/get_patients.php for Firebase → Render.
     """
     return api_get_patients_list()
+
+
+def _norm_history_entry(row: dict, source: str = "patient_diagnosis_results") -> dict:
+    """Shape expected by js/pcode-diagnosis-history.js."""
+    overall_code = row.get("Overall_diagnosis")
+    try:
+        overall_code = int(overall_code) if overall_code is not None else None
+    except (TypeError, ValueError):
+        overall_code = None
+    overall_pct = _norm_prob_percent(row.get("Overall_diagnosis_probability_percentage"))
+    xgb_pct = _norm_prob_percent(row.get("XGBoost_diagnosis_probability_percentage"))
+    cnn_pct = _norm_prob_percent(row.get("CNN_diagnosis_probability_percentage"))
+    if overall_pct is None:
+        probs = [p for p in (xgb_pct, cnn_pct) if p is not None]
+        overall_pct = round(sum(probs) / len(probs), 1) if probs else None
+    if overall_code is None:
+        if overall_pct is not None:
+            overall_code = 1 if overall_pct >= 75 else (2 if overall_pct >= 55 else 0)
+        else:
+            overall_code = None
+
+    status_map = {
+        1: ("positive", "Positive", "pcode-history-status--detected"),
+        0: ("negative", "Negative", "pcode-history-status--clear"),
+        2: ("borderline", "Borderline", "pcode-history-status--borderline"),
+    }
+    status_code, status_label, status_badge = status_map.get(
+        overall_code if overall_code is not None else -1,
+        ("pending", "Pending", "pcode-history-status--detected"),
+    )
+    created_by = str(row.get("created_by") or "Physician")
+    if created_by.lower() in ("patient", "user", "regular user"):
+        origin_label, origin_badge, origin_code = (
+            "User App Self-Screening",
+            "pcode-history-origin--patient",
+            "Patient",
+        )
+    else:
+        origin_label, origin_badge, origin_code = (
+            "Clinician Upload",
+            "pcode-history-origin--clinician",
+            "Physician",
+        )
+
+    created_at = row.get("created_at")
+    created_iso = _serialize_value(created_at)
+    created_display = None
+    if isinstance(created_at, datetime):
+        created_display = created_at.strftime("%b %d, %Y · %I:%M %p")
+    elif created_iso:
+        created_display = str(created_iso)
+
+    clinical = {}
+    snap = row.get("clinical_inputs_snapshot")
+    if isinstance(snap, str) and snap.strip():
+        try:
+            import json as _json
+
+            decoded = _json.loads(snap)
+            if isinstance(decoded, dict):
+                clinical = decoded
+        except Exception:  # noqa: BLE001
+            clinical = {}
+    elif isinstance(snap, dict):
+        clinical = snap
+
+    return {
+        "diagnosis_id": int(row.get("diagnosis_id") or 0),
+        "screening_id": row.get("screening_id"),
+        "parameter_id": int(row["parameter_id"]) if row.get("parameter_id") else None,
+        "source": source,
+        "created_at": created_iso,
+        "created_at_display": created_display or created_iso,
+        "created_by": origin_code,
+        "origin_label": origin_label,
+        "origin_badge_class": origin_badge,
+        "status_code": status_code,
+        "status_label": status_label,
+        "status_badge_class": status_badge,
+        "confidence_fraction": (overall_pct / 100.0) if overall_pct is not None else None,
+        "confidence_percent": overall_pct,
+        "confidence_display": f"{overall_pct:.1f}% Confidence" if overall_pct is not None else "N/A",
+        "threshold": 0.75,
+        "xgboost_diagnosis": int(row["XGBoost_diagnosis"]) if row.get("XGBoost_diagnosis") is not None else None,
+        "xgboost_probability_percent": xgb_pct,
+        "cnn_diagnosis": int(row["CNN_diagnosis"]) if row.get("CNN_diagnosis") is not None else None,
+        "cnn_probability_percent": cnn_pct,
+        "overall_diagnosis": overall_code,
+        "clinical_inputs": clinical,
+        "metrics_summary": {},
+        "frozen_parameters": clinical,
+        "ultrasound_image": _format_ultrasound(row.get("ultrasound_image") or row.get("Ultrasound_image")),
+    }
+
+
+@app.get("/api/diagnostics/get_patient_history")
+@app.get("/api/diagnostics/get_patient_history.php")
+def api_get_patient_history():
+    """Provider diagnosis timeline for one patient (Firebase → Render)."""
+    try:
+        decoded = _require_provider_auth()
+    except PermissionError as exc:
+        return _json_error(str(exc), 401)
+
+    provider_id = int(decoded.get("id") or 0)
+    try:
+        patient_id = int(request.args.get("patient_id") or 0)
+    except (TypeError, ValueError):
+        patient_id = 0
+    if patient_id <= 0:
+        return _json_error("A valid patient_id query parameter is required", 400)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                cur.execute(
+                    """
+                    SELECT patient_id, patient_name, linked_user_id
+                    FROM patient_personal_info
+                    WHERE patient_id = %s AND owner_provider_id = %s
+                    LIMIT 1
+                    """,
+                    (patient_id, provider_id),
+                )
+                patient = cur.fetchone()
+                if not patient:
+                    return _json_error("Patient not found", 404)
+
+                cur.execute(
+                    """
+                    SELECT
+                        diagnosis_id, screening_id, patient_id,
+                        XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                        CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                        Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                        created_by, created_at, clinical_inputs_snapshot
+                    FROM patient_diagnosis_results
+                    WHERE patient_id = %s
+                    ORDER BY created_at DESC, diagnosis_id DESC
+                    """,
+                    (patient_id,),
+                )
+                rows = cur.fetchall() or []
+                entries = [_norm_history_entry(dict(r), "patient_diagnosis_results") for r in rows]
+
+                linked_user_id = int(patient.get("linked_user_id") or 0)
+                if linked_user_id > 0:
+                    try:
+                        cur.execute(
+                            """
+                            SELECT
+                                diagnosis_id, screening_id, user_id,
+                                XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                                CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                                Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                                created_by, created_at, clinical_inputs_snapshot
+                            FROM user_diagnosis_results
+                            WHERE user_id = %s
+                            ORDER BY created_at DESC, diagnosis_id DESC
+                            """,
+                            (linked_user_id,),
+                        )
+                        for r in cur.fetchall() or []:
+                            row = dict(r)
+                            row.setdefault("created_by", "Patient")
+                            entries.append(_norm_history_entry(row, "user_diagnosis_results"))
+                    except Exception:  # noqa: BLE001
+                        pass
+
+                entries.sort(key=lambda e: str(e.get("created_at") or ""), reverse=True)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Patient history failed")
+        return _json_error("Failed to load patient history", 500, detail=str(exc))
+
+    return jsonify(
+        {
+            "success": True,
+            "patient_id": patient_id,
+            "patient_name": patient.get("patient_name"),
+            "linked_user_id": linked_user_id if linked_user_id > 0 else None,
+            "threshold": 0.75,
+            "is_baseline": len(entries) == 0,
+            "message": (
+                "No prior diagnostic runs recorded. Baseline history is ready for the first screening."
+                if not entries
+                else "Patient diagnosis history loaded successfully"
+            ),
+            "count": len(entries),
+            "history": entries,
+        }
+    ), 200
+
+
+@app.get("/api/diagnostics/get_user_history")
+@app.get("/api/diagnostics/get_user_history.php")
+def api_get_user_history():
+    """Regular-user self-screening timeline."""
+    try:
+        decoded = decode_jwt(request.headers.get("Authorization") or request.args.get("token") or "")
+    except ValueError as exc:
+        return _json_error(str(exc), 401)
+    if bool(decoded.get("isGuest")):
+        return _json_error("Guest users cannot access screening history", 403)
+    user_id = int(decoded.get("id") or 0)
+    if user_id <= 0:
+        return _json_error("Invalid user session", 401)
+
+    entries: list[dict] = []
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                try:
+                    cur.execute(
+                        """
+                        SELECT
+                            diagnosis_id, screening_id, user_id,
+                            XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                            CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                            Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                            created_by, created_at, clinical_inputs_snapshot
+                        FROM user_diagnosis_results
+                        WHERE user_id = %s
+                        ORDER BY created_at DESC, diagnosis_id DESC
+                        """,
+                        (user_id,),
+                    )
+                    for r in cur.fetchall() or []:
+                        row = dict(r)
+                        row.setdefault("created_by", "Patient")
+                        entries.append(_norm_history_entry(row, "user_diagnosis_results"))
+                except Exception:  # noqa: BLE001
+                    entries = []
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("User history failed")
+        return _json_error("Failed to load screening history", 500, detail=str(exc))
+
+    return jsonify(
+        {
+            "success": True,
+            "user_id": user_id,
+            "threshold": 0.75,
+            "is_baseline": len(entries) == 0,
+            "message": (
+                "No screening history yet. Complete a Detect run and tap Save Record to start your timeline."
+                if not entries
+                else "Screening history loaded successfully"
+            ),
+            "count": len(entries),
+            "history": entries,
+        }
+    ), 200
+
+
+@app.get("/api/get_patient")
+@app.get("/api/get_patient.php")
+def api_get_patient():
+    """Single patient + draft clinical parameters for Detect forms."""
+    try:
+        decoded = _require_provider_auth()
+    except PermissionError as exc:
+        return _json_error(str(exc), 401)
+
+    provider_id = int(decoded.get("id") or 0)
+    raw_id = request.args.get("id") or ""
+    try:
+        patient_id = int(re.sub(r"^(?:PCOS|PMOS)-", "", str(raw_id), flags=re.I))
+    except (TypeError, ValueError):
+        patient_id = 0
+    if patient_id <= 0:
+        return _json_error("Patient ID is required", 400)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                cur.execute(
+                    """
+                    SELECT patient_id, patient_name, age, date_of_birth, contact_no, address,
+                           civil_status, occupation, religion, reffered_by, clinical_recommendations
+                    FROM patient_personal_info
+                    WHERE patient_id = %s AND owner_provider_id = %s
+                    LIMIT 1
+                    """,
+                    (patient_id, provider_id),
+                )
+                personal = cur.fetchone()
+                if not personal:
+                    return _json_error("Patient not found", 404)
+                cur.execute(
+                    """
+                    SELECT * FROM patient_diagnosis_parameters
+                    WHERE patient_id = %s
+                      AND (screening_id IS NULL OR screening_id = '')
+                    ORDER BY parameter_id DESC LIMIT 1
+                    """,
+                    (patient_id,),
+                )
+                params = cur.fetchone() or {}
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Get patient failed")
+        return _json_error("Failed to load patient", 500, detail=str(exc))
+
+    data: dict[str, Any] = {
+        "id": f"PMOS-{patient_id:03d}",
+        "patient_id": patient_id,
+        "name": personal.get("patient_name"),
+        "Age_yrs": personal.get("age"),
+        "DOB": _serialize_value(personal.get("date_of_birth")),
+        "contact_no": personal.get("contact_no"),
+        "address": personal.get("address"),
+        "civil_status": personal.get("civil_status"),
+        "occupation": personal.get("occupation"),
+        "religion": personal.get("religion"),
+        "referred_by": personal.get("reffered_by"),
+        "clinical_recommendations": personal.get("clinical_recommendations"),
+    }
+    for k, v in dict(params).items():
+        if k in ("parameter_id", "patient_id", "screening_id", "created_at", "created_by"):
+            continue
+        data[k] = _format_ultrasound(v) if k == "Ultrasound_image" else _serialize_value(v)
+    return _json_ok(data, message="Patient loaded")
+
+
+@app.post("/api/save_diagnosis_results")
+@app.post("/api/save_diagnosis_results.php")
+def api_save_diagnosis_results():
+    """Persist a screening result row (Detect save flow)."""
+    import json as _json
+    import uuid as _uuid
+
+    try:
+        decoded = decode_jwt(request.headers.get("Authorization") or "")
+    except ValueError as exc:
+        return _json_error(str(exc), 401)
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not payload:
+        return _json_error("No data provided", 400)
+
+    try:
+        patient_id = int(payload.get("patient_id") or 0)
+    except (TypeError, ValueError):
+        patient_id = 0
+    if patient_id <= 0:
+        return _json_error("patient_id is required", 400)
+
+    def _code(v):
+        if v is None or v == "":
+            return None
+        if isinstance(v, (int, float)):
+            return int(v)
+        s = str(v).strip().lower()
+        if s in ("positive", "1", "pmos", "pcos"):
+            return 1
+        if s in ("negative", "0", "normal"):
+            return 0
+        if s in ("borderline", "2"):
+            return 2
+        try:
+            return int(float(s))
+        except (TypeError, ValueError):
+            return None
+
+    def _pct(v):
+        return _norm_prob_percent(v)
+
+    screening_id = str(payload.get("screening_id") or _uuid.uuid4())
+    created_by = "Physician"
+    role = str(decoded.get("role") or "").lower()
+    if role in ("regular user", "patient", "user"):
+        created_by = "Patient"
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO patient_diagnosis_results
+                    (patient_id, XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                     CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                     Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                     created_by, clinical_inputs_snapshot, screening_id)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """,
+                    (
+                        patient_id,
+                        _code(payload.get("XGBoost_diagnosis") or payload.get("xgboost_diagnosis")),
+                        _pct(payload.get("XGBoost_diagnosis_probability_percentage") or payload.get("xgboost_probability")),
+                        _code(payload.get("CNN_diagnosis") or payload.get("cnn_diagnosis")),
+                        _pct(payload.get("CNN_diagnosis_probability_percentage") or payload.get("cnn_probability")),
+                        _code(payload.get("Overall_diagnosis") or payload.get("overall_diagnosis")),
+                        _pct(payload.get("Overall_diagnosis_probability_percentage") or payload.get("overall_probability")),
+                        created_by,
+                        _json.dumps(payload.get("clinical_inputs") or payload.get("clinical") or {}, default=str),
+                        screening_id,
+                    ),
+                )
+                diagnosis_id = int(cur.lastrowid)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Save diagnosis results failed")
+        return _json_error("Failed to save diagnosis results", 500, detail=str(exc))
+
+    return _json_ok(
+        {"diagnosis_id": diagnosis_id, "screening_id": screening_id, "patient_id": patient_id},
+        message="Diagnosis results saved",
+        diagnosis_id=diagnosis_id,
+        screening_id=screening_id,
+    )
+
+
+# --- Auth extras / user diagnosis / clinical validity / admin / export ------
+def _hash_password_for_storage(password: str) -> str:
+    digest = _password_to_digest(password)
+    hashed = bcrypt.hashpw(digest.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    if hashed.startswith("$2b$"):
+        hashed = "$2y$" + hashed[4:]
+    return hashed
+
+
+def _require_regular_user_auth() -> dict:
+    decoded = decode_jwt(request.headers.get("Authorization") or request.args.get("token") or "")
+    if bool(decoded.get("isGuest")):
+        raise PermissionError("Guest users cannot access this resource")
+    uid = decoded.get("id")
+    try:
+        uid_i = int(uid)
+    except (TypeError, ValueError):
+        uid_i = 0
+    if uid_i <= 0:
+        raise PermissionError("Invalid user session")
+    role = str(decoded.get("role") or "").lower()
+    if role in ("administrator", "admin", "system administrator"):
+        return decoded
+    source = str(decoded.get("auth_source") or "")
+    if source == "clinical_providers" or role in (
+        "ob-gyn",
+        "obgyn",
+        "physician",
+        "provider",
+        "specialist",
+        "clinician",
+        "radiologist",
+        "ob-sonologist",
+        "health expert",
+        "other",
+    ):
+        # Providers may still call some shared endpoints; allow.
+        return decoded
+    return decoded
+
+
+def _require_admin_auth() -> dict:
+    decoded = decode_jwt(request.headers.get("Authorization") or "")
+    role = str(decoded.get("role") or "").lower()
+    if role not in ("administrator", "admin", "system administrator"):
+        raise PermissionError("Administrator access required")
+    return decoded
+
+
+def _derive_display_name(email: str, fallback: str = "Patient") -> str:
+    local = (email or "").split("@", 1)[0].strip()
+    cleaned = re.sub(r"[._+\-]+", " ", local)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if len(cleaned) >= 2:
+        return " ".join(p.capitalize() for p in cleaned.split())
+    return fallback
+
+
+def _pick_payload(payload: dict, keys: list[str]) -> Optional[str]:
+    for key in keys:
+        if key not in payload:
+            continue
+        val = payload.get(key)
+        if val is None or val == "":
+            continue
+        return str(val).strip()
+    return None
+
+
+def _parse_clinical_date(raw: Optional[str]) -> Optional[date]:
+    if not raw:
+        return None
+    raw = str(raw).strip()
+    if not raw:
+        return None
+    for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%m/%d/%Y", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
+def _clinical_validity_evaluate(payload: dict) -> dict[str, Any]:
+    """Port of api/clinical_validity.php evaluate() (cloud-safe subset)."""
+    today = date.today()
+    warnings: list[dict[str, Any]] = []
+    notes: dict[str, Any] = {}
+    lab_max, us_max, symptom_max = 90, 60, 180
+    follicular_min, follicular_max = 2, 5
+
+    lmp = _parse_clinical_date(_pick_payload(payload, ["last_menstrual_period_date", "lmp_date", "LMP_date"]))
+    blood_draw = _parse_clinical_date(
+        _pick_payload(payload, ["blood_draw_date", "lab_draw_date", "hormone_panel_date"])
+    )
+    ultrasound_date = _parse_clinical_date(
+        _pick_payload(payload, ["ultrasound_date", "scan_date", "us_date"])
+    )
+    symptom_date = _parse_clinical_date(
+        _pick_payload(payload, ["symptom_evaluation_date", "symptom_date", "clinical_symptom_date"])
+    )
+
+    cycle_raw = _pick_payload(payload, ["Cycle_length", "Cycle_length_days"])
+    try:
+        cycle_length = int(float(cycle_raw)) if cycle_raw else 28
+    except (TypeError, ValueError):
+        cycle_length = 28
+    if cycle_length < 21:
+        cycle_length = 28
+
+    cycle_ri = str(
+        _pick_payload(payload, ["Cycle_R_I", "CycleR_I", "cycle_regularity", "cycle_r_i"]) or ""
+    ).lower()
+    amenorrhea = cycle_ri in ("amenorrhea", "amenorrhoea", "no_period", "absent")
+
+    def _days_between(a: Optional[date], b: Optional[date]) -> Optional[int]:
+        if not a or not b:
+            return None
+        return (b - a).days
+
+    if amenorrhea:
+        notes["hormone_cycle"] = "amenorrhea_bypass"
+    elif lmp and blood_draw:
+        cycle_day = int(_days_between(lmp, blood_draw) or 0) + 1
+        if cycle_day < follicular_min or cycle_day > follicular_max:
+            warnings.append(
+                {
+                    "code": "follicular_window_mismatch",
+                    "message": (
+                        f"Blood draw appears to be on cycle day {cycle_day}; "
+                        f"ideal baseline window is days {follicular_min}–{follicular_max}."
+                    ),
+                    "cycle_day": cycle_day,
+                }
+            )
+    elif blood_draw and not lmp:
+        warnings.append(
+            {
+                "code": "missing_lmp",
+                "message": "Last menstrual period date is missing; cycle-day alignment could not be verified.",
+            }
+        )
+
+    fasting = _pick_payload(payload, ["fasting_hours", "Fasting_hours", "fasting_hours_before_draw"])
+    try:
+        if fasting is not None and float(fasting) < 8:
+            warnings.append(
+                {
+                    "code": "non_fasting_rbs",
+                    "message": (
+                        "Non-fasting baseline detected. System will flag this record to prevent "
+                        "insulin-resistance data skewing in XAI models."
+                    ),
+                }
+            )
+    except (TypeError, ValueError):
+        pass
+
+    lab_keys = (
+        "LH_level", "LH_mIU_mL", "FSH_level", "FSH_mIU_mL", "TSH_level", "TSH_mIU_L",
+        "AMH_level", "AMH_ng_mL", "PRL_level", "PRL_ng_mL", "RBS", "RBS_mg_dl",
+        "Progesterone_level", "PRG_ng_mL", "Vitamin_D3_level", "Vit_D3_ng_mL",
+    )
+    us_keys = (
+        "Follicle_no_L", "Follicle_no_R", "Avg_F_size_L", "Avg_F_size_L_mm",
+        "Avg_F_size_R", "Avg_F_size_R_mm",
+    )
+    symptom_keys = ("Weight_gain", "Hair_growth", "Skin_darkening", "Pimples")
+    has_lab = any(payload.get(k) not in (None, "") for k in lab_keys)
+    has_us = any(payload.get(k) not in (None, "") for k in us_keys)
+    has_symptom = any(payload.get(k) not in (None, "") for k in symptom_keys)
+
+    def _age_label(days: Optional[int], max_days: int) -> str:
+        if days is None:
+            return "Valid"
+        if days > max_days:
+            return f"Age is {days} days (Max: {max_days})"
+        return "Valid"
+
+    lab_age = _days_between(blood_draw, today) if blood_draw else None
+    us_age = _days_between(ultrasound_date, today) if ultrasound_date else None
+    symptom_age = _days_between(symptom_date, today) if symptom_date else None
+    expired_fields = {"hormone_panel": "Valid", "ultrasound": "Valid", "symptom_markers": "Valid"}
+
+    if has_lab:
+        expired_fields["hormone_panel"] = _age_label(lab_age, lab_max)
+        if lab_age is not None and lab_age > lab_max:
+            warnings.append(
+                {"code": "lab_expired", "message": f"Hormone/metabolic panel exceeds {lab_max}-day validity."}
+            )
+    if has_us:
+        expired_fields["ultrasound"] = _age_label(us_age, us_max)
+        if us_age is not None and us_age > us_max:
+            warnings.append(
+                {
+                    "code": "ultrasound_expired",
+                    "message": f"Ultrasound follicle metrics exceed {us_max}-day validity.",
+                }
+            )
+    if has_symptom:
+        expired_fields["symptom_markers"] = _age_label(symptom_age, symptom_max)
+        if symptom_age is not None and symptom_age > symptom_max:
+            warnings.append(
+                {
+                    "code": "symptom_expired",
+                    "message": f"Hyperandrogenism symptom markers exceed {symptom_max}-day validity.",
+                }
+            )
+
+    modality = (_pick_payload(payload, ["ultrasound_modality", "Ultrasound_modality", "us_modality"]) or "TVUS")
+    modality_norm = "TVUS"
+    ml = modality.lower()
+    if "transabdominal" in ml or "pelvic" in ml:
+        modality_norm = "Transabdominal"
+    elif ml not in ("tvus", "transvaginal", ""):
+        modality_norm = "Other"
+    notes["ultrasound_modality"] = modality_norm
+    if modality_norm == "Transabdominal":
+        warnings.append(
+            {
+                "code": "transabdominal_modality",
+                "message": (
+                    "Transabdominal/Pelvic scan selected — CNN will proceed with diminished "
+                    "follicle boundary resolution vs TVUS baseline."
+                ),
+            }
+        )
+    elif modality_norm == "Other":
+        warnings.append(
+            {
+                "code": "alternate_modality",
+                "message": "Alternate pelvic imaging modality selected — feature extraction confidence may vary.",
+            }
+        )
+
+    inference_blocked = (expired_fields["hormone_panel"] != "Valid" and has_lab) or (
+        expired_fields["ultrasound"] != "Valid" and has_us
+    )
+    action_required = None
+    if expired_fields["ultrasound"] != "Valid":
+        action_required = "Please update or re-order the pelvic ultrasound scan to proceed with diagnostic inference."
+    elif expired_fields["hormone_panel"] != "Valid":
+        action_required = (
+            "Please update or re-order baseline hormone and metabolic labs to proceed with diagnostic inference."
+        )
+
+    stale = None
+    if inference_blocked:
+        stale = {
+            "status": "stale_clinical_data",
+            "error": "Inference locked due to expired parameters.",
+            "expired_fields": expired_fields,
+            "action_required": action_required,
+            "warnings": warnings,
+            "ultrasound_imaging": None,
+        }
+
+    return {
+        "valid": not inference_blocked,
+        "warnings": warnings,
+        "notes": notes,
+        "expired_fields": expired_fields,
+        "inference_blocked": inference_blocked,
+        "stale_response": stale,
+        "ultrasound_imaging": None,
+        "ultrasound_modality": modality_norm,
+    }
+
+
+def _minimal_pdf_bytes(title: str, lines: list[str]) -> bytes:
+    """Tiny single-page PDF without external deps (Report export fallback)."""
+    content_lines = [f"BT /F1 12 Tf 50 750 Td ({title.replace('(', '\\(').replace(')', '\\)')}) Tj"]
+    y = 720
+    for line in lines[:40]:
+        safe = re.sub(r"[^\x20-\x7E]", "?", str(line))[:90].replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        content_lines.append(f"0 -16 Td ({safe}) Tj")
+        y -= 16
+    content_lines.append("ET")
+    stream = "\n".join(content_lines).encode("latin-1", errors="replace")
+    objs = []
+    objs.append(b"1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n")
+    objs.append(b"2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n")
+    objs.append(
+        b"3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj\n"
+    )
+    objs.append(f"4 0 obj<< /Length {len(stream)} >>stream\n".encode() + stream + b"\nendstream\nendobj\n")
+    objs.append(b"5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj\n")
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objs:
+        offsets.append(len(out))
+        out.extend(obj)
+    xref = len(out)
+    out.extend(f"xref\n0 {len(offsets)}\n".encode())
+    out.extend(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        out.extend(f"{off:010d} 00000 n \n".encode())
+    out.extend(
+        f"trailer<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    )
+    return bytes(out)
+
+
+@app.post("/api/register")
+@app.post("/api/register.php")
+def api_register():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _json_error("Invalid JSON format", 400)
+
+    portal = str(payload.get("registration_portal") or "patient").strip().lower()
+    if portal in ("community", "user"):
+        portal = "patient"
+    email = str(payload.get("email") or "").strip().lower()
+    password = str(payload.get("password") or "").strip()
+    name = str(payload.get("user_name") or "").strip()
+    institution = str(payload.get("institution") or "").strip()
+
+    if not email or not password:
+        return _json_error("Email and password are required", 400)
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return _json_error("Invalid email format", 400)
+    if portal == "provider":
+        return _json_error(
+            "Provider accounts must be created by an administrator. Self-registration for OB-GYN portals is disabled.",
+            403,
+            code="provider_registration_disabled",
+        )
+    if len(name) < 2:
+        name = _derive_display_name(email, "Patient")
+    if not _password_is_sha256_digest(password) and len(password) < 8:
+        return _json_error("Password must be at least 8 characters", 400)
+    if not _password_is_sha256_digest(password):
+        if not (
+            re.search(r"[A-Z]", password)
+            and re.search(r"[a-z]", password)
+            and re.search(r"[0-9]", password)
+            and re.search(r'[!@#$%^&*(),.?":{}|<>]', password)
+        ):
+            return _json_error(
+                "Password must contain uppercase, lowercase, number, and special character",
+                400,
+            )
+
+    try:
+        hashed = _hash_password_for_storage(password)
+    except Exception as exc:  # noqa: BLE001
+        return _json_error("Failed to secure password", 500, detail=str(exc))
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM users WHERE email = %s LIMIT 1", (email,))
+                if cur.fetchone():
+                    return _json_error("Email already registered", 409)
+                cur.execute(
+                    "SELECT 1 FROM clinical_providers WHERE email = %s LIMIT 1",
+                    (email,),
+                )
+                if cur.fetchone():
+                    return _json_error("Email already registered", 409)
+                role = "Regular User"
+                cur.execute(
+                    """
+                    INSERT INTO users (user_name, email, password, role, institution)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (name, email, hashed, role, institution),
+                )
+                new_id = int(cur.lastrowid)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Registration failed")
+        return _json_error("Registration failed", 500, detail=str(exc))
+
+    token = generate_jwt(
+        {"id": new_id, "email": email, "user_name": name, "name": name, "role": role, "auth_source": "users"}
+    )
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": "Patient account created. You can sign in now.",
+                "portal": "patient",
+                "token": token,
+                "expiresIn": JWT_EXPIRY,
+                "user": {
+                    "id": new_id,
+                    "name": name,
+                    "email": email,
+                    "role": role,
+                    "institution": institution,
+                    "avatar": _default_avatar(name),
+                },
+            }
+        ),
+        201,
+    )
+
+
+@app.post("/api/guest-login")
+@app.post("/api/guest_login")
+@app.post("/api/guest_login.php")
+def api_guest_login():
+    guest_id = f"guest_{uuid.uuid4().hex[:12]}"
+    name = "Guest User"
+    email = "guest@pcode.local"
+    token = generate_jwt(
+        {
+            "id": guest_id,
+            "email": email,
+            "name": name,
+            "role": "Guest",
+            "isGuest": True,
+            "auth_source": "guest",
+        }
+    )
+    return jsonify(
+        {
+            "success": True,
+            "message": "Guest login successful",
+            "token": token,
+            "expiresIn": JWT_EXPIRY,
+            "user": {
+                "id": guest_id,
+                "name": name,
+                "email": email,
+                "role": "Guest",
+                "isGuest": True,
+                "avatar": "https://ui-avatars.com/api/?name=Guest+User&background=9CA3AF&color=fff",
+            },
+        }
+    ), 200
+
+
+@app.post("/api/verify")
+@app.post("/api/verify.php")
+def api_verify():
+    try:
+        decoded = decode_jwt(request.headers.get("Authorization") or "")
+    except ValueError as exc:
+        return _json_error(str(exc), 401)
+
+    if bool(decoded.get("isGuest")):
+        return jsonify(
+            {
+                "success": True,
+                "message": "Token is valid",
+                "user": {
+                    "id": decoded.get("id"),
+                    "name": decoded.get("name") or "Guest User",
+                    "email": decoded.get("email") or "guest@pcode.local",
+                    "role": "Guest",
+                    "isGuest": True,
+                    "avatar": "https://ui-avatars.com/api/?name=Guest+User&background=9CA3AF&color=fff",
+                },
+            }
+        ), 200
+
+    uid = int(decoded.get("id") or 0)
+    if uid <= 0:
+        return _json_error("Invalid token", 401)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT user_id, user_name, email, role, institution, avatar
+                    FROM users WHERE user_id = %s LIMIT 1
+                    """,
+                    (uid,),
+                )
+                user = cur.fetchone()
+                if not user:
+                    cur.execute(
+                        """
+                        SELECT id AS user_id, user_name, email, role, institution, avatar
+                        FROM clinical_providers WHERE id = %s LIMIT 1
+                        """,
+                        (uid,),
+                    )
+                    user = cur.fetchone()
+                if not user:
+                    return _json_error("User not found", 404)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Verify failed")
+        return _json_error("Database error", 500, detail=str(exc))
+
+    name = str(user.get("user_name") or "")
+    return jsonify(
+        {
+            "success": True,
+            "message": "Token is valid",
+            "user": {
+                "id": int(user["user_id"]),
+                "name": name,
+                "email": user.get("email"),
+                "role": user.get("role"),
+                "institution": user.get("institution") or "",
+                "avatar": user.get("avatar") or _default_avatar(name),
+            },
+        }
+    ), 200
+
+
+@app.post("/api/update-profile")
+@app.post("/api/update_profile")
+@app.post("/api/update_profile.php")
+def api_update_profile():
+    try:
+        decoded = decode_jwt(request.headers.get("Authorization") or "")
+    except ValueError as exc:
+        return _json_error(str(exc), 401)
+    if bool(decoded.get("isGuest")):
+        return _json_error("Guests cannot update profiles", 403)
+
+    payload = request.get_json(silent=True) or {}
+    name = str(payload.get("user_name") or payload.get("name") or "").strip()
+    institution = payload.get("institution")
+    avatar = payload.get("avatar")
+    uid = int(decoded.get("id") or 0)
+    source = str(decoded.get("auth_source") or "")
+    role = str(decoded.get("role") or "").lower()
+    is_provider = source == "clinical_providers" or role in (
+        "ob-gyn", "obgyn", "physician", "provider", "specialist", "clinician",
+    )
+    if uid <= 0:
+        return _json_error("Invalid session", 401)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                table = "clinical_providers" if is_provider else "users"
+                id_col = "id" if is_provider else "user_id"
+                sets = []
+                vals: list[Any] = []
+                if name:
+                    sets.append("user_name = %s")
+                    vals.append(name)
+                if institution is not None:
+                    sets.append("institution = %s")
+                    vals.append(str(institution))
+                if avatar is not None:
+                    sets.append("avatar = %s")
+                    vals.append(str(avatar))
+                if not sets:
+                    return _json_error("No profile fields to update", 400)
+                vals.append(uid)
+                cur.execute(
+                    f"UPDATE {table} SET {', '.join(sets)} WHERE {id_col} = %s",
+                    tuple(vals),
+                )
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Update profile failed")
+        return _json_error("Failed to update profile", 500, detail=str(exc))
+
+    return _json_ok(message="Profile updated")
+
+
+@app.post("/api/validate_clinical_timing")
+@app.post("/api/validate_clinical_timing.php")
+def api_validate_clinical_timing():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        payload = {}
+    evaluation = _clinical_validity_evaluate(payload)
+    return jsonify(
+        {
+            "success": True,
+            "clinical_validity": evaluation,
+            "inference_allowed": bool(evaluation.get("valid")),
+        }
+    ), 200
+
+
+@app.get("/api/get_user_diagnosis")
+@app.get("/api/get_user_diagnosis.php")
+def api_get_user_diagnosis():
+    try:
+        decoded = _require_regular_user_auth()
+    except (PermissionError, ValueError) as exc:
+        return _json_error(str(exc), 401)
+    user_id = int(decoded.get("id") or 0)
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                try:
+                    cur.execute(
+                        """
+                        SELECT p.*,
+                               r.diagnosis_id,
+                               r.XGBoost_diagnosis,
+                               r.XGBoost_diagnosis_probability_percentage,
+                               r.CNN_diagnosis,
+                               r.CNN_diagnosis_probability_percentage,
+                               r.Overall_diagnosis,
+                               r.Overall_diagnosis_probability_percentage,
+                               r.screening_id,
+                               r.created_at AS screening_created_at
+                        FROM user_diagnosis_parameters p
+                        LEFT JOIN user_diagnosis_results r
+                          ON r.user_id = p.user_id
+                         AND r.diagnosis_id = (
+                              SELECT r2.diagnosis_id FROM user_diagnosis_results r2
+                              WHERE r2.user_id = p.user_id
+                              ORDER BY r2.created_at DESC, r2.diagnosis_id DESC
+                              LIMIT 1
+                         )
+                        WHERE p.user_id = %s
+                        LIMIT 1
+                        """,
+                        (user_id,),
+                    )
+                    row = cur.fetchone()
+                except Exception:  # noqa: BLE001
+                    return jsonify(
+                        {"success": True, "data": None, "message": "User tables not initialized"}
+                    ), 200
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Get user diagnosis failed")
+        return _json_error("Failed to load user diagnosis", 500, detail=str(exc))
+
+    if not row:
+        return jsonify({"success": True, "data": None, "message": "No saved diagnosis"}), 200
+    data = {k: _serialize_value(v) for k, v in dict(row).items()}
+    if data.get("Ultrasound_image"):
+        data["Ultrasound_image"] = _format_ultrasound(row.get("Ultrasound_image"))
+    return jsonify({"success": True, "data": data, "message": "OK"}), 200
+
+
+@app.post("/api/save_user_diagnosis")
+@app.post("/api/save_user_diagnosis.php")
+def api_save_user_diagnosis():
+    import json as _json
+    import uuid as _uuid
+
+    try:
+        decoded = _require_regular_user_auth()
+    except (PermissionError, ValueError) as exc:
+        return _json_error(str(exc), 401)
+    user_id = int(decoded.get("id") or 0)
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _json_error("No valid JSON data provided", 400)
+
+    clinical = payload.get("clinical_inputs") or {}
+    if not isinstance(clinical, dict):
+        clinical = {}
+    alias_map = {
+        "age": "Age_yrs", "Pulse_rate": "Pulse_rate_bpm", "RR_breath": "RR_breath_min",
+        "BP_systolic": "BP_Systolic_mmHg", "BP_diastolic": "BP_Diastolic_mmHg",
+        "Hemoglobin": "Hb_g_dl", "Cycle_R_I": "CycleR_I", "Cycle_length": "Cycle_length_days",
+        "Marriage_duration": "Marriage_Status_years", "Pregnant_status": "Pregnant",
+        "No_abortions": "No_of_abortions", "I_Beta_HCG": "I_beta_HCG_mIU_mL",
+        "II_Beta_HCG": "II_beta_HCG_mIU_mL", "LH_level": "LH_mIU_mL", "FSH_level": "FSH_mIU_mL",
+        "AMH_level": "AMH_ng_mL", "PRL_level": "PRL_ng_mL", "TSH_level": "TSH_mIU_L",
+        "Vitamin_D3_level": "Vit_D3_ng_mL", "Progesterone_level": "PRG_ng_mL", "RBS": "RBS_mg_dl",
+        "Avg_F_size_L": "Avg_F_size_L_mm", "Avg_F_size_R": "Avg_F_size_R_mm",
+    }
+    params: dict[str, Any] = {}
+    for k, v in clinical.items():
+        params[alias_map.get(k, k)] = v
+
+    if payload.get("clear_ultrasound_image") is True:
+        params["Ultrasound_image"] = None
+    elif isinstance(payload.get("ultrasound_image"), str):
+        params["Ultrasound_image"] = _coerce_ultrasound_blob(payload["ultrasound_image"])
+
+    allowed = (
+        "Age_yrs", "Weight_kg", "Height_cm", "BMI", "Blood_Group", "Pulse_rate_bpm", "RR_breath_min",
+        "BP_Systolic_mmHg", "BP_Diastolic_mmHg", "Hb_g_dl", "CycleR_I", "Cycle_length_days",
+        "Marriage_Status_years", "Pregnant", "No_of_abortions", "I_beta_HCG_mIU_mL", "II_beta_HCG_mIU_mL",
+        "FSH_mIU_mL", "LH_mIU_mL", "FSH_LH", "Hip_inch", "Waist_inch", "Waist_hip_ratio", "TSH_mIU_L",
+        "AMH_ng_mL", "PRL_ng_mL", "Vit_D3_ng_mL", "PRG_ng_mL", "RBS_mg_dl", "Weight_gain", "Hair_growth",
+        "Skin_darkening", "Hair_loss", "Pimples", "Fast_food", "Reg_Exercise", "Follicle_no_L",
+        "Follicle_no_R", "Avg_F_size_L_mm", "Avg_F_size_R_mm", "Endometrium_mm", "Ultrasound_image",
+    )
+    cols = [c for c in allowed if c in params]
+    res = payload.get("results") if isinstance(payload.get("results"), dict) else {}
+    screening_id = str(_uuid.uuid4())
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                if cols:
+                    placeholders = ", ".join(["%s"] * (len(cols) + 1))
+                    col_sql = ", ".join(["user_id"] + cols)
+                    updates = ", ".join([f"{c}=VALUES({c})" for c in cols])
+                    cur.execute(
+                        f"INSERT INTO user_diagnosis_parameters ({col_sql}) VALUES ({placeholders}) "
+                        f"ON DUPLICATE KEY UPDATE {updates}",
+                        tuple([user_id] + [params[c] for c in cols]),
+                    )
+                else:
+                    cur.execute(
+                        "INSERT IGNORE INTO user_diagnosis_parameters (user_id) VALUES (%s)",
+                        (user_id,),
+                    )
+                cur.execute(
+                    """
+                    INSERT INTO user_diagnosis_results
+                    (user_id, screening_id, XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
+                     CNN_diagnosis, CNN_diagnosis_probability_percentage,
+                     Overall_diagnosis, Overall_diagnosis_probability_percentage,
+                     created_by, clinical_inputs_snapshot)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """,
+                    (
+                        user_id,
+                        screening_id,
+                        res.get("xgboost_diagnosis"),
+                        _norm_prob_percent(res.get("xgboost_probability")),
+                        res.get("cnn_diagnosis"),
+                        _norm_prob_percent(res.get("cnn_probability")),
+                        res.get("overall_diagnosis"),
+                        _norm_prob_percent(res.get("overall_probability")),
+                        "Patient",
+                        _json.dumps(clinical, default=str),
+                    ),
+                )
+                diagnosis_id = int(cur.lastrowid)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Save user diagnosis failed")
+        return _json_error("Failed to save user diagnosis", 500, detail=str(exc))
+
+    return jsonify(
+        {
+            "success": True,
+            "message": "User diagnosis saved",
+            "diagnosis_id": diagnosis_id,
+            "screening_id": screening_id,
+        }
+    ), 200
+
+
+@app.get("/api/get_users")
+@app.get("/api/get_users.php")
+def api_get_users():
+    try:
+        _require_admin_auth()
+    except (PermissionError, ValueError) as exc:
+        return _json_error(str(exc), 401)
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT user_id, user_name, email, role, institution,
+                           CASE WHEN last_login IS NOT NULL THEN 1 ELSE 0 END AS is_active,
+                           created_at, updated_at
+                    FROM users
+                    WHERE role NOT IN ('Administrator', 'System Administrator')
+                    ORDER BY created_at DESC
+                    """
+                )
+                users = []
+                for row in cur.fetchall() or []:
+                    users.append({k: _serialize_value(v) for k, v in dict(row).items()})
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Get users failed")
+        return _json_error("Error retrieving users", 500, detail=str(exc))
+    return jsonify({"success": True, "message": "Users retrieved successfully", "users": users, "total": len(users)}), 200
+
+
+@app.post("/api/save_user")
+@app.post("/api/save_user.php")
+def api_save_user():
+    try:
+        _require_admin_auth()
+    except (PermissionError, ValueError) as exc:
+        return _json_error(str(exc), 401)
+    payload = request.get_json(silent=True) or {}
+    name = str(payload.get("name") or "").strip()
+    email = str(payload.get("email") or "").strip().lower()
+    role = str(payload.get("role") or "").strip()
+    institution = str(payload.get("institution") or "").strip()
+    password = str(payload.get("password") or "").strip() or None
+    allowed_roles = {
+        "Radiologist", "Ob-Gyn", "OB-Sonologist", "Other", "Health Expert", "Physician", "Regular User",
+    }
+    if not name or not email or not role:
+        return _json_error("Name, email, and role are required", 400)
+    if role not in allowed_roles:
+        return _json_error("Role is not allowed", 400)
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT user_id FROM users WHERE email = %s LIMIT 1", (email,))
+                if cur.fetchone():
+                    return _json_error("Email already exists in the system", 409)
+                hashed = _hash_password_for_storage(password or os.urandom(8).hex())
+                cur.execute(
+                    """
+                    INSERT INTO users (user_name, email, password, role, institution)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (name, email, hashed, role, institution),
+                )
+                new_id = int(cur.lastrowid)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Save user failed")
+        return _json_error("Failed to save user", 500, detail=str(exc))
+    return jsonify({"success": True, "message": "User created", "user_id": new_id}), 201
+
+
+@app.post("/api/delete_user")
+@app.post("/api/delete_user.php")
+def api_delete_user():
+    try:
+        admin = _require_admin_auth()
+    except (PermissionError, ValueError) as exc:
+        return _json_error(str(exc), 401)
+    payload = request.get_json(silent=True) or {}
+    try:
+        user_id = int(payload.get("user_id") or 0)
+    except (TypeError, ValueError):
+        user_id = 0
+    if user_id <= 0:
+        return _json_error("User ID is required", 400)
+    if user_id == int(admin.get("id") or 0):
+        return _json_error("Cannot delete your own account", 400)
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT role FROM users WHERE user_id = %s LIMIT 1", (user_id,))
+                row = cur.fetchone()
+                if not row:
+                    return _json_error("User not found", 404)
+                role = str(row.get("role") or "").lower()
+                if role in ("administrator", "admin", "system administrator"):
+                    return _json_error("Cannot delete administrator accounts", 403)
+                cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Delete user failed")
+        return _json_error("Failed to delete user", 500, detail=str(exc))
+    return jsonify({"success": True, "message": "User deleted"}), 200
+
+
+@app.post("/api/export_xai_pdf")
+@app.post("/api/export_xai_pdf.php")
+def api_export_xai_pdf():
+    """Cloud-friendly PDF export from client payload (no PHP TCPDF)."""
+    try:
+        decode_jwt(request.headers.get("Authorization") or "")
+    except ValueError:
+        # Allow guest/export with client-held payload only
+        pass
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _json_error("Invalid JSON export payload", 400)
+    patient_id = str(payload.get("patient_id") or "unknown")
+    lines = [
+        f"Patient ID: {patient_id}",
+        f"Generated: {datetime.utcnow().isoformat()}Z",
+        "",
+        "Clinical / imaging summary (cloud export)",
+    ]
+    clinical = payload.get("clinical_data") if isinstance(payload.get("clinical_data"), dict) else {}
+    imaging = payload.get("imaging_data") if isinstance(payload.get("imaging_data"), dict) else {}
+    for key in (
+        "xgboost_probability",
+        "cnn_probability",
+        "overall_probability",
+        "XGBoost_diagnosis_probability_percentage",
+        "CNN_diagnosis_probability_percentage",
+        "Overall_diagnosis_probability_percentage",
+    ):
+        if key in payload and payload[key] not in (None, ""):
+            lines.append(f"{key}: {payload[key]}")
+        if key in clinical and clinical[key] not in (None, ""):
+            lines.append(f"clinical.{key}: {clinical[key]}")
+        if key in imaging and imaging[key] not in (None, ""):
+            lines.append(f"imaging.{key}: {imaging[key]}")
+    pdf = _minimal_pdf_bytes("P-Code / PMOS Detection Report", lines)
+    b64 = base64.b64encode(pdf).decode("ascii")
+    filename = f"PMOS_Report_{re.sub(r'[^A-Za-z0-9_-]+', '_', patient_id)}.pdf"
+    return jsonify(
+        {
+            "success": True,
+            "message": "PDF generated",
+            "filename": filename,
+            "file_url": f"data:application/pdf;base64,{b64}",
+        }
+    ), 200
 
 
 @app.post("/api/delete_patient")

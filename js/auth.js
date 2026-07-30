@@ -781,10 +781,18 @@ class AuthManager {
         'update_profile.php': 'update-profile',
         'patients/get_patients_list.php': 'patients/get_patients_list',
         'get_patients.php': 'get_patients',
+        'get_patients_simple.php': 'get_patients',
+        'get_patient.php': 'get_patient',
         'delete_patient.php': 'delete_patient',
         'save_patient.php': 'save_patient',
-        'get_patients_simple.php': 'get_patients',
+        'save_diagnosis_results.php': 'save_diagnosis_results',
+        'diagnostics/get_patient_history.php': 'diagnostics/get_patient_history',
+        'diagnostics/get_user_history.php': 'diagnostics/get_user_history',
+        'get_user_diagnosis.php': 'get_user_diagnosis',
+        'save_user_diagnosis.php': 'save_user_diagnosis',
         'predict.php': 'predict',
+        'validate_clinical_timing.php': 'validate_clinical_timing',
+        'export_xai_pdf.php': 'export_xai_pdf',
       };
       p = map[p] || p.replace(/\.php$/i, '');
     }
@@ -2874,9 +2882,9 @@ class AuthManager {
     this.hideError('login-general-error');
 
     try {
-      // Call guest login API endpoint
-      console.log('Attempting guest login to:', this.apiBaseUrl + 'guest_login.php');
-      const response = await fetch(this.apiBaseUrl + 'guest_login.php', {
+      const guestUrl = this.resolveApiUrl('guest_login.php');
+      console.log('Attempting guest login to:', guestUrl);
+      const response = await fetch(guestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

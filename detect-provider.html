@@ -934,7 +934,8 @@
 </head>
 <body class="pcode-app-bento pcode-detect-provider-page min-h-screen h-auto flex flex-col text-zinc-50 antialiased" data-pcode-auth-portal="provider">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/auth.js?v=20260730-nqak"></script>
+    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js?v=20260730-apiscan"></script>
     <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
     <script src="js/pcode-form-guard.js?v=20260710a"></script>
@@ -3060,7 +3061,7 @@
             console.log('DEBUG: Patient ID is:', selectedPatient);
             
             const token = sessionStorage.getItem('PMOS_auth_token') || '';
-            fetch(`api/get_patient.php?id=${encodeURIComponent(selectedPatient)}`, {
+            fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl(`api/get_patient.php?id=${encodeURIComponent(selectedPatient)}`):`api/get_patient.php?id=${encodeURIComponent(selectedPatient)}`), {
                     method: 'GET',
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 })
@@ -5078,7 +5079,7 @@
 
                 try {
                     console.log('[SAVE] Updating patient parameters via save_patient.php');
-                    const pResp = await fetch('./api/save_patient.php', {
+                    const pResp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/save_patient.php'):'./api/save_patient.php'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -5100,7 +5101,7 @@
                 saveData.clinical_inputs_snapshot = clinicalInputsForDb;
                 saveData.created_by = 'Physician';
                 try {
-                    const response = await fetch('./api/save_diagnosis_results.php', {
+                    const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/save_diagnosis_results.php'):'./api/save_diagnosis_results.php'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -5273,7 +5274,7 @@
                     window.pcodeShowExportLoading('Generating PDF report…');
                 }
 
-                const response = await fetch('api/export_xai_pdf.php', {
+                const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(exportData)

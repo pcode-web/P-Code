@@ -463,7 +463,11 @@
 
     renderLoading();
 
-    return fetch('api/diagnostics/get_patient_history.php?patient_id=' + encodeURIComponent(numericId), {
+    return fetch(
+      (typeof global.pcodeApiUrl === 'function'
+        ? global.pcodeApiUrl('diagnostics/get_patient_history.php?patient_id=' + encodeURIComponent(numericId))
+        : 'https://p-code-nqak.onrender.com/api/diagnostics/get_patient_history?patient_id=' + encodeURIComponent(numericId)),
+      {
       method: 'GET',
       headers: authHeaders(),
       credentials: 'include'
@@ -501,7 +505,11 @@
 
     renderLoading();
 
-    return fetch('api/diagnostics/get_user_history.php', {
+    return fetch(
+      (typeof global.pcodeApiUrl === 'function'
+        ? global.pcodeApiUrl('diagnostics/get_user_history.php')
+        : 'https://p-code-nqak.onrender.com/api/diagnostics/get_user_history'),
+      {
       method: 'GET',
       headers: authHeaders(),
       credentials: 'include'

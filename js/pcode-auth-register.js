@@ -118,7 +118,7 @@
 
       hashPromise
         .then(function (digest) {
-          return fetch('api/register.php', {
+          return fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/register.php'):'api/register.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
