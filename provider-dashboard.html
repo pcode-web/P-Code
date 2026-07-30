@@ -390,7 +390,7 @@
           : Promise.resolve(false);
         sync.then(function (ok) {
           if (!ok) {
-            console.warn("[Dashboard] Session sync failed ? metrics may show 0 until you sign in again");
+            console.warn("[Dashboard] Session sync failed - metrics may show 0 until you sign in again");
           }
           startDashboardMetricsPolling();
         });
