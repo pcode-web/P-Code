@@ -31,6 +31,7 @@ if str(BASE_DIR) not in sys.path:
 
 # Lazy ML imports — TensorFlow/XGBoost must NOT block auth/DB boot on Render
 cnn_predict = None  # type: ignore
+cnn_tflite = None  # type: ignore
 xgboost_predict = None  # type: ignore
 
 
@@ -41,6 +42,15 @@ def _load_cnn():
 
         cnn_predict = _cnn
     return cnn_predict
+
+
+def _load_cnn_tflite():
+    global cnn_tflite
+    if cnn_tflite is None:
+        import cnn_tflite as _tfl  # noqa: WPS433
+
+        cnn_tflite = _tfl
+    return cnn_tflite
 
 
 def _load_xgb():
@@ -150,17 +160,23 @@ def _cors_preflight():
     return resp
 
 # --- ML model paths ----------------------------------------------------------
-CNN_MODEL_PATH = Path(
-    os.environ.get(
-        "CNN_MODEL_PATH",
-        str(BASE_DIR / "CNN Model" / "pcos_detection_modelv4.keras"),
-    )
+_tflite_default = BASE_DIR / "CNN Model" / "pcos_detection_modelv4.tflite"
+_raw_cnn = (os.getenv("CNN_TFLITE_PATH") or os.getenv("CNN_MODEL_PATH") or "").strip()
+if _raw_cnn.lower().endswith(".tflite"):
+    CNN_TFLITE_PATH = Path(_raw_cnn)
+else:
+    # Ignore legacy .keras CNN_MODEL_PATH so hosted always prefers TFLite weights.
+    CNN_TFLITE_PATH = _tflite_default
+
+CNN_KERAS_PATH = Path(
+    (os.getenv("CNN_KERAS_PATH") or "").strip()
+    or str(BASE_DIR / "CNN Model" / "pcos_detection_modelv4.keras")
 )
+# Alias kept for older logging / health checks
+CNN_MODEL_PATH = CNN_TFLITE_PATH
 XGB_MODEL_PATH = Path(
-    os.environ.get(
-        "XGB_MODEL_PATH",
-        str(BASE_DIR / "XGBoost Model" / "xgboost_pcos_model_v5.pkl"),
-    )
+    (os.getenv("XGB_MODEL_PATH") or "").strip()
+    or str(BASE_DIR / "XGBoost Model" / "xgboost_pcos_model_v5.pkl")
 )
 
 # --- Database config (Render + Clever Cloud add-on fallbacks) ----------------
@@ -2915,13 +2931,11 @@ def api_predict():
     has_image = bool(
         payload.get("image") or payload.get("image_base64") or payload.get("Ultrasound_image")
     )
-    if has_image and CNN_MODEL_PATH.is_file():
+    if has_image and CNN_TFLITE_PATH.is_file():
         try:
             image_bytes = _decode_image_payload(payload)
-            cnn = _load_cnn()
-            cnn_result = cnn.predict(
+            cnn_result = _run_cnn_inference(
                 image_bytes,
-                str(CNN_MODEL_PATH),
                 generate_gradcam=bool(payload.get("generate_gradcam", False)),
                 apply_smoothing=bool(payload.get("apply_smoothing", True)),
                 smoothing_factor=max(0.50, min(0.95, smoothing_factor)),
@@ -2930,8 +2944,8 @@ def api_predict():
         except Exception as exc:  # noqa: BLE001
             logger.exception("Predict CNN failed")
             cnn_result = {"success": False, "error": str(exc)}
-    elif has_image and not CNN_MODEL_PATH.is_file():
-        cnn_result = {"success": False, "error": f"CNN model missing at {CNN_MODEL_PATH}"}
+    elif has_image and not CNN_TFLITE_PATH.is_file():
+        cnn_result = {"success": False, "error": f"CNN TFLite model missing at {CNN_TFLITE_PATH}"}
 
     def _label_to_code(label: Any, probability: Any = None) -> Optional[int]:
         if label is None:
@@ -3063,6 +3077,39 @@ def api_predict():
     ), 200
 
 
+def _run_cnn_inference(
+    image_bytes: bytes,
+    *,
+    generate_gradcam: bool = False,
+    apply_smoothing: bool = True,
+    smoothing_factor: float = 0.90,
+    user_mode: str = "",
+) -> dict[str, Any]:
+    """Hosted CNN path: always use pcos_detection_modelv4.tflite (low RAM)."""
+    if not CNN_TFLITE_PATH.is_file():
+        return {
+            "success": False,
+            "error": (
+                f"CNN TFLite model not found at {CNN_TFLITE_PATH}. "
+                "Upload pcos_detection_modelv4.tflite or set CNN_TFLITE_PATH."
+            ),
+        }
+    try:
+        tfl = _load_cnn_tflite()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("CNN TFLite module failed to load")
+        return {"success": False, "error": f"CNN TFLite runtime unavailable: {exc}"}
+
+    return tfl.predict_pcos_bytes(
+        image_bytes,
+        tflite_path=str(CNN_TFLITE_PATH),
+        apply_smoothing=apply_smoothing,
+        smoothing_factor=smoothing_factor,
+        generate_gradcam=generate_gradcam,
+        user_mode=user_mode,
+    )
+
+
 # =============================================================================
 # ML inference (existing Render endpoints)
 # =============================================================================
@@ -3071,13 +3118,6 @@ def predict_cnn():
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return _json_error("Request body must be JSON")
-
-    if not CNN_MODEL_PATH.is_file():
-        return _json_error(
-            f"CNN model not found at {CNN_MODEL_PATH}. "
-            "Upload pcos_detection_modelv4.keras or set CNN_MODEL_PATH.",
-            503,
-        )
 
     try:
         image_bytes = _decode_image_payload(payload)
@@ -3098,15 +3138,8 @@ def predict_cnn():
     smoothing_factor = max(0.50, min(0.95, smoothing_factor))
     user_mode = str(payload.get("user_mode") or "")
 
-    try:
-        cnn = _load_cnn()
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("CNN module failed to load")
-        return _json_error(f"CNN model runtime unavailable: {exc}", 503)
-
-    result = cnn.predict(
+    result = _run_cnn_inference(
         image_bytes,
-        str(CNN_MODEL_PATH),
         generate_gradcam=generate_gradcam,
         apply_smoothing=apply_smoothing,
         smoothing_factor=smoothing_factor,
@@ -3173,8 +3206,6 @@ def predict_cnn_gradcam():
     payload = dict(payload)
     payload["generate_gradcam"] = True
 
-    if not CNN_MODEL_PATH.is_file():
-        return _json_error(f"CNN model not found at {CNN_MODEL_PATH}", 503)
     try:
         image_bytes = _decode_image_payload(payload)
     except ValueError as exc:
@@ -3183,14 +3214,8 @@ def predict_cnn_gradcam():
         smoothing_factor = float(payload.get("smoothing_factor", 0.90))
     except (TypeError, ValueError):
         smoothing_factor = 0.90
-    try:
-        cnn = _load_cnn()
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("CNN module failed to load")
-        return _json_error(f"CNN model runtime unavailable: {exc}", 503)
-    result = cnn.predict(
+    result = _run_cnn_inference(
         image_bytes,
-        str(CNN_MODEL_PATH),
         generate_gradcam=True,
         apply_smoothing=bool(payload.get("apply_smoothing", True)),
         smoothing_factor=max(0.50, min(0.95, smoothing_factor)),
