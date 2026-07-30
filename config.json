@@ -3,7 +3,7 @@
     "name": "PMOS Decision Support System",
     "version": "2.1.4",
     "environment": "production",
-    "apiBaseUrl": "./api/",
+    "apiBaseUrl": "https://p-code.onrender.com/api/",
     "frontendUrl": "./"
   },
   "authentication": {

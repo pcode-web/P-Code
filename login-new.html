@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="login-bento-page pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
   <script src="js/libs/typed.min.js" defer></script>
   <!-- Google Identity Services Library -->
-  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260707c">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-googlefix">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     html.login-bento-page {
@@ -522,8 +522,8 @@
       }
       .entry-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.85rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
         width: 100%;
         border: none;
         background: transparent;
@@ -537,9 +537,9 @@
         justify-content: flex-start !important;
         text-align: center !important;
         width: 100%;
-        min-height: 9.75rem;
-        padding: 1.15rem 1rem 1.2rem !important;
-        gap: 0.4rem;
+        min-height: 0;
+        padding: 0.95rem 0.55rem 1rem !important;
+        gap: 0.3rem;
         box-sizing: border-box;
       }
       .entry-icon-slot {
@@ -547,13 +547,13 @@
         align-items: center;
         justify-content: center;
         width: 100% !important;
-        height: 3rem !important;
-        margin: 0 0 0.15rem !important;
+        height: 2.5rem !important;
+        margin: 0 0 0.1rem !important;
         grid-area: unset !important;
       }
       .entry-icon {
-        width: 2.35rem;
-        height: 2.35rem;
+        width: 2rem;
+        height: 2rem;
       }
       .entry-card > .entry-card-title,
       .entry-card > .entry-card-desc {
@@ -562,18 +562,18 @@
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        padding: 0 0.15rem !important;
+        padding: 0 0.1rem !important;
       }
       html.login-bento-page.dark .entry-card-title,
       html.login-bento-page:not(.dark) .entry-card-title {
-        font-size: 1rem !important;
-        line-height: 1.35 !important;
+        font-size: 0.82rem !important;
+        line-height: 1.25 !important;
         min-height: 0 !important;
       }
       html.login-bento-page.dark .entry-card-desc,
       html.login-bento-page:not(.dark) .entry-card-desc {
-        font-size: 0.8125rem !important;
-        line-height: 1.45 !important;
+        font-size: 0.68rem !important;
+        line-height: 1.35 !important;
       }
       .right-entry-hint {
         margin-bottom: 1rem;
@@ -1259,10 +1259,10 @@
 
   <!-- Auth Module -->
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
-  <script src="js/pcode-google-auth.js?v=20260707a"></script>
-  <script src="js/auth.js?v=20260730-firebase-emaillink"></script>
+  <script src="js/pcode-google-auth.js?v=20260730-renderapi"></script>
+  <script src="js/auth.js?v=20260730-renderapi"></script>
   <script type="module" src="js/firebase-config.js"></script>
-  <script src="js/firebase-email-link-auth.js?v=20260730-emaillink"></script>
+  <script src="js/firebase-email-link-auth.js?v=20260730-renderapi"></script>
 
   <script>
     /**

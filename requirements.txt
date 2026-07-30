@@ -7,6 +7,11 @@ Flask>=3.0.0,<4
 flask-cors>=4.0.0,<5
 gunicorn>=22.0.0,<24
 
+# MySQL (Clever Cloud / Render)
+PyMySQL>=1.1.0,<2
+DBUtils>=3.0.0,<4
+bcrypt>=4.0.0,<5
+
 # Numerical / tabular (XGBoost path)
 numpy>=1.26.0,<3
 pandas>=2.0.0,<3

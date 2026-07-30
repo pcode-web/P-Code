@@ -44,6 +44,7 @@ class AuthManager {
     this.refreshToken = null;
     this.tokenExpiry = null;
     this.apiBaseUrl = './api/';  // Default relative path
+    this.apiStyle = 'php';
     this.selectedPortalType = null;
     this._tokenRefreshTimeoutId = null;
     /** Reserved for optional session polling (auto-logout disabled). */
@@ -716,13 +717,39 @@ class AuthManager {
 
   async loadConfig() {
     try {
-      const response = await fetch('config.json');
+      const response = await fetch('config.json?v=' + Date.now());
       const config = await response.json();
-      this.apiBaseUrl = config.app.apiBaseUrl;
+      this.apiBaseUrl = config.app.apiBaseUrl || './api/';
+      this.apiStyle = /onrender\.com/i.test(this.apiBaseUrl) ? 'flask' : 'php';
     } catch (error) {
       console.warn('Config not loaded, using default API URL');
       this.apiBaseUrl = './api/';
+      this.apiStyle = 'php';
     }
+  }
+
+  /**
+   * Map PHP-style paths to Flask routes when apiBaseUrl points at Render.
+   * @param {string} path e.g. "login.php" or "auth/google_callback.php"
+   */
+  resolveApiUrl(path) {
+    const base = String(this.apiBaseUrl || './api/').replace(/\/?$/, '/');
+    let p = String(path || '').replace(/^\//, '');
+    const flask = this.apiStyle === 'flask' || /onrender\.com/i.test(base);
+    if (flask) {
+      const map = {
+        'login.php': 'login',
+        'register.php': 'register',
+        'verify.php': 'verify',
+        'guest_login.php': 'guest-login',
+        'auth/google_callback.php': 'auth/google',
+        'auth/firebase_callback.php': 'auth/firebase',
+        'sync_session.php': 'sync-session',
+        'update_profile.php': 'update-profile',
+      };
+      p = map[p] || p.replace(/\.php$/i, '');
+    }
+    return base + p;
   }
 
   setupEventListeners() {
@@ -2253,13 +2280,13 @@ class AuthManager {
 
       switch(type) {
         case 'login':
-          endpoint = this.apiBaseUrl + 'login.php';
+          endpoint = this.resolveApiUrl('login.php');
           break;
         case 'register':
-          endpoint = this.apiBaseUrl + 'register.php';
+          endpoint = this.resolveApiUrl('register.php');
           break;
         case 'verify':
-          endpoint = this.apiBaseUrl + 'verify.php';
+          endpoint = this.resolveApiUrl('verify.php');
           break;
         default:
           return { success: false, message: 'Invalid request type' };
@@ -2293,7 +2320,14 @@ class AuthManager {
         return result;
       } catch (parseError) {
         console.error('JSON parse error:', parseError);
-        return { success: false, message: 'Server returned invalid response: ' + responseText.substring(0, 200) };
+        const snippet = String(responseText || '').substring(0, 120);
+        const looksHtml = /<!doctype|<html/i.test(snippet);
+        return {
+          success: false,
+          message: looksHtml
+            ? 'Auth API is unreachable from this site. Check config.json apiBaseUrl (Render/Hostinger).'
+            : 'Server returned invalid response: ' + snippet,
+        };
       }
     } catch (error) {
       console.error('API Error:', error);
@@ -2863,7 +2897,7 @@ class AuthManager {
     this.hideError('login-general-error');
 
     try {
-      console.log('Attempting Google login to:', this.apiBaseUrl + 'auth/google_callback.php');
+      console.log('Attempting Google login to:', this.resolveApiUrl('auth/google_callback.php'));
 
       const isLoginNew =
         typeof window !== 'undefined' &&
@@ -2880,7 +2914,7 @@ class AuthManager {
         googleBody.expectedAccess = portalForGoogle;
         googleBody.loginContext = 'portal-pick';
       }
-      const response = await fetch(this.apiBaseUrl + 'auth/google_callback.php', {
+      const response = await fetch(this.resolveApiUrl('auth/google_callback.php'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
