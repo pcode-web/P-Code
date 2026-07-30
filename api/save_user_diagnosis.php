@@ -98,6 +98,18 @@ try {
     $params = [];
     foreach ($clinical as $k => $v) {
         $dbKey = $map[$k] ?? $k;
+        if ($dbKey === 'CycleR_I' || $k === 'Cycle_R_I') {
+            if ($v === null || $v === '') {
+                $params['CycleR_I'] = null;
+            } else {
+                $low = strtolower(trim((string)$v));
+                if ($low === 'regular' || $low === '0') $params['CycleR_I'] = 0;
+                else if ($low === 'irregular' || $low === 'amenorrhea' || $low === '1') $params['CycleR_I'] = 1;
+                else if (is_numeric($v)) $params['CycleR_I'] = (float)$v;
+                else $params['CycleR_I'] = null;
+            }
+            continue;
+        }
         $params[$dbKey] = $v;
     }
 

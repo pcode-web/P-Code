@@ -1057,6 +1057,90 @@ def _ensure_owner_provider_column(cur) -> None:
         pass
 
 
+def _ensure_user_diagnosis_schema(cur) -> None:
+    """Best-effort schema fixes so community saves don't 500 on older Clever Cloud DBs."""
+    alters = (
+        "ALTER TABLE user_diagnosis_results ADD COLUMN screening_id VARCHAR(36) NULL DEFAULT NULL",
+        "ALTER TABLE user_diagnosis_results ADD COLUMN created_by VARCHAR(32) NOT NULL DEFAULT 'Patient'",
+        "ALTER TABLE user_diagnosis_results ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE user_diagnosis_results ADD COLUMN clinical_inputs_snapshot LONGTEXT NULL",
+        "ALTER TABLE user_diagnosis_results ADD KEY idx_udr_screening_id (screening_id)",
+        "ALTER TABLE user_diagnosis_results ADD KEY idx_udr_user_created (user_id, created_at)",
+        "ALTER TABLE user_diagnosis_results DROP INDEX uniq_user",
+        "ALTER TABLE user_diagnosis_results DROP INDEX uq_results_user_id",
+        "ALTER TABLE user_diagnosis_parameters ADD UNIQUE KEY uq_user_id (user_id)",
+    )
+    for sql in alters:
+        try:
+            cur.execute(sql)
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def _table_columns(cur, table: str) -> set[str]:
+    try:
+        cur.execute(f"SHOW COLUMNS FROM `{table}`")
+        rows = cur.fetchall() or []
+        cols: set[str] = set()
+        for row in rows:
+            if isinstance(row, dict):
+                name = row.get("Field") or row.get("field")
+            else:
+                name = row[0] if row else None
+            if name:
+                cols.add(str(name))
+        return cols
+    except Exception:  # noqa: BLE001
+        return set()
+
+
+def _coerce_user_param_value(column: str, value: Any) -> Any:
+    """Coerce clinical form values into DB-safe types (CycleR_I is float in schema)."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        raw = value.strip()
+        if raw == "" or raw.lower() in {"null", "undefined", "nan"}:
+            return None
+        if column == "CycleR_I":
+            low = raw.lower()
+            if low in {"regular", "0"}:
+                return 0
+            if low in {"irregular", "amenorrhea", "1"}:
+                return 1
+            try:
+                return float(raw)
+            except ValueError:
+                return None
+        if column in {
+            "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss",
+            "Pimples", "Fast_food", "Reg_Exercise", "Blood_Group",
+            "Age_yrs", "Pulse_rate_bpm", "RR_breath_min", "Cycle_length_days",
+            "Marriage_Status_years", "No_of_abortions", "Follicle_no_L", "Follicle_no_R",
+            "BP_Systolic_mmHg", "BP_Diastolic_mmHg",
+        }:
+            try:
+                if "." in raw:
+                    return float(raw)
+                return int(raw)
+            except ValueError:
+                return raw if column == "Pregnant" else None
+        try:
+            if re.fullmatch(r"-?\d+(\.\d+)?", raw):
+                return float(raw) if "." in raw else int(raw)
+        except Exception:  # noqa: BLE001
+            pass
+        return raw
+    if column == "CycleR_I":
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    return value
+
+
+
+
 def _format_ultrasound(value: Any) -> Any:
     if value is None or value == "":
         return None
@@ -2299,6 +2383,8 @@ def api_save_user_diagnosis():
     except (PermissionError, ValueError) as exc:
         return _json_error(str(exc), 401)
     user_id = int(decoded.get("id") or 0)
+    if user_id <= 0:
+        return _json_error("Invalid user session", 401)
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return _json_error("No valid JSON data provided", 400)
@@ -2319,11 +2405,12 @@ def api_save_user_diagnosis():
     }
     params: dict[str, Any] = {}
     for k, v in clinical.items():
-        params[alias_map.get(k, k)] = v
+        col = alias_map.get(k, k)
+        params[col] = _coerce_user_param_value(col, v)
 
     if payload.get("clear_ultrasound_image") is True:
         params["Ultrasound_image"] = None
-    elif isinstance(payload.get("ultrasound_image"), str):
+    elif isinstance(payload.get("ultrasound_image"), str) and payload.get("ultrasound_image").strip():
         params["Ultrasound_image"] = _coerce_ultrasound_blob(payload["ultrasound_image"])
 
     allowed = (
@@ -2335,17 +2422,36 @@ def api_save_user_diagnosis():
         "Skin_darkening", "Hair_loss", "Pimples", "Fast_food", "Reg_Exercise", "Follicle_no_L",
         "Follicle_no_R", "Avg_F_size_L_mm", "Avg_F_size_R_mm", "Endometrium_mm", "Ultrasound_image",
     )
-    cols = [c for c in allowed if c in params]
     res = payload.get("results") if isinstance(payload.get("results"), dict) else {}
     screening_id = str(_uuid.uuid4())
+
+    def _as_int(value: Any) -> Optional[int]:
+        if value is None or value == "":
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    xg_d = _as_int(res.get("xgboost_diagnosis"))
+    cnn_d = _as_int(res.get("cnn_diagnosis"))
+    ov_d = _as_int(res.get("overall_diagnosis"))
+    xg_p = _norm_prob_percent(res.get("xgboost_probability"))
+    cnn_p = _norm_prob_percent(res.get("cnn_probability"))
+    ov_p = _norm_prob_percent(res.get("overall_probability"))
+    snap = _json.dumps(clinical, default=str)
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
+                _ensure_user_diagnosis_schema(cur)
+                param_cols_existing = _table_columns(cur, "user_diagnosis_parameters")
+                cols = [c for c in allowed if c in params and (not param_cols_existing or c in param_cols_existing)]
+
                 if cols:
                     placeholders = ", ".join(["%s"] * (len(cols) + 1))
                     col_sql = ", ".join(["user_id"] + cols)
-                    updates = ", ".join([f"{c}=VALUES({c})" for c in cols])
+                    updates = ", ".join([f"`{c}`=VALUES(`{c}`)" for c in cols])
                     cur.execute(
                         f"INSERT INTO user_diagnosis_parameters ({col_sql}) VALUES ({placeholders}) "
                         f"ON DUPLICATE KEY UPDATE {updates}",
@@ -2356,29 +2462,79 @@ def api_save_user_diagnosis():
                         "INSERT IGNORE INTO user_diagnosis_parameters (user_id) VALUES (%s)",
                         (user_id,),
                     )
-                cur.execute(
-                    """
-                    INSERT INTO user_diagnosis_results
-                    (user_id, screening_id, XGBoost_diagnosis, XGBoost_diagnosis_probability_percentage,
-                     CNN_diagnosis, CNN_diagnosis_probability_percentage,
-                     Overall_diagnosis, Overall_diagnosis_probability_percentage,
-                     created_by, clinical_inputs_snapshot)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """,
-                    (
-                        user_id,
-                        screening_id,
-                        res.get("xgboost_diagnosis"),
-                        _norm_prob_percent(res.get("xgboost_probability")),
-                        res.get("cnn_diagnosis"),
-                        _norm_prob_percent(res.get("cnn_probability")),
-                        res.get("overall_diagnosis"),
-                        _norm_prob_percent(res.get("overall_probability")),
-                        "Patient",
-                        _json.dumps(clinical, default=str),
-                    ),
+
+                result_cols_existing = _table_columns(cur, "user_diagnosis_results")
+                # Build insert dynamically so missing screening_id / snapshot columns don't 500
+                insert_cols = ["user_id"]
+                insert_vals: list[Any] = [user_id]
+                if not result_cols_existing or "screening_id" in result_cols_existing:
+                    insert_cols.append("screening_id")
+                    insert_vals.append(screening_id)
+                insert_cols.extend(
+                    [
+                        "XGBoost_diagnosis",
+                        "XGBoost_diagnosis_probability_percentage",
+                        "CNN_diagnosis",
+                        "CNN_diagnosis_probability_percentage",
+                        "Overall_diagnosis",
+                        "Overall_diagnosis_probability_percentage",
+                    ]
                 )
-                diagnosis_id = int(cur.lastrowid)
+                insert_vals.extend([xg_d, xg_p, cnn_d, cnn_p, ov_d, ov_p])
+                if not result_cols_existing or "created_by" in result_cols_existing:
+                    insert_cols.append("created_by")
+                    insert_vals.append("Patient")
+                if not result_cols_existing or "clinical_inputs_snapshot" in result_cols_existing:
+                    insert_cols.append("clinical_inputs_snapshot")
+                    insert_vals.append(snap)
+
+                col_sql = ", ".join(f"`{c}`" for c in insert_cols)
+                ph = ", ".join(["%s"] * len(insert_vals))
+                try:
+                    cur.execute(
+                        f"INSERT INTO user_diagnosis_results ({col_sql}) VALUES ({ph})",
+                        tuple(insert_vals),
+                    )
+                    diagnosis_id = int(cur.lastrowid)
+                except Exception as insert_exc:  # noqa: BLE001
+                    # Fallback: unique(user_id) still present — update latest row
+                    logger.warning("Append user diagnosis failed (%s); upserting latest row", insert_exc)
+                    cur.execute(
+                        """
+                        UPDATE user_diagnosis_results
+                        SET XGBoost_diagnosis=%s,
+                            XGBoost_diagnosis_probability_percentage=%s,
+                            CNN_diagnosis=%s,
+                            CNN_diagnosis_probability_percentage=%s,
+                            Overall_diagnosis=%s,
+                            Overall_diagnosis_probability_percentage=%s,
+                            clinical_inputs_snapshot=%s
+                        WHERE diagnosis_id = (
+                            SELECT diagnosis_id FROM (
+                                SELECT diagnosis_id FROM user_diagnosis_results
+                                WHERE user_id=%s
+                                ORDER BY created_at DESC, diagnosis_id DESC
+                                LIMIT 1
+                            ) latest
+                        )
+                        """,
+                        (xg_d, xg_p, cnn_d, cnn_p, ov_d, ov_p, snap, user_id),
+                    )
+                    if cur.rowcount == 0:
+                        raise insert_exc
+                    cur.execute(
+                        """
+                        SELECT diagnosis_id, screening_id FROM user_diagnosis_results
+                        WHERE user_id=%s
+                        ORDER BY created_at DESC, diagnosis_id DESC
+                        LIMIT 1
+                        """,
+                        (user_id,),
+                    )
+                    row = cur.fetchone() or {}
+                    diagnosis_id = int(row.get("diagnosis_id") or 0)
+                    if row.get("screening_id"):
+                        screening_id = str(row.get("screening_id"))
     except Exception as exc:  # noqa: BLE001
         logger.exception("Save user diagnosis failed")
         return _json_error("Failed to save user diagnosis", 500, detail=str(exc))
