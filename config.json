@@ -16,7 +16,7 @@
   },
   "mlModels": {
     "xgboost": {
-      "endpoint": "/api/v1/models/xgboost/predict",
+      "endpoint": "https://p-code.onrender.com/predict-xgboost",
       "version": "2.1.4",
       "features": [
         "age",
@@ -37,7 +37,7 @@
       "confidenceThreshold": 0.85
     },
     "cnn": {
-      "endpoint": "/api/v1/models/cnn/predict",
+      "endpoint": "https://p-code.onrender.com/predict-cnn",
       "version": "2.1.4",
       "inputSize": [224, 224],
       "channels": 3,
@@ -48,6 +48,9 @@
       },
       "threshold": 0.5,
       "confidenceThreshold": 0.90
+    },
+    "cnnGradcam": {
+      "endpoint": "https://p-code.onrender.com/predict-cnn-gradcam"
     },
     "xai": {
       "shap": {

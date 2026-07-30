@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/.venv/**",
+      "**/__pycache__/**",
+      "api/**",
+      "config/**",
+      "logs/**",
+      "exports/**",
+      "scripts/**",
+      "tools/**",
+      "CNN Model/**",
+      "XGBoost Model/**",
+      "*.py",
+      "requirements.txt",
+      "Procfile",
+      "runtime.txt",
+      "package*.json",
+      "pcode.sql",
+      "HOSTINGER-KVM2.md"
+    ]
+  }
+}

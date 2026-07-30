@@ -1533,7 +1533,7 @@
       console.log('Fetching XGBoost SHAP explanation with data:', predictionData);
 
       // Call XGBoost prediction API for SHAP explanations
-      fetch('api/predict_xgboost.php', {
+      fetch('https://p-code.onrender.com/predict-xgboost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(predictionData)
@@ -2912,10 +2912,13 @@
       
       console.log('🔍 Grad-CAM Request Data:', requestData);
       
-      fetch('api/predict_cnn_gradcam.php', {
+      fetch('https://p-code.onrender.com/predict-cnn-gradcam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+          image: requestData.image,
+          generate_gradcam: true
+        })
       })
       .then(response => response.json())
       .then(result => {

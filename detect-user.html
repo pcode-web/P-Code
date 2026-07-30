@@ -3850,7 +3850,7 @@
             const isRegularUser = role === 'regular user' && !isGuest;
             // Regular Users: stronger smoothing (less extreme probabilities)
             const xgbSmoothingFactor = isRegularUser ? 0.70 : null;
-            fetch('api/predict_xgboost.php', {
+            fetch('https://p-code.onrender.com/predict-xgboost', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4193,26 +4193,20 @@
             // Regular Users: stronger smoothing for more conservative, less extreme probabilities
             const smoothingFactor = isRegularUser ? 0.80 : null;
             const userMode = isRegularUser ? 'regular_user' : 'provider';
-            const validityPayload = (window.PcodeClinicalValidity && window.PcodeClinicalValidity.collectValidityPayload)
-                ? window.PcodeClinicalValidity.collectValidityPayload()
-                : {};
-            let cnnBody =
-                'image=' + encodeURIComponent(imageBase64) +
-                '&user_mode=' + encodeURIComponent(userMode);
+            const cnnPayload = {
+                image: imageBase64,
+                user_mode: userMode,
+                generate_gradcam: false
+            };
             if (smoothingFactor) {
-                cnnBody += '&smoothing_factor=' + encodeURIComponent(String(smoothingFactor));
+                cnnPayload.smoothing_factor = smoothingFactor;
             }
-            ['ultrasound_date', 'blood_draw_date', 'last_menstrual_period_date', 'Follicle_no_L', 'Follicle_no_R', 'Avg_F_size_L', 'Avg_F_size_R', 'Cycle_R_I', 'ultrasound_modality'].forEach(function (field) {
-                if (validityPayload[field] !== undefined && validityPayload[field] !== '') {
-                    cnnBody += '&' + encodeURIComponent(field) + '=' + encodeURIComponent(String(validityPayload[field]));
-                }
-            });
-            fetch('api/predict_cnn.php', {
+            fetch('https://p-code.onrender.com/predict-cnn', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
-                body: cnnBody
+                body: JSON.stringify(cnnPayload)
             })
             .then(response => {
                 return response.text().then(text => {
@@ -4344,33 +4338,27 @@
         }
 
         function sendImageToAnalysis(imageBase64, button, originalHTML) {
-            // Send to CNN prediction API
+            // Send to CNN prediction API (Render Flask)
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
             // Regular Users: stronger smoothing for more conservative, less extreme probabilities
             const smoothingFactor = isRegularUser ? 0.80 : null;
             const userMode = isRegularUser ? 'regular_user' : 'provider';
-            const validityPayload = (window.PcodeClinicalValidity && window.PcodeClinicalValidity.collectValidityPayload)
-                ? window.PcodeClinicalValidity.collectValidityPayload()
-                : {};
-            let cnnBody =
-                'image=' + encodeURIComponent(imageBase64) +
-                '&user_mode=' + encodeURIComponent(userMode);
+            const cnnPayload = {
+                image: imageBase64,
+                user_mode: userMode,
+                generate_gradcam: false
+            };
             if (smoothingFactor) {
-                cnnBody += '&smoothing_factor=' + encodeURIComponent(String(smoothingFactor));
+                cnnPayload.smoothing_factor = smoothingFactor;
             }
-            ['ultrasound_date', 'blood_draw_date', 'last_menstrual_period_date', 'Follicle_no_L', 'Follicle_no_R', 'Avg_F_size_L', 'Avg_F_size_R', 'Cycle_R_I', 'ultrasound_modality'].forEach(function (field) {
-                if (validityPayload[field] !== undefined && validityPayload[field] !== '') {
-                    cnnBody += '&' + encodeURIComponent(field) + '=' + encodeURIComponent(String(validityPayload[field]));
-                }
-            });
-            fetch('api/predict_cnn.php', {
+            fetch('https://p-code.onrender.com/predict-cnn', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
-                body: cnnBody
+                body: JSON.stringify(cnnPayload)
             })
             .then(response => {
                 // First, get the raw text response

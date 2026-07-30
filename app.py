@@ -23,10 +23,11 @@ import xgboost_predict  # noqa: E402
 
 app = Flask(__name__)
 
-# --- CORS (Firebase Hosting + optional extras via CORS_ORIGINS) ----------------
+# --- CORS (Firebase Hosting + Hostinger/XAMPP + optional extras via CORS_ORIGINS) -
 _default_origin_patterns = [
     r"^https://.*\.web\.app$",
     r"^https://.*\.firebaseapp.com$",
+    r"^https://.*$",  # production frontends (Hostinger, custom domains)
     r"^http://localhost(:\d+)?$",
     r"^http://127\.0\.0\.1(:\d+)?$",
 ]
