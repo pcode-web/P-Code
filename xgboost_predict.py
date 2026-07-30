@@ -169,6 +169,26 @@ def prepare_clinical_data(data_dict, model=None):
             
             # Ultrasound findings - Endometrium
             'Endometrium_mm': 'Endometrium (mm)',  # Maps to model feature
+
+            # Common short aliases from forms / clients
+            'AMH': 'AMH(ng/mL)',
+            'LH': 'LH(mIU/mL)',
+            'FSH': 'FSH(mIU/mL)',
+            'TSH': 'TSH (mIU/L)',
+            'PRL': 'PRL(ng/mL)',
+            'PRG': 'PRG(ng/mL)',
+        }
+
+        # Checkbox Y/N fields: unchecked in the UI means explicit No (0), not "missing".
+        # Leaving them as NaN lets XGBoost ignore the protective "no symptom" signal and
+        # over-lean Positive on the remaining vitals/labs.
+        SYMPTOM_YN_DEFAULT_ZERO = {
+            'Weight gain(Y/N)',
+            'hair growth(Y/N)',
+            'Skin darkening (Y/N)',
+            'Hair loss(Y/N)',
+            'Pimples(Y/N)',
+            'Fast food (Y/N)',
         }
         
         # Get expected feature names from model if available
@@ -207,6 +227,17 @@ def prepare_clinical_data(data_dict, model=None):
                     remapped_data[model_field] = value  # Keep as-is if not recognized
             else:
                 remapped_data[model_field] = value
+
+        # Unchecked symptom checkboxes mean explicit No (0), never "missing"/NaN.
+        # Inject before the feature frame is built so the model always sees 0.
+        for col in SYMPTOM_YN_DEFAULT_ZERO:
+            raw = remapped_data.get(col, None)
+            if raw is None or raw == '':
+                remapped_data[col] = 0
+            elif isinstance(raw, (float, np.floating)) and np.isnan(raw):
+                remapped_data[col] = 0
+            elif isinstance(raw, str) and raw.strip().lower() in ('', 'nan', 'none', 'null'):
+                remapped_data[col] = 0
         
         # If model provides expected features, ensure DataFrame has exactly those columns in that order
         if expected_features:
@@ -271,8 +302,35 @@ def prepare_clinical_data(data_dict, model=None):
             except:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
         
+        # Final guard: symptom Y/N columns must be 0 (No), never NaN.
+        for col in SYMPTOM_YN_DEFAULT_ZERO:
+            if col not in df.columns:
+                df[col] = 0.0
+                continue
+            val = df[col].iloc[0]
+            if pd.isna(val) or val is None or val == '':
+                df.loc[df.index[0], col] = 0.0
+                continue
+            if isinstance(val, str) and val.strip().lower() in ('nan', 'none', 'null'):
+                df.loc[df.index[0], col] = 0.0
+                continue
+            try:
+                num = float(val)
+                if np.isnan(num):
+                    df.loc[df.index[0], col] = 0.0
+                else:
+                    df.loc[df.index[0], col] = 1.0 if num >= 0.5 else 0.0
+            except Exception:
+                df.loc[df.index[0], col] = 0.0
+
         # Clean suspicious zero values (converts them to NaN)
+        # NOTE: must run after symptom defaults — symptoms are allowed to be 0.
         df = clean_suspicious_zeros(df)
+
+        # Re-assert after clean_suspicious_zeros (symptoms are not in that list, but keep safe)
+        for col in SYMPTOM_YN_DEFAULT_ZERO:
+            if col in df.columns and pd.isna(df[col].iloc[0]):
+                df.loc[df.index[0], col] = 0.0
         
         return df
     except Exception as e:
@@ -562,8 +620,9 @@ def apply_shap_aware_adjustment(probability_percentage, shap_explanation):
     - 40%: Ultrasound parameters
     - 20%: Everything else
     
-    If protective factors (negative influence) are strong, reduce the prediction.
-    If risk factors (positive influence) are strong, increase the prediction.
+    Protective (negative-impact) factors can reduce the score.
+    Risk-factor *inflation* is disabled — it was over-pushing Positive even when
+    classic PCOS symptoms were marked No.
     """
     if not shap_explanation or not shap_explanation.get('success'):
         return probability_percentage
@@ -606,18 +665,23 @@ def apply_shap_aware_adjustment(probability_percentage, shap_explanation):
         ultrasound_contrib = [c for c in contributions if c.get('feature') in group_ultrasound]
         other_contrib = [c for c in contributions if c.get('feature') not in (group_clinical | group_ultrasound)]
 
-        # Increase importance of reproductive parameters within the "clinical" 40% bucket
-        reproductive_multiplier = 1.6
-        clinical_pos = sum(
-            (c['abs_shap_value'] * (reproductive_multiplier if c.get('feature') in reproductive_parameters else 1.0))
-            for c in clinical_contrib
-            if c.get('impact') == 'positive'
-        )
-        clinical_neg = sum(
-            (c['abs_shap_value'] * (reproductive_multiplier if c.get('feature') in reproductive_parameters else 1.0))
-            for c in clinical_contrib
-            if c.get('impact') == 'negative'
-        )
+        # Weight absences of classic symptoms more heavily when they pull negative
+        symptom_multiplier = 1.75
+        reproductive_multiplier = 1.35
+        clinical_pos = 0.0
+        clinical_neg = 0.0
+        for c in clinical_contrib:
+            feat = c.get('feature')
+            weight = 1.0
+            if feat in clinical_symptoms:
+                weight = symptom_multiplier
+            elif feat in reproductive_parameters:
+                weight = reproductive_multiplier
+            mag = c['abs_shap_value'] * weight
+            if c.get('impact') == 'positive':
+                clinical_pos += mag
+            elif c.get('impact') == 'negative':
+                clinical_neg += mag
 
         ultrasound_pos = sum(c['abs_shap_value'] for c in ultrasound_contrib if c.get('impact') == 'positive')
         ultrasound_neg = sum(c['abs_shap_value'] for c in ultrasound_contrib if c.get('impact') == 'negative')
@@ -633,29 +697,71 @@ def apply_shap_aware_adjustment(probability_percentage, shap_explanation):
         
         if total_weighted > 0:
             protective_ratio = weighted_negative / total_weighted
-            risk_ratio = weighted_positive / total_weighted
             
-            # Strong protective factors from clinical assessment
-            if protective_ratio > 0.55:
-                # Protective factors dominate: significantly reduce probability
-                # Reduced impact (tuned)
-                adjustment_factor = 1.0 - (protective_ratio - 0.55) * 1.15
-                adjusted_probability = probability_percentage * adjustment_factor
-                return adjusted_probability
-            
-            # Strong risk factors from clinical assessment
-            elif risk_ratio > 0.65 and probability_percentage > 45:
-                # Risk factors dominate: increase probability
-                # Reduced impact (tuned)
-                adjustment_factor = 1.0 + (risk_ratio - 0.65) * 0.6
-                adjusted_probability = probability_percentage * adjustment_factor
-                return min(95, adjusted_probability)
+            # Strong protective factors from clinical assessment → reduce score only
+            if protective_ratio > 0.50:
+                adjustment_factor = 1.0 - (protective_ratio - 0.50) * 1.35
+                adjustment_factor = max(0.55, min(1.0, adjustment_factor))
+                return probability_percentage * adjustment_factor
         
         return probability_percentage
         
-    except Exception as e:
+    except Exception:
         return probability_percentage
 
+
+def apply_symptom_absence_adjustment(probability_percentage, df):
+    """
+    When classic PCOS symptom checkboxes are explicitly No (0), pull the score
+    down so Positive is harder to reach without positive symptom evidence.
+    """
+    try:
+        p = float(probability_percentage)
+    except Exception:
+        return probability_percentage
+
+    symptom_fields = (
+        'Weight gain(Y/N)',
+        'hair growth(Y/N)',
+        'Skin darkening (Y/N)',
+        'Hair loss(Y/N)',
+        'Pimples(Y/N)',
+    )
+
+    yes = 0
+    no = 0
+    for col in symptom_fields:
+        if col not in df.columns:
+            continue
+        val = df[col].iloc[0]
+        if pd.isna(val):
+            continue
+        try:
+            num = float(val)
+        except Exception:
+            continue
+        if num == 1:
+            yes += 1
+        elif num == 0:
+            no += 1
+
+    answered = yes + no
+    if answered < 3:
+        return p
+
+    # All/near-all symptoms denied → meaningful dampening toward Negative/Borderline
+    if yes == 0 and no >= 4:
+        factor = 0.78
+    elif yes == 0 and no >= 3:
+        factor = 0.85
+    elif yes == 1 and no >= 3:
+        factor = 0.92
+    elif yes <= 1 and no >= 4:
+        factor = 0.94
+    else:
+        return p
+
+    return float(max(1.0, min(99.0, p * factor)))
 def apply_threshold_aware_smoothing(probability_percentage, smoothing_factor=1.0):
     """
     Threshold-aware smoothing using the Regular User thresholds:
@@ -929,38 +1035,37 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
         debug_info['converted_percentage'] = round(probability_percentage, 2)
         debug_info['smoothing_factor'] = float(smoothing_factor)
         
-        # SYMPTOM ENHANCEMENT: If hormonal tests are missing, enhance prediction based on clinical symptoms
-        # This gives patients without hormone test results a meaningful prediction based on symptoms
+        # Symptom balance:
+        # - Boost slightly only when hormones are mostly missing AND ≥2 symptoms are Yes
+        # - Dampen when symptoms are mostly/explicitly No (reduces false Positive lean)
         hormonal_fields = {'FSH(mIU/mL)', 'LH(mIU/mL)', 'AMH(ng/mL)', 'TSH (mIU/L)', 'PRL(ng/mL)', 'PRG(ng/mL)', 'Vit D3 (ng/mL)'}
         symptom_fields = {'Weight gain(Y/N)', 'hair growth(Y/N)', 'Skin darkening (Y/N)', 'Hair loss(Y/N)', 'Pimples(Y/N)'}
         
-        # Check which hormonal fields are present
         hormonal_present = [col for col in df.columns if col in hormonal_fields and pd.notna(df[col].iloc[0])]
         hormonal_missing_count = len(hormonal_fields) - len(hormonal_present)
         
-        # Count positive PCOS symptoms
         positive_symptoms = 0
+        negative_symptoms = 0
         for col in df.columns:
             if col in symptom_fields:
                 val = df[col].iloc[0]
-                if pd.notna(val) and val == 1:  # Symptom is present (=1)
+                if pd.notna(val) and val == 1:
                     positive_symptoms += 1
+                elif pd.notna(val) and val == 0:
+                    negative_symptoms += 1
         
-        # Apply minimal symptom adjustment (reduce false positives)
         symptom_boost = 0
         if hormonal_missing_count >= 5 and positive_symptoms >= 2:
-            # Very conservative boost - symptoms only slightly increase score
-            # This prevents false positives from symptom-based overconfidence
-            symptom_boost = positive_symptoms * 0.8  # ~1.6% per symptom instead of 1.6% per symptom
+            symptom_boost = positive_symptoms * 0.5  # smaller than before
             probability_percentage = probability_percentage + symptom_boost
             debug_info['symptom_boost_applied'] = True
-            debug_info['positive_symptoms'] = positive_symptoms
             debug_info['symptom_boost_percentage'] = round(symptom_boost, 2)
-            debug_info['reason'] = f'Limited hormonal data. Minimal adjustment (+{positive_symptoms * 0.8:.1f}%) from {positive_symptoms} symptoms.'
         else:
             debug_info['symptom_boost_applied'] = False
-            debug_info['positive_symptoms'] = positive_symptoms
-            debug_info['hormonal_tests_available'] = len(hormonal_present)
+
+        debug_info['positive_symptoms'] = positive_symptoms
+        debug_info['negative_symptoms'] = negative_symptoms
+        debug_info['hormonal_tests_available'] = len(hormonal_present)
         
         # Get SHAP explanation (pass missing_mask and raw_prediction for proper calibration)
         shap_explanation = get_shap_explanation(model, df, raw_prediction, missing_mask)
@@ -985,6 +1090,7 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
             'ultrasound_findings': [],
             'hormonal_markers': [],
             'clinical_symptoms_positive_count': 0,
+            'clinical_symptoms_negative_count': negative_symptoms,
             'ultrasound_findings_present_count': 0,
             'hormonal_markers_present_count': 0
         }
@@ -1024,10 +1130,15 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
                         })
                         priority_contribution_summary['hormonal_markers_present_count'] += 1
         
-        # Apply SHAP-aware calibration: adjust probability based on balance of protective vs risk factors
+        # Apply SHAP-aware calibration: protective-only (no risk inflation)
         probability_percentage = apply_shap_aware_adjustment(probability_percentage, shap_explanation)
         debug_info['shap_adjusted_percentage'] = round(probability_percentage, 2)
 
+        # Explicit No symptoms → dampen Positive lean
+        before_symptom_adj = probability_percentage
+        probability_percentage = apply_symptom_absence_adjustment(probability_percentage, df)
+        debug_info['symptom_absence_adjusted_percentage'] = round(probability_percentage, 2)
+        debug_info['symptom_absence_delta'] = round(probability_percentage - before_symptom_adj, 2)
         # Threshold-aware smoothing (Regular User request). Applied only when smoothing_factor < 1.
         try:
             sf = float(smoothing_factor)
@@ -1115,7 +1226,7 @@ if __name__ == '__main__':
             'error': f'Invalid JSON input: {str(e)}'
         }))
         sys.exit(1)
-    except Exception as e:
+    except Exception as e: 
         print(json.dumps({
             'success': False,
             'error': str(e)
