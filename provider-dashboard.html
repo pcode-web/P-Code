@@ -368,7 +368,7 @@
     </footer>
 
   <!-- Auth Module -->
-  <script src="js/auth.js?v=20260730-dashboard-api"></script>
+  <script src="js/auth.js?v=20260730-cors-cred"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
   <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
   <script>
@@ -637,24 +637,44 @@
     }
 
     /**
-     * Fetch JSON with Render cold-start retries (free tier may spin up 30?60s).
+     * Fetch JSON with Render cold-start retries.
+     * credentials:'include' requires Access-Control-Allow-Credentials: true on Render.
      */
     async function pcodeFetchJson(url, options, retries) {
       const max = typeof retries === "number" ? retries : 3;
       let lastErr = null;
       for (let attempt = 0; attempt <= max; attempt++) {
         try {
-          const fetchFn =
-            typeof auth !== "undefined" && typeof auth.authenticatedFetch === "function"
-              ? auth.authenticatedFetch.bind(auth)
-              : fetch;
+          const token =
+            (typeof auth !== "undefined" && auth.token) ||
+            sessionStorage.getItem("PMOS_auth_token") ||
+            localStorage.getItem("PMOS_auth_token") ||
+            "";
+          const baseHeaders = {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          };
+          if (token) {
+            baseHeaders.Authorization = "Bearer " + token;
+          }
+          const merged = Object.assign({}, options || {});
+          merged.credentials = "include";
+          merged.headers = Object.assign(
+            {},
+            baseHeaders,
+            typeof auth !== "undefined" && typeof auth.getAuthHeaders === "function"
+              ? auth.getAuthHeaders()
+              : {},
+            merged.headers || {}
+          );
+
           const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
           const timer = controller
             ? setTimeout(function () { controller.abort(); }, 60000)
             : null;
-          const resp = await fetchFn(
+          const resp = await fetch(
             url,
-            Object.assign({}, options || {}, controller ? { signal: controller.signal } : {})
+            Object.assign({}, merged, controller ? { signal: controller.signal } : {})
           );
           if (timer) clearTimeout(timer);
           const text = await resp.text();
@@ -686,25 +706,13 @@
       if (typeof auth === "undefined" || !auth.isAuthenticated()) {
         return;
       }
-      const headers =
-        typeof auth.getAuthHeaders === "function"
-          ? auth.getAuthHeaders()
-          : { "Content-Type": "application/json" };
-      if (!headers.Authorization || !String(headers.Authorization).replace(/^Bearer\s+/i, "").trim()) {
-        const token =
-          sessionStorage.getItem("PMOS_auth_token") || localStorage.getItem("PMOS_auth_token") || "";
-        if (token) headers.Authorization = "Bearer " + token;
-      }
-      if (!headers.Authorization) {
-        return;
-      }
 
       try {
         const url = await pcodeDashboardApiUrl("get_patients.php");
-        const data = await pcodeFetchJson(url + (url.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now(), {
-          method: "GET",
-          headers: headers,
-        });
+        const data = await pcodeFetchJson(
+          url + (url.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now(),
+          { method: "GET" }
+        );
         const patients = (data && data.data) || [];
         pcodeDashboardPatientsCache = patients;
 
@@ -712,7 +720,6 @@
         const PMOSEl = document.getElementById("PMOS-cases");
         if (totalEl) totalEl.textContent = String(patients.length);
         if (PMOSEl) {
-          // Count completed diagnoses (non-pending) ? includes positive PCOS/PMOS cases
           PMOSEl.textContent = String(
             patients.filter(function (p) {
               return p.overall_diagnosis && p.overall_diagnosis !== "pending";

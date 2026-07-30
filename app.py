@@ -57,64 +57,76 @@ logger = logging.getLogger("pcode")
 app = Flask(__name__)
 
 # --- CORS --------------------------------------------------------------------
-# Explicit Firebase hosts + pattern fallbacks (Render → browser preflight)
-_default_origin_patterns = [
-    "https://pcode.web.app",
+# Firebase + local origins. credentials=True requires an exact echoed Origin
+# (never "*") when the browser sends credentials: 'include'.
+_ALLOWED_ORIGINS = [
     "https://project-a3473fa6-d957-4693-96a.web.app",
-    r"^https://.*\.web\.app$",
-    r"^https://.*\.firebaseapp.com$",
-    r"^https://.*$",
-    r"^http://localhost(:\d+)?$",
-    r"^http://127\.0\.0\.1(:\d+)?$",
+    "https://pcode.web.app",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost",
+    "http://127.0.0.1",
 ]
 _extra = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
+_ALLOWED_ORIGINS = list(dict.fromkeys(_extra + _ALLOWED_ORIGINS))
+
+
+def _cors_origin_allowed(origin: str) -> bool:
+    if not origin:
+        return False
+    if origin in _ALLOWED_ORIGINS:
+        return True
+    # Keep Firebase preview / custom web.app hosts working
+    if re.match(r"^https://[a-z0-9-]+\.web\.app$", origin, re.I):
+        return True
+    if re.match(r"^https://[a-z0-9-]+\.firebaseapp\.com$", origin, re.I):
+        return True
+    if re.match(r"^http://localhost(:\d+)?$", origin):
+        return True
+    if re.match(r"^http://127\.0\.0\.1(:\d+)?$", origin):
+        return True
+    return False
+
+
 CORS(
     app,
     resources={
         r"/*": {
-            "origins": _extra + _default_origin_patterns,
-            "methods": ["GET", "POST", "OPTIONS"],
+            "origins": _ALLOWED_ORIGINS
+            + [
+                r"^https://[a-z0-9-]+\.web\.app$",
+                r"^https://[a-z0-9-]+\.firebaseapp\.com$",
+                r"^http://localhost(:\d+)?$",
+                r"^http://127\.0\.0\.1(:\d+)?$",
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "expose_headers": ["Content-Type"],
+            "supports_credentials": True,
             "max_age": 86400,
         }
     },
-    supports_credentials=False,
+    supports_credentials=True,
 )
 
 
 @app.after_request
 def _ensure_cors_headers(response):
-    """Guarantee CORS on every response (including 4xx) for the Firebase frontend."""
+    """Echo allowed Origin + Allow-Credentials for Firebase credentialed fetches."""
     origin = request.headers.get("Origin", "")
-    allow = False
-    if origin:
-        if origin in _extra or origin in (
-            "https://pcode.web.app",
-            "https://project-a3473fa6-d957-4693-96a.web.app",
-        ):
-            allow = True
-        elif re.match(r"^https://.*\.web\.app$", origin):
-            allow = True
-        elif re.match(r"^https://.*\.firebaseapp.com$", origin):
-            allow = True
-        elif re.match(r"^https://", origin):
-            allow = True
-        elif re.match(r"^http://localhost(:\d+)?$", origin):
-            allow = True
-        elif re.match(r"^http://127\.0\.0\.1(:\d+)?$", origin):
-            allow = True
-    if allow:
+    if _cors_origin_allowed(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Vary"] = "Origin"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     return response
 
 
 @app.route("/api/<path:_any>", methods=["OPTIONS"])
 @app.route("/<path:_any>", methods=["OPTIONS"])
 def _cors_preflight(_any: str = ""):
+    # after_request attaches ACAO / ACAC for allowed Firebase origins
     return ("", 204)
 
 # --- ML model paths ----------------------------------------------------------
