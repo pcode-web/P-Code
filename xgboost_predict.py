@@ -699,9 +699,9 @@ def apply_shap_aware_adjustment(probability_percentage, shap_explanation):
             protective_ratio = weighted_negative / total_weighted
             
             # Strong protective factors from clinical assessment → reduce score only
-            if protective_ratio > 0.50:
-                adjustment_factor = 1.0 - (protective_ratio - 0.50) * 1.35
-                adjustment_factor = max(0.55, min(1.0, adjustment_factor))
+            if protective_ratio > 0.42:
+                adjustment_factor = 1.0 - (protective_ratio - 0.42) * 1.65
+                adjustment_factor = max(0.42, min(1.0, adjustment_factor))
                 return probability_percentage * adjustment_factor
         
         return probability_percentage
@@ -713,7 +713,7 @@ def apply_shap_aware_adjustment(probability_percentage, shap_explanation):
 def apply_symptom_absence_adjustment(probability_percentage, df):
     """
     When classic PCOS symptom checkboxes are explicitly No (0), pull the score
-    down so Positive is harder to reach without positive symptom evidence.
+    down hard so Positive is difficult without positive symptom evidence.
     """
     try:
         p = float(probability_percentage)
@@ -749,19 +749,42 @@ def apply_symptom_absence_adjustment(probability_percentage, df):
     if answered < 3:
         return p
 
-    # All/near-all symptoms denied → meaningful dampening toward Negative/Borderline
-    if yes == 0 and no >= 4:
-        factor = 0.78
+    # Stronger Negative pull when symptoms are denied
+    if yes == 0 and no >= 5:
+        factor, subtract = 0.64, 10.0
+    elif yes == 0 and no >= 4:
+        factor, subtract = 0.68, 9.0
     elif yes == 0 and no >= 3:
-        factor = 0.85
+        factor, subtract = 0.74, 8.0
     elif yes == 1 and no >= 3:
-        factor = 0.92
+        factor, subtract = 0.84, 5.0
     elif yes <= 1 and no >= 4:
-        factor = 0.94
+        factor, subtract = 0.88, 3.0
     else:
         return p
 
-    return float(max(1.0, min(99.0, p * factor)))
+    # Regular cycle (0) adds a little more Negative pull when symptoms are sparse
+    cycle_col = 'Cycle(R/I)'
+    if cycle_col in df.columns and yes <= 1:
+        try:
+            cycle_val = float(df[cycle_col].iloc[0])
+            if not np.isnan(cycle_val) and cycle_val == 0:
+                factor *= 0.94
+                subtract += 2.0
+        except Exception:
+            pass
+
+    adjusted = (p * factor) - subtract
+    # Cap: with zero Yes symptoms, stay at most mid-Borderline / Negative band
+    if yes == 0 and no >= 3:
+        adjusted = min(adjusted, 58.0)
+    if yes == 0 and no >= 4:
+        adjusted = min(adjusted, 48.0)
+    # Keep a small floor so sparse No-symptom cases don't collapse to ~0
+    if yes == 0 and answered >= 4:
+        adjusted = max(adjusted, 12.0)
+
+    return float(max(1.0, min(99.0, adjusted)))
 def apply_threshold_aware_smoothing(probability_percentage, smoothing_factor=1.0):
     """
     Threshold-aware smoothing using the Regular User thresholds:
@@ -1055,14 +1078,13 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
                     negative_symptoms += 1
         
         symptom_boost = 0
+        # No positive boost from sparse symptoms — reduces false Positive lean
+        debug_info['symptom_boost_applied'] = False
+        debug_info['symptom_boost_percentage'] = 0
         if hormonal_missing_count >= 5 and positive_symptoms >= 2:
-            symptom_boost = positive_symptoms * 0.5  # smaller than before
-            probability_percentage = probability_percentage + symptom_boost
-            debug_info['symptom_boost_applied'] = True
-            debug_info['symptom_boost_percentage'] = round(symptom_boost, 2)
-        else:
-            debug_info['symptom_boost_applied'] = False
-
+            debug_info['symptom_boost_skipped'] = (
+                f'{positive_symptoms} symptoms present but boost disabled for Negative pull'
+            )
         debug_info['positive_symptoms'] = positive_symptoms
         debug_info['negative_symptoms'] = negative_symptoms
         debug_info['hormonal_tests_available'] = len(hormonal_present)
