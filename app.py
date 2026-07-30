@@ -1910,7 +1910,9 @@ def _clinical_validity_evaluate(payload: dict) -> dict[str, Any]:
 
 def _minimal_pdf_bytes(title: str, lines: list[str]) -> bytes:
     """Tiny single-page PDF without external deps (Report export fallback)."""
-    content_lines = [f"BT /F1 12 Tf 50 750 Td ({title.replace('(', '\\(').replace(')', '\\)')}) Tj"]
+    # Process string replacements BEFORE inserting into f-string
+    clean_title = title.replace('(', '\\(').replace(')', '\\)')
+    content_lines = [f"BT /F1 12 Tf 50 750 Td ({clean_title}) Tj"]
     y = 720
     for line in lines[:40]:
         safe = re.sub(r"[^\x20-\x7E]", "?", str(line))[:90].replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
