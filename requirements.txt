@@ -21,9 +21,12 @@ shap>=0.44.0,<0.50
 scipy>=1.11.0,<2
 joblib>=1.3.0,<2
 
-# Imaging (CNN path) — hosted Render uses TFLite (low RAM)
-# Linux/Render: tflite-runtime only. Windows/dev: full TensorFlow (includes tf.lite).
-tflite-runtime>=2.14.0; platform_system != "Windows"
-tensorflow>=2.15.0,<2.21; platform_system == "Windows"
+# Imaging (CNN path) — hosted Render uses LiteRT (low RAM)
+# Do NOT use legacy tflite-runtime on Linux: it lacks FULLY_CONNECTED v12
+# emitted by TensorFlow ≥ 2.16 converters.
+# ai-edge-litert: Linux/macOS, Python 3.9–3.12 (Render should use 3.12).
+# Windows/dev: full TensorFlow (includes tf.lite for conversion + inference).
+ai-edge-litert>=1.2.0,<3; platform_system != "Windows"
+tensorflow>=2.15.0,<2.22; platform_system == "Windows"
 Pillow>=10.0.0,<12
 opencv-python-headless>=4.8.0,<5

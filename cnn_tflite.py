@@ -5,13 +5,20 @@ Converts ``pcos_detection_modelv4.keras`` (MobileNetV2) to an optimized
 ``.tflite`` artifact for constrained hosts (e.g. ≤512 MB RAM).
 
 Production inference dependencies (install only these on the server):
-  - tflite-runtime   # preferred; avoids full TensorFlow (~GBs)
+  - ai-edge-litert   # required on Render; supports FULLY_CONNECTED v12+
   - pillow
   - numpy
+
+Do not install legacy ``tflite-runtime`` on the server — it fails on models
+converted with TensorFlow ≥ 2.16 (FULLY_CONNECTED opcode v12).
 
 Conversion (dev machine only) still needs full TensorFlow:
   - tensorflow
   - pillow / numpy (optional for smoke tests)
+
+Note: converting with TensorFlow ≥ 2.16 often emits FULLY_CONNECTED v12.
+Match the server interpreter (ai-edge-litert) or convert with TF ≤ 2.15.
+Render should use Python 3.12 (see runtime.txt).
 
 Usage
 -----
@@ -52,9 +59,13 @@ def convert_keras_to_tflite(
     """
     Load a Keras ``.keras`` model and export an optimized TFLite flatbuffer.
 
-    Uses ``tf.lite.Optimize.DEFAULT``, which typically applies post-training
-    weight quantization (FP16 / dynamic-range INT8 where supported) to shrink
-    size and reduce peak RAM vs. the full Keras/TF runtime.
+    Uses ``tf.lite.Optimize.DEFAULT`` plus ``TFLITE_BUILTINS`` so the graph
+    stays on standard Lite ops (no SELECT_TF_OPS).
+
+    Important: op *versions* still follow the TensorFlow used to convert.
+    TF 2.16+ often emits FULLY_CONNECTED v12. Match the server interpreter
+    (``ai-edge-litert`` / recent TFLite) or convert with TensorFlow ≤ 2.15
+    if you must stay on older ``tflite-runtime``.
 
     Returns
     -------
@@ -78,15 +89,19 @@ def convert_keras_to_tflite(
     tflite_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"[convert] Loading Keras model: {keras_path}")
+    print(f"[convert] TensorFlow {tf.__version__}")
     model = tf.keras.models.load_model(keras_path, compile=False)
 
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    # Restrict to widely supported standard TFLite ops (no Flex / SELECT_TF_OPS).
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
+    converter.allow_custom_ops = False
     if optimize:
         # DEFAULT ≈ weight quantization (dynamic range / FP16-friendly path).
         # Keeps float I/O so preprocess stays simple (0–1 float32).
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-    print("[convert] Converting with Optimize.DEFAULT …")
+    print("[convert] Converting with TFLITE_BUILTINS + Optimize.DEFAULT …")
     tflite_bytes = converter.convert()
 
     tflite_path.write_bytes(tflite_bytes)
@@ -102,6 +117,12 @@ def convert_keras_to_tflite(
     print(f"  Keras  : {_mb(keras_size)}  ({keras_path.name})")
     print(f"  TFLite : {_mb(tflite_size)}  ({tflite_path.name})")
     print(f"  Ratio  : {ratio:.1f}% of original size")
+    if tuple(int(x) for x in tf.__version__.split(".")[:2]) >= (2, 16):
+        print(
+            "[convert] Note: TF ≥ 2.16 may emit FULLY_CONNECTED v12. "
+            "Use ai-edge-litert (or TF ≥ 2.17 Lite) on the server, "
+            "or reconvert with TensorFlow 2.15 for older tflite-runtime."
+        )
 
     # Free Keras graph ASAP so conversion doesn't leave a large footprint.
     del model
@@ -114,39 +135,66 @@ def convert_keras_to_tflite(
 
 
 # =============================================================================
-# 2) LIGHTWEIGHT INFERENCE — production (prefer tflite-runtime)
+# 2) LIGHTWEIGHT INFERENCE — production (prefer LiteRT)
 # =============================================================================
-def _load_interpreter_api():
+def _interpreter_candidates():
     """
-    Prefer ``tflite_runtime`` (small footprint). Fall back to ``tensorflow.lite``.
+    Yield (name, Interpreter) backends in preference order.
+    Legacy ``tflite_runtime`` is last — it often lacks FULLY_CONNECTED v12.
     """
-    try:
-        from tflite_runtime.interpreter import Interpreter  # type: ignore
+    tried = []
 
-        return Interpreter
+    try:
+        from ai_edge_litert.interpreter import Interpreter  # type: ignore
+
+        yield "ai_edge_litert", Interpreter
+        tried.append("ai_edge_litert")
     except ImportError:
         pass
+
     try:
         from tensorflow.lite import Interpreter  # type: ignore
 
-        return Interpreter
+        yield "tensorflow.lite", Interpreter
+        tried.append("tensorflow.lite")
     except ImportError:
         pass
+
     try:
         from tensorflow.lite.python.interpreter import Interpreter  # type: ignore
 
-        return Interpreter
-    except ImportError as exc:
+        yield "tensorflow.lite.python", Interpreter
+        tried.append("tensorflow.lite.python")
+    except ImportError:
+        pass
+
+    try:
+        from tflite_runtime.interpreter import Interpreter  # type: ignore
+
+        yield "tflite_runtime", Interpreter
+        tried.append("tflite_runtime")
+    except ImportError:
+        pass
+
+    if not tried:
         raise ImportError(
-            "No TFLite Interpreter found. On the production server install:\n"
-            "  pip install tflite-runtime pillow numpy\n"
-            "(or tensorflow if tflite-runtime wheels are unavailable for your platform)"
-        ) from exc
+            "No TFLite/LiteRT Interpreter found. On the production server install:\n"
+            "  pip install 'ai-edge-litert>=1.2.0' pillow numpy\n"
+            "(Render must use Python 3.9–3.12; see runtime.txt)"
+        )
+
+
+def _load_interpreter_api():
+    """Return the first available Interpreter class (prefer LiteRT)."""
+    for _name, Interpreter in _interpreter_candidates():
+        return Interpreter
+    raise ImportError("No TFLite Interpreter available")
 
 
 _INTERPRETER: Any = None
 _INPUT_DETAILS: Any = None
 _OUTPUT_DETAILS: Any = None
+_INTERPRETER_BACKEND: str = ""
 
 
 def load_tflite_interpreter(
@@ -157,10 +205,10 @@ def load_tflite_interpreter(
     """
     Create (or reuse) a single TFLite Interpreter.
 
+    Tries LiteRT first, then TensorFlow Lite, then legacy tflite-runtime.
     ``num_threads=1`` keeps RAM/CPU predictable on small VMs.
-    Allocates tensors once; callers should reuse the global instance.
     """
-    global _INTERPRETER, _INPUT_DETAILS, _OUTPUT_DETAILS
+    global _INTERPRETER, _INPUT_DETAILS, _OUTPUT_DETAILS, _INTERPRETER_BACKEND
 
     tflite_path = Path(tflite_path).resolve()
     if not tflite_path.is_file():
@@ -172,23 +220,31 @@ def load_tflite_interpreter(
     if _INTERPRETER is not None:
         return _INTERPRETER
 
-    Interpreter = _load_interpreter_api()
-    # Cap arena growth: 1 thread is enough for single-request Flask workers.
-    try:
-        interpreter = Interpreter(
-            model_path=str(tflite_path),
-            num_threads=max(1, int(num_threads)),
-        )
-    except TypeError:
-        # Older tflite-runtime builds may not accept num_threads=
-        interpreter = Interpreter(model_path=str(tflite_path))
+    errors: list[str] = []
+    for name, Interpreter in _interpreter_candidates():
+        try:
+            try:
+                interpreter = Interpreter(
+                    model_path=str(tflite_path),
+                    num_threads=max(1, int(num_threads)),
+                )
+            except TypeError:
+                interpreter = Interpreter(model_path=str(tflite_path))
+            interpreter.allocate_tensors()
+            _INTERPRETER = interpreter
+            _INPUT_DETAILS = interpreter.get_input_details()
+            _OUTPUT_DETAILS = interpreter.get_output_details()
+            _INTERPRETER_BACKEND = name
+            print(f"[cnn_tflite] Using interpreter backend: {name}")
+            return interpreter
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"{name}: {type(exc).__name__}: {exc}")
 
-    interpreter.allocate_tensors()
-    _INTERPRETER = interpreter
-    _INPUT_DETAILS = interpreter.get_input_details()
-    _OUTPUT_DETAILS = interpreter.get_output_details()
-    return interpreter
-
+    raise RuntimeError(
+        "Failed to load CNN TFLite model with any interpreter backend. "
+        "Install ai-edge-litert on the server (Python 3.9–3.12). Details: "
+        + " | ".join(errors)
+    )
 
 def preprocess_image(
     image_path: Union[str, Path],
