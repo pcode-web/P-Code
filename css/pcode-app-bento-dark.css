@@ -3342,23 +3342,32 @@ body.pcode-app-bento #patient-modal .text-gray-800 {
 
 @media (max-width: 767px) {
   body.pcode-app-bento #patient-modal.modal {
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 2.5vh 2.5vw !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    padding: 0 !important;
   }
 
   body.pcode-app-bento #patient-modal .modal-content,
   body.pcode-app-bento #patient-modal .pcode-patient-modal-shell {
-    width: 95% !important;
-    max-width: 95vw !important;
-    max-height: 90vh !important;
-    max-height: 90dvh !important;
-    height: auto !important;
-    margin: 0 auto !important;
-    border-radius: 20px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    /* Pin height so flex footer stays on-screen (height:auto was clipping Next/Previous) */
+    height: 100dvh !important;
+    height: 100vh !important;
+    max-height: 100dvh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 1rem 1rem 0 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
   }
 
   body.pcode-app-bento #patient-modal .pcode-patient-modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
     padding-top: 1rem !important;
@@ -3367,9 +3376,12 @@ body.pcode-app-bento #patient-modal .text-gray-800 {
 
   body.pcode-app-bento #patient-modal .pcode-patient-modal-footer,
   body.pcode-app-bento #patient-modal #modal-footer-section {
-    padding: 0.75rem 1rem !important;
-    flex-wrap: wrap;
-    gap: 0.75rem !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 0.5rem !important;
+    z-index: 20 !important;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
   }
 }
 
