@@ -339,7 +339,14 @@
     if (validation.anomaly_passed === false || validation.passed === false) return true;
     if (validation.is_ultrasound === false) return true;
     var maha = imagingData.mahalanobis;
-    if (maha && maha.available === true && maha.reliable === false) return true;
+    if (
+      maha &&
+      maha.available === true &&
+      maha.reliable === false &&
+      maha.calibration_mismatch !== true
+    ) {
+      return true;
+    }
     return false;
   }
 
@@ -347,20 +354,25 @@
     var validation = (imagingData && imagingData.ultrasound_validation) || {};
     return (
       validation.message ||
-      'The system could not confirm this upload as a valid pelvic ultrasound scan. Diagnosis results cannot be saved while the image is unreliable. Please upload a valid pelvic ultrasound image and re-run imaging analysis.'
+      'The system could not confirm this upload as a valid pelvic ultrasound scan. Imaging AI results will not be saved. You can still save clinical metrics/results, or upload a valid pelvic ultrasound and re-run imaging analysis.'
     );
   }
 
   /**
-   * Hard-block save when imaging is unreliable.
+   * Gate save when imaging is unreliable.
+   * Clinical-only saves are always allowed when hasClinical / allowClinicalOnly is set.
    * @returns {boolean} true if save may proceed
    */
   function assertImagingReliableForSave(imagingData, options) {
     var opts = options || {};
     if (!imagingIsUnreliable(imagingData)) return true;
+    // Clinical-only saves are allowed even when ultrasound is pending/unreliable.
+    if (opts.allowClinicalOnly || opts.hasClinical) return true;
     if (!opts.quiet) {
       window.alert(
-        'Save blocked — unreliable ultrasound image\n\n' + getUnreliableImagingSaveMessage(imagingData)
+        'Cannot save imaging-only results — unreliable ultrasound image\n\n' +
+          getUnreliableImagingSaveMessage(imagingData) +
+          '\n\nComplete clinical analysis to save clinical metrics only.'
       );
     }
     return false;
@@ -427,11 +439,11 @@
       '<span class="font-semibold">Ultrasound image not confirmed:</span> ' +
       (validation.message ||
         'The system could not confirm this upload as a valid pelvic ultrasound scan.') +
-      ' Imaging AI confidence may be unreliable. Diagnosis results cannot be saved until a valid pelvic ultrasound image is uploaded and re-analyzed.' +
+      ' Imaging AI confidence may be unreliable and will be excluded from Save. Clinical metrics can still be saved.' +
       '</p>';
   }
 
-  /** @deprecated Prefer assertImagingReliableForSave — save is now hard-blocked. */
+  /** @deprecated Prefer assertImagingReliableForSave. */
   function confirmSaveIfNonUltrasoundSync(imagingData) {
     return assertImagingReliableForSave(imagingData, { quiet: false });
   }

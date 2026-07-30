@@ -585,7 +585,14 @@ def _attach_mahalanobis_validation(
             },
         }
     else:
-        maha_result = score_features(features, mu=mu, inv_cov=inv_cov, meta=meta)
+        # soft_calibration_mismatch: TFLite GAP ≠ Keras feature space the pickles expect
+        maha_result = score_features(
+            features,
+            mu=mu,
+            inv_cov=inv_cov,
+            meta=meta,
+            soft_calibration_mismatch=True,
+        )
     image_validation = image_validation_payload(us_check, maha_result)
     return us_check, maha_result, image_validation
 

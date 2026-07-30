@@ -126,8 +126,23 @@ def mahalanobis_reliability(dist, df, alpha: float = 0.999):
         return bool(dist <= upper), None, upper, None
 
 
-def score_features(features, mu=None, inv_cov=None, meta=None) -> dict:
-    """Build a cnn_predict-compatible ``mahalanobis`` result dict from a feature vector."""
+def score_features(
+    features,
+    mu=None,
+    inv_cov=None,
+    meta=None,
+    *,
+    soft_calibration_mismatch: bool = False,
+    domain_shift_ratio: float = 6.0,
+) -> dict:
+    """Build a cnn_predict-compatible ``mahalanobis`` result dict from a feature vector.
+
+    soft_calibration_mismatch:
+      When True (hosted TFLite path), distances far above the chi-square threshold
+      are treated as a Keras↔TFLite feature-space mismatch. Mahalanobis is then
+      marked unavailable for hard gating so ultrasound-likeness can decide — matching
+      prior local Keras behavior where features matched these pickles.
+    """
     if mu is None or inv_cov is None:
         mu, inv_cov, meta = try_load_mahalanobis_params()
     meta = dict(meta or {})
@@ -158,7 +173,7 @@ def score_features(features, mu=None, inv_cov=None, meta=None) -> dict:
         reliable, _lo, upper, p_value = mahalanobis_reliability(
             dist, expected_dim, alpha=0.999
         )
-        return {
+        result = {
             "distance": dist,
             "feature_dim": expected_dim,
             "threshold": upper,
@@ -168,6 +183,34 @@ def score_features(features, mu=None, inv_cov=None, meta=None) -> dict:
             "available": True,
             "meta": meta,
         }
+
+        # TFLite quantized GAP activations are often far from the Keras feature
+        # space used to fit mahalanobis_mu / mahalanobis_inv_cov. Distances then
+        # land many× above the chi-square cutoff for *all* images (including real US).
+        if (
+            soft_calibration_mismatch
+            and not reliable
+            and upper is not None
+            and float(upper) > 0
+            and float(dist) > float(upper) * float(domain_shift_ratio)
+        ):
+            result["available"] = False
+            result["calibration_mismatch"] = True
+            result["anomaly_detected"] = False
+            result["gating"] = "disabled_tflite_feature_domain_mismatch"
+            result["meta"] = {
+                **meta,
+                "calibration_mismatch": True,
+                "distance": dist,
+                "threshold": upper,
+                "domain_shift_ratio": float(domain_shift_ratio),
+                "note": (
+                    "Mahalanobis pickles were fit on Keras features; hosted TFLite "
+                    "GAP features are out of that space. Hard gating falls back to "
+                    "ultrasound-likeness until TFLite-calibrated pickles are provided."
+                ),
+            }
+        return result
     except Exception as exc:  # noqa: BLE001
         return {
             "available": False,
