@@ -1,5 +1,4 @@
 # Python / Render ML API
-runtime.txt
 .python-version
 __pycache__/
 *.py[cod]
