@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -50,7 +50,7 @@
             flex-shrink: 0;
             height: auto;
         }
-        /* Mobile drawer ‚Äî fixed; must not consume layout height in the page flow */
+        /* Mobile drawer ù fixed; must not consume layout height in the page flow */
         #mobile-menu.mobile-menu,
         #menu-overlay.mobile-menu-overlay {
             position: fixed !important;
@@ -168,7 +168,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Enhanced Modal shell ‚Äî glass styles from pcode-app-bento-dark.css */
+        /* Enhanced Modal shell ù glass styles from pcode-app-bento-dark.css */
         .modal-content {
             max-width: 900px;
             width: 90%;
@@ -241,7 +241,7 @@
             cursor: pointer;
         }
 
-        /* Unified footer height ‚Äî page footer only (patient modal has its own rules) */
+        /* Unified footer height ù page footer only (patient modal has its own rules) */
         footer:not(#modal-footer-section) {
             min-height: 64px;
             padding: 0 !important;
@@ -329,7 +329,7 @@
             color: rgba(200, 196, 210, 0.92);
         }
 
-        /* Checkbox size ‚Äî checkmark drawing is in pcode-app-bento-dark.css */
+        /* Checkbox size ù checkmark drawing is in pcode-app-bento-dark.css */
         #patient-modal input[type="checkbox"] {
             width: 18px;
             height: 18px;
@@ -365,9 +365,9 @@
             --tw-gradient-to: rgb(255 251 235 / var(--tw-bg-opacity));
         }
 
-        /* Patient modal stepper ‚Äî see pcode-app-bento-dark.css (.pcode-step-glass) */
+        /* Patient modal stepper ù see pcode-app-bento-dark.css (.pcode-step-glass) */
 
-        /* Add Patient modal ‚Äî scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
+        /* Add Patient modal ù scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
         #patient-modal .modal-content {
             max-height: 90vh;
             max-height: 90dvh;
@@ -412,7 +412,7 @@
             display: none;
         }
 
-        /* Patient table ‚Äî fixed layout, centered cells (desktop/tablet) */
+        /* Patient table ù fixed layout, centered cells (desktop/tablet) */
         table.patients-data-table {
             table-layout: fixed;
             width: 100%;
@@ -555,7 +555,7 @@
   <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
   <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260726-lightmetrics">
-  <!-- Patients light-mode: gray text/borders ‚Üí black (dark mode untouched) -->
+  <!-- Patients light-mode: gray text/borders ? black (dark mode untouched) -->
   <style id="pcode-patients-light-readability">
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .gradient-bg .hero-title,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .gradient-bg h1,
@@ -680,7 +680,7 @@
       max-width: none !important;
     }
 
-    /* Keep semantic Positive / Borderline colors ‚Äî deeper opaque in light */
+    /* Keep semantic Positive / Borderline colors ù deeper opaque in light */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body span.bg-amber-100,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--borderline,
     html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body span.bg-amber-100 {
@@ -804,7 +804,7 @@
       background: #991b1b !important;
     }
 
-    /* Sidebar / mobile drawer ‚Äî black text in light mode */
+    /* Sidebar / mobile drawer ù black text in light mode */
     html.pcode-app-bento-root:not(.dark) #mobile-menu,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
@@ -845,7 +845,7 @@
       border-radius: 0.5rem !important;
     }
 
-    /* Sidebar ‚Äî dark mode: white (not gray) profile + theme labels */
+    /* Sidebar ù dark mode: white (not gray) profile + theme labels */
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-role,
     html.pcode-app-bento-root.dark #mobile-menu .mobile-nav-links a,
@@ -861,7 +861,7 @@
       opacity: 1 !important;
     }
 
-    /* ---- Add Patient modal ‚Äî light chrome (beats unscoped dark bento rules) ---- */
+    /* ---- Add Patient modal ù light chrome (beats unscoped dark bento rules) ---- */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__top,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__stepper-band,
@@ -1427,7 +1427,7 @@
         <!-- Pagination (desktop table + mobile cards share state) -->
         <nav id="patients-pagination" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6" aria-label="Patient list pagination">
             <p class="pcode-pagination-status m-0 text-sm text-gray-700">
-                Showing <span id="showing-start">1</span>‚Äì<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
+                Showing <span id="showing-start">1</span>ù<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
             </p>
             <div class="flex gap-2 shrink-0" id="page-numbers">
                 <button type="button" id="prev-page" class="pcode-pagination-btn" aria-label="Previous page" disabled>Previous</button>
@@ -1519,7 +1519,7 @@
                 </div>
             </div>
 
-            <!-- Form body ‚Äî independent scroll (header + footer pinned) -->
+            <!-- Form body ù independent scroll (header + footer pinned) -->
             <div id="patient-modal-body" class="pcode-patient-modal-body flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4 md:px-6 md:py-5 scrollbar-thin">
             <form id="add-patient-form" class="min-h-0 w-full">
                 <!-- STEP 1: Personal Info -->
@@ -1601,7 +1601,7 @@
                             <div id="patient-weight-host" class="pcode-metric-host col-span-1"></div>
                             <input type="hidden" id="patient-weight" name="patient-weight">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">BMI (kg/m¬≤)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">BMI (kg/mù)</label>
                                 <input type="number" id="patient-bmi" readonly placeholder="Auto" step="0.1" class="input-medical bg-gray-50 text-gray-600">
                             </div>
                         </div>
@@ -1696,11 +1696,11 @@
                                 <input type="number" id="vit-d3-level" step="0.1" placeholder="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">I Œ≤-HCG (mIU/mL)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">I ù-HCG (mIU/mL)</label>
                                 <input type="number" id="beta-hcg-i" step="0.1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">II Œ≤-HCG (mIU/mL)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">II ù-HCG (mIU/mL)</label>
                                 <input type="number" id="beta-hcg-ii" step="0.1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
@@ -1852,7 +1852,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 <p class="text-sm font-semibold text-gray-800 mb-0.5">Drop image or click to upload</p>
-                                <p class="text-xs text-gray-500 mb-3">JPG, PNG ‚Ä¢ Max 10MB</p>
+                                <p class="text-xs text-gray-500 mb-3">JPG, PNG ù Max 10MB</p>
                             </div>
                             <div id="image-preview-section" class="hidden">
                                 <p class="text-sm font-semibold text-gray-800 mb-3">Image Preview</p>
@@ -1886,7 +1886,7 @@
                         <div class="pcode-history-panel__header">
                             <div>
                                 <h3 id="patient-diagnosis-history-title" class="pcode-history-panel__title">Diagnosis History</h3>
-                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0‚Äì54% Negative ¬∑ 55‚Äì74% Borderline ¬∑ ‚â•75% Positive).</p>
+                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0ù54% Negative ù 55ù74% Borderline ù =75% Positive).</p>
                             </div>
                             <span id="patient-diagnosis-history-count" class="pcode-history-panel__count" aria-live="polite"></span>
                         </div>
@@ -1907,7 +1907,7 @@
                         rows="12"
                         maxlength="8000"
                         class="form-control w-full min-h-[14rem] resize-y"
-                        placeholder="e.g. Lifestyle counseling, lab follow-up, medication review, return visit timing, referral‚Ä¶"
+                        placeholder="e.g. Lifestyle counseling, lab follow-up, medication review, return visit timing, referralù"
                     ></textarea>
                     <p class="mt-2 text-xs text-white/40">Optional. Click Save Patient to store these notes with the record and include them in the PDF report.</p>
                 </div>
@@ -1918,7 +1918,7 @@
             <div id="modal-footer-section" class="clinical-stepper-footer pcode-patient-modal-footer flex-shrink-0 border-t border-white/[0.06] p-3 sm:p-5 bg-white/[0.02] backdrop-blur-xl rounded-b-lg z-10">
                 <div class="clinical-stepper-footer__nav pcode-patient-modal-footer__nav w-full">
                     <button id="prev-add-btn" type="button" onclick="goToAddPatientStep(currentAddPatientStep - 1)" class="pcode-btn-secondary btn-ghost-glass clinical-stepper-btn disabled:opacity-50 disabled:cursor-not-allowed">
-                        ‚Üê Previous
+                        ? Previous
                     </button>
                     <p class="pcode-patient-footer-step text-sm font-medium" id="footer-step-info">Step 1 of 5: Personal Info</p>
                     <div id="footer-action-buttons" class="pcode-patient-footer-actions">
@@ -1946,11 +1946,11 @@
                 <dl class="pcode-delete-modal__meta">
                     <div>
                         <dt>Patient name</dt>
-                        <dd id="delete-patient-name">‚Äî</dd>
+                        <dd id="delete-patient-name">ù</dd>
                     </div>
                     <div>
                         <dt>Patient ID</dt>
-                        <dd id="delete-patient-id">‚Äî</dd>
+                        <dd id="delete-patient-id">ù</dd>
                     </div>
                 </dl>
             </div>
@@ -1985,7 +1985,7 @@
                 
                 <div class="space-y-3">
                     <button onclick="goToRegister()" class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-purple-800 transition-colors shadow-md">
-                        üìù Click Here to Register
+                        ?? Click Here to Register
                     </button>
                     
                     <button onclick="closeGuestRegistrationModal()" class="w-full px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
@@ -2006,7 +2006,7 @@
     </footer>
 
     <!-- Auth Module -->
-    <script src="js/auth.js?v=20260730-corsfix"></script>
+    <script src="js/auth.js?v=20260730-patients-api"></script>
     <script src="js/pcode-form-guard.js?v=20260708a"></script>
   <script src="js/pcode-diagnosis-history.js?v=20260725-userhist"></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
@@ -2087,7 +2087,7 @@
             menuIcon.classList.remove('hidden');
         }
 
-        // Note: in ‚Äúdesktop site‚Äù mode we keep hamburger + profile actions,
+        // Note: in ùdesktop siteù mode we keep hamburger + profile actions,
         // but hide the sidebar navigation link list via CSS (when present).
         // Patient data will be fetched from API
         let patients = [];
@@ -2230,7 +2230,7 @@
             const totalEl = document.getElementById('total-patients');
             if (startEl) startEl.textContent = '0';
             if (endEl) endEl.textContent = '0';
-            if (totalEl) totalEl.textContent = '‚Ä¶';
+            if (totalEl) totalEl.textContent = 'ù';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -2263,6 +2263,17 @@
             });
         });
 
+        async function pcodePatientsApiUrl(relPath) {
+            const clean = String(relPath || '').replace(/^\.?\/?api\//, '');
+            if (window.auth && typeof auth.resolveApiUrl === 'function') {
+                if (!/onrender\.com/i.test(String(auth.apiBaseUrl || ''))) {
+                    try { await auth.loadConfig(); } catch (_) {}
+                }
+                return auth.resolveApiUrl(clean);
+            }
+            return 'https://p-code-nqak.onrender.com/api/' + clean.replace(/\.php$/i, '');
+        }
+
         async function fetchPatients() {
             showPatientListSkeleton();
             try {
@@ -2280,7 +2291,7 @@
                 
                 // **GUEST MODE**: Load from sessionStorage
                 if (isGuest) {
-                    console.log('üöÄ GUEST MODE - Loading added patients from sessionStorage');
+                    console.log('?? GUEST MODE - Loading added patients from sessionStorage');
                     const guestAddedPatients = JSON.parse(sessionStorage.getItem('guest_added_patients') || '[]');
                     const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
                     
@@ -2293,8 +2304,9 @@
                     return;
                 }
                 
-                // **NORMAL FLOW**: Fetch from API (pass auth token so API filters by current user)
-                const response = await fetch('api/patients/get_patients_list.php', {
+                // **NORMAL FLOW**: Fetch from Render/Flask API (Firebase has no PHP)
+                const listUrl = await pcodePatientsApiUrl('patients/get_patients_list.php');
+                const response = await fetch(listUrl, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -2302,11 +2314,20 @@
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                const result = await response.json();
+                const rawText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (parseErr) {
+                    throw new Error(
+                        'Patients API returned non-JSON (HTTP ' + response.status + '). ' +
+                        'Check that ' + listUrl + ' is online.'
+                    );
+                }
                 
                 if (result.success && result.data) {
                     // Use API data directly - API filters by authenticated user so only their patients are returned
-                    console.log('‚úÖ Loaded', result.data.length, 'patient(s) for current user');
+                    console.log('? Loaded', result.data.length, 'patient(s) for current user');
                     patients = result.data;
                     
                     filteredPatients = [...patients];
@@ -2426,8 +2447,8 @@
                 return '<span class="pcode-latest-screening__empty">No runs yet</span>';
             }
             const dateLabel = patient.latest_screening_display
-                ? String(patient.latest_screening_display).replace(/\s*¬∑\s*/g, ' ¬∑ ')
-                : (patient.latest_screening_at || '‚Äî');
+                ? String(patient.latest_screening_display).replace(/\s*ù\s*/g, ' ù ')
+                : (patient.latest_screening_at || 'ù');
             const origin = patient.latest_screening_origin || '';
             const originShort =
                 origin === 'Clinician Upload' ? 'Clinician' :
@@ -2499,7 +2520,7 @@
             container.innerHTML = pagePatients.map((patient, index) => {
                 const displayId = patient.id && patient.id.startsWith('added_')
                     ? `<span class="text-blue-400 font-semibold">TEMP_ID${index + 1}</span>`
-                    : (patient.id || '‚Äî');
+                    : (patient.id || 'ù');
                 const finalVariant =
                     patient.overall_diagnosis === 'positive' ? 'positive' :
                     patient.overall_diagnosis === 'negative' ? 'negative' : 'pending';
@@ -2508,7 +2529,7 @@
                 <article class="pcode-card-static pcode-patient-card" onclick="viewPatient('${patient.id}')" role="button" tabindex="0">
                     <div class="pcode-patient-card__head">
                         <div>
-                            <div class="pcode-patient-card__name">${patient.name || '‚Äî'}</div>
+                            <div class="pcode-patient-card__name">${patient.name || 'ù'}</div>
                             <div class="pcode-patient-card__id">${displayId}</div>
                             ${patient.last_tested_display
                                 ? `<div class="pcode-patient-card__tested">Last tested ${patient.last_tested_display}</div>`
@@ -2517,7 +2538,7 @@
                         ${formatDiagnosisBadge(patient.overall_diagnosis)}
                     </div>
                     <div class="pcode-patient-card__meta">
-                        <span>Age: <strong class="text-white">${patient.age ?? '‚Äî'}</strong></span>
+                        <span>Age: <strong class="text-white">${patient.age ?? 'ù'}</strong></span>
                         <span>Added: <strong class="text-white">${patient.date_added || 'N/A'}</strong></span>
                         <span>Clinical result: ${formatDiagnosisBadge(patient.xgboost_diagnosis)}</span>
                         <span>Ultrasound: ${formatDiagnosisBadge(patient.cnn_diagnosis)}</span>
@@ -2746,7 +2767,7 @@
                                 // Also update the data attribute
                                 checkbox.dataset.expectedCheckedState = shouldBeChecked;
                             } else {
-                                console.log(`[VERIFY] ${item.id}: correctly set to ${actuallyChecked} ‚úì`);
+                                console.log(`[VERIFY] ${item.id}: correctly set to ${actuallyChecked} ?`);
                             }
                         }
                     });
@@ -2776,7 +2797,7 @@
             const nameEl = document.getElementById('delete-patient-name');
             const idEl = document.getElementById('delete-patient-id');
             if (nameEl) nameEl.textContent = (patient && patient.name) ? patient.name : 'Unknown patient';
-            if (idEl) idEl.textContent = patientId || '‚Äî';
+            if (idEl) idEl.textContent = patientId || 'ù';
             const modal = document.getElementById('delete-patient-modal');
             if (modal) {
                 modal.classList.add('show');
@@ -2801,19 +2822,21 @@
             const confirmBtn = document.getElementById('delete-patient-confirm-btn');
             if (confirmBtn) {
                 confirmBtn.disabled = true;
-                confirmBtn.textContent = 'Deleting‚Ä¶';
+                confirmBtn.textContent = 'Deletingù';
             }
 
             // Extract numeric ID from PMOS-XXX format
             const numericId = parseInt(String(patientId).replace(/^(?:PCOS|PMOS)-/i, ''), 10);
 
-            fetch('api/delete_patient.php', {
+            pcodePatientsApiUrl('delete_patient.php').then(function (deleteUrl) {
+            return fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '')
                 },
                 body: JSON.stringify({ patient_id: numericId })
+            });
             })
             .then(response => response.json())
             .then(data => {
@@ -2854,11 +2877,11 @@
                 return;
             }
 
-            // Dedicated export loader ‚Äî other toasts cannot dismiss it
+            // Dedicated export loader ù other toasts cannot dismiss it
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF report‚Ä¶');
+                window.pcodeShowExportLoading('Generating PDF reportù');
             } else {
-                showPatientsToast('Generating PDF report‚Ä¶', 'loading', { persist: true });
+                showPatientsToast('Generating PDF reportù', 'loading', { persist: true });
             }
 
             // Get current user info
@@ -2883,7 +2906,7 @@
                 user_id: user ? user.id : null
             };
 
-            console.log('üì§ Exporting patient data:', exportData);
+            console.log('?? Exporting patient data:', exportData);
 
             const finishExportUi = function (ok, message) {
                 if (typeof window.pcodeHideExportLoading === 'function') {
@@ -2921,11 +2944,11 @@
                 return data;
             })
             .then(data => {
-                console.log('üì¨ API Response:', data);
+                console.log('?? API Response:', data);
                 if (data && data.success && data.file_url) {
                     // Download the PDF file using direct fetch to ensure it works
                     const fileUrl = (data.file_url.startsWith('/') ? '' : '/pcode/') + data.file_url;
-                    console.log('üì• Downloading from:', fileUrl);
+                    console.log('?? Downloading from:', fileUrl);
                     
                     return fetch(fileUrl)
                         .then(response => {
@@ -2941,15 +2964,15 @@
                             document.body.removeChild(downloadLink);
                             URL.revokeObjectURL(downloadLink.href);
                             finishExportUi(true, 'Report exported successfully!');
-                            console.log('‚úÖ PDF downloaded successfully');
+                            console.log('? PDF downloaded successfully');
                         });
                 } else {
-                    console.error('‚ùå API Error:', data && data.message);
+                    console.error('? API Error:', data && data.message);
                     finishExportUi(false, 'Error: ' + ((data && data.message) || 'Failed to generate report'));
                 }
             })
             .catch(error => {
-                console.error('‚ùå Export error:', error);
+                console.error('? Export error:', error);
                 finishExportUi(false, 'Export failed: ' + (error && error.message ? error.message : String(error)));
             });
         }
@@ -3439,7 +3462,7 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const base64Image = e.target.result;
-                        console.log('üì∏ Patient with ultrasound image');
+                        console.log('?? Patient with ultrasound image');
                         resolve(savePatientData(finalName, finalAge, finalDOB, finalContact, base64Image, isGuest));
                     };
                     reader.onerror = function() {
@@ -3451,16 +3474,16 @@
             } else if (isEditingExistingPatient) {
                 if (existingUltrasoundMarkedForRemoval) {
                     // User explicitly removed the existing image while editing
-                    console.log('üóëÔ∏è Editing patient - removing existing ultrasound image');
+                    console.log('??? Editing patient - removing existing ultrasound image');
                     return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest);
                 } else {
                     // Editing existing patient without re-uploading image - keep existing
-                    console.log('üìù Editing patient - keeping existing ultrasound image');
+                    console.log('?? Editing patient - keeping existing ultrasound image');
                     return savePatientData(finalName, finalAge, finalDOB, finalContact, 'KEEP_EXISTING', isGuest);
                 }
             } else {
                 // New patient without ultrasound image - save without it
-                console.log('üíæ New patient without ultrasound image');
+                console.log('?? New patient without ultrasound image');
                 return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest);
             }
         }
@@ -3545,7 +3568,7 @@
 
             // **GUEST MODE**: Save to sessionStorage instead of database
             if (isGuest) {
-                console.log('üíæ GUEST MODE - Saving patient to sessionStorage (temporarily)');
+                console.log('?? GUEST MODE - Saving patient to sessionStorage (temporarily)');
                 
                 // Store patient in guest_added_patients list in sessionStorage
                 let guestAddedPatients = JSON.parse(sessionStorage.getItem('guest_added_patients') || '[]');
@@ -3619,14 +3642,14 @@
                 // Only include Ultrasound_image if we have one and it's not the "keep existing" marker
                 if (base64Image && base64Image !== 'KEEP_EXISTING') {
                     guestPatient.Ultrasound_image = base64Image;
-                    console.log('‚úÖ Ultrasound image INCLUDED - size:', base64Image.length, 'bytes');
+                    console.log('? Ultrasound image INCLUDED - size:', base64Image.length, 'bytes');
                 } else {
-                    console.log('‚ö†Ô∏è Ultrasound image NOT included - base64Image:', base64Image);
+                    console.log('?? Ultrasound image NOT included - base64Image:', base64Image);
                 }
                 
-                console.log('‚úÖ Guest patient to save:', guestPatient);
-                console.log('üîç Patient keys:', Object.keys(guestPatient).sort());
-                console.log('üìä Field values:', {
+                console.log('? Guest patient to save:', guestPatient);
+                console.log('?? Patient keys:', Object.keys(guestPatient).sort());
+                console.log('?? Field values:', {
                     age: guestPatient.age,
                     name: guestPatient.name,
                     weight: guestPatient.weight,
@@ -3639,14 +3662,14 @@
                 guestAddedPatients.push(guestPatient);
                 sessionStorage.setItem('guest_added_patients', JSON.stringify(guestAddedPatients));
                 
-                console.log('‚úÖ Guest patient saved to sessionStorage:', guestPatient);
-                console.log('üìä Total guest added patients:', guestAddedPatients.length);
-                alert('‚úì Patient data saved temporarily for your guest session!\n\nNote: This data will be cleared when you sign out.');
+                console.log('? Guest patient saved to sessionStorage:', guestPatient);
+                console.log('?? Total guest added patients:', guestAddedPatients.length);
+                alert('? Patient data saved temporarily for your guest session!\n\nNote: This data will be cleared when you sign out.');
                 if (window.patientFormGuard) window.patientFormGuard.notifySaved('Saved to guest session');
                 closeModalImmediate();
                 
                 // **CRITICAL**: Refresh the patient table to show the newly added guest patient
-                console.log('üîÑ Refreshing patient list to show newly added guest patient');
+                console.log('?? Refreshing patient list to show newly added guest patient');
                 fetchPatients();
                 
                 // Don't refresh patients from database (guests don't have database patients)
@@ -3654,13 +3677,15 @@
             }
 
             // **NORMAL FLOW**: Call API to save patient to database
-            return fetch('api/save_patient.php', {
+            return pcodePatientsApiUrl('save_patient.php').then(function (saveUrl) {
+            return fetch(saveUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '')
                 },
                 body: JSON.stringify(patientData)
+            });
             })
             .then(response => response.json())
             .then(data => {
@@ -3678,7 +3703,7 @@
                             return true;
                         })
                         .catch(() => {
-                            // Data saved, but table refresh failed ‚Äî still close cleanly.
+                            // Data saved, but table refresh failed ù still close cleanly.
                             closeModalImmediate();
                             return true;
                         });
@@ -3801,7 +3826,7 @@
             }
         }
 
-        // Obsidian glass stepper ‚Äî class-driven states + per-step segment connectors
+        // Obsidian glass stepper ù class-driven states + per-step segment connectors
         function updateStepIndicators(currentStep) {
             for (let i = 1; i <= PATIENT_MODAL_TOTAL_STEPS; i++) {
                 const indicator = document.getElementById(`step-${i}-indicator`);
@@ -3958,7 +3983,7 @@
             }, 300);
         };
 
-        // Keep full modal auto-calcs (BMI, ratios, DOB‚Üíage). Do not replace with a partial override.
+        // Keep full modal auto-calcs (BMI, ratios, DOB?age). Do not replace with a partial override.
         const originalSetupModalEventListeners = setupModalEventListeners;
         window.setupModalEventListeners = function() {
             originalSetupModalEventListeners();

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -58,7 +58,7 @@
             flex-shrink: 0;
         }
         .max-w-7xl { max-width: 100% !important; width: 100% !important; }
-        /* Mobile drawer — fixed; must not consume layout height in the page flow */
+        /* Mobile drawer � fixed; must not consume layout height in the page flow */
         #mobile-menu.mobile-menu,
         #menu-overlay.mobile-menu-overlay {
             position: fixed !important;
@@ -290,7 +290,7 @@
             vertical-align: middle;
         }
 
-        /* Gauge roots — fluid sizing from css/pcode-app-bento-dark.css?v=20260724-cardglow */
+        /* Gauge roots � fluid sizing from css/pcode-app-bento-dark.css?v=20260724-cardglow */
         .gauge-container {
             display: block !important;
             margin: 0 auto;
@@ -361,7 +361,7 @@
         }
 
 
-        /* Detection card field widths — equal heights live in pcode-detect-layout.css */
+        /* Detection card field widths � equal heights live in pcode-detect-layout.css */
         .detection-card .step-content input:not([type='checkbox']):not([type='radio']),
         .detection-card .step-content select,
         .detection-card .step-content textarea {
@@ -501,7 +501,7 @@
             text-align: center;
         }
 
-        /* Final diagnosis overlay: larger spinner — size in pcode-dual-ring-spinner.css */
+        /* Final diagnosis overlay: larger spinner � size in pcode-dual-ring-spinner.css */
 
         #final-gauge .gauge-analyzing-overlay .overlay-text {
             font-size: 18px;
@@ -553,7 +553,7 @@
             50% { opacity: 1; }
         }
 
-        /* Results actions — layout in pcode-action-buttons.css */
+        /* Results actions � layout in pcode-action-buttons.css */
         .analysis-actions.analyzing {
             display: none;
         }
@@ -705,7 +705,7 @@
       border-color: #cbd5e1 !important;
     }
 
-    /* Analysis cards — black text & borders in light mode */
+    /* Analysis cards � black text & borders in light mode */
     html.pcode-app-bento-root:not(.dark) .detection-card,
     html.pcode-app-bento-root:not(.dark) .detection-card.pcode-diagnostic-bento,
     html.pcode-app-bento-root:not(.dark) .pcode-diagnostic-bento,
@@ -733,7 +733,7 @@
       color: #000000 !important;
       -webkit-text-fill-color: #000000 !important;
     }
-    /* Ghost / outline buttons → black label */
+    /* Ghost / outline buttons ? black label */
     html.pcode-app-bento-root:not(.dark) .clinical-stepper-footer .btn-ghost-glass,
     html.pcode-app-bento-root:not(.dark) .clinical-stepper-footer #prev-btn,
     html.pcode-app-bento-root:not(.dark) .pcode-dropzone-actions .btn-ghost-glass {
@@ -751,7 +751,7 @@
       -webkit-text-fill-color: #000000 !important;
       stroke: #000000 !important;
     }
-    /* Solid primary CTAs → white label (fixes dark-on-purple) */
+    /* Solid primary CTAs ? white label (fixes dark-on-purple) */
     html.pcode-app-bento-root:not(.dark) .clinical-stepper-footer .btn-purple-glass,
     html.pcode-app-bento-root:not(.dark) #next-btn,
     html.pcode-app-bento-root:not(.dark) .clinical-stepper-footer .btn-blue-glass,
@@ -862,7 +862,7 @@
       background: #6d28d9 !important;
       border-color: #6d28d9 !important;
     }
-    /* Final Combined Diagnosis — silver dark-mode text → black on white */
+    /* Final Combined Diagnosis � silver dark-mode text ? black on white */
     html.pcode-app-bento-root:not(.dark) .pcode-final-bar__label,
     html.pcode-app-bento-root:not(.dark) .pcode-final-bar__value,
     html.pcode-app-bento-root:not(.dark) .pcode-final-verdict__percent,
@@ -934,8 +934,8 @@
 </head>
 <body class="pcode-app-bento pcode-detect-provider-page min-h-screen h-auto flex flex-col text-zinc-50 antialiased" data-pcode-auth-portal="provider">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/auth.js?v=20260730-corsfix"></script>
-    <script src="js/pcode-google-auth.js?v=20260730-corsfix"></script>
+    <script src="js/auth.js?v=20260730-nqak"></script>
+    <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
     <script src="js/pcode-form-guard.js?v=20260710a"></script>
     <script src="js/pcode-diagnosis-guard.js?v=20260710a"></script>
@@ -943,7 +943,7 @@
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
     <script src="js/pcode-clinical-validity.js?v=20260723-stepgap2"></script>
     <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
-    <script src="js/pcode-pdf-export-helpers.js?v=20260714c"></script>
+    <script src="js/pcode-pdf-export-helpers.js?v=20260730-nqak"></script>
     <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
     <!-- Sidebar Overlay -->
     <div id="menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
@@ -1023,7 +1023,7 @@
         </div>
     </div>
 
-    <!-- Auth Modal — floating portal chooser -->
+    <!-- Auth Modal � floating portal chooser -->
     <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
         <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
         <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
@@ -1101,7 +1101,7 @@
             <h2 class="pcode-card-title pcode-diagnostic-title mb-3 sm:mb-4">Patient Selection</h2>
             <div class="pcode-patient-selection-row flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
                 <select id="patient-select" class="w-full sm:flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="">⏳ Loading patients...</option>
+                    <option value="">? Loading patients...</option>
                 </select>
                 <div class="pcode-patient-selection-actions">
                 <button type="button" onclick="loadPatientsList()" class="btn-blue-glass min-w-0 text-sm">
@@ -1136,7 +1136,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h2 class="text-2xl font-bold text-gray-800">Clinical Analysis</h2>
-                            <p class="text-gray-600">AI Model — Clinical Biomarkers</p>
+                            <p class="text-gray-600">AI Model � Clinical Biomarkers</p>
                         </div>
                         <div class="pcode-autosave-status-wrap ml-auto self-start">
                             <span id="clinical-form-autosave-status" class="pcode-autosave-status" aria-live="polite" data-state="idle"></span>
@@ -1192,7 +1192,7 @@
                             <div id="pcode-height-cm-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Height_cm" name="Height_cm">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">BMI (kg/m²)</label>
+                                <label class="block text-sm font-medium text-gray-700">BMI (kg/m�)</label>
                                 <input type="number" id="BMI" name="BMI" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div>
@@ -1378,8 +1378,8 @@
                             <div>
                                 <label for="ultrasound_modality">Imaging Modality</label>
                                 <select id="ultrasound_modality" name="ultrasound_modality" class="clinical-modality-select">
-                                    <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) — Preferred</option>
-                                    <option value="Transabdominal">Transabdominal / Pelvic — Fallback</option>
+                                    <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) � Preferred</option>
+                                    <option value="Transabdominal">Transabdominal / Pelvic � Fallback</option>
                                     <option value="Other">Other Pelvic Scan</option>
                                 </select>
                             </div>
@@ -1387,12 +1387,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700" for="Follicle_no_L">Follicles Count Left (TVUS follicle field)</label>
-                                <span class="clinical-follicle-label-hint">Left ovary follicle count — best captured on TVUS for imaging AI boundary mapping.</span>
+                                <span class="clinical-follicle-label-hint">Left ovary follicle count � best captured on TVUS for imaging AI boundary mapping.</span>
                                 <input type="number" id="Follicle_no_L" name="Follicle_no_L" step="0.1" placeholder="e.g. 12" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700" for="Follicle_no_R">Follicles Count Right (TVUS follicle field)</label>
-                                <span class="clinical-follicle-label-hint">Right ovary follicle count — paired with scan modality selection above.</span>
+                                <span class="clinical-follicle-label-hint">Right ovary follicle count � paired with scan modality selection above.</span>
                                 <input type="number" id="Follicle_no_R" name="Follicle_no_R" step="0.1" placeholder="e.g. 10" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div id="pcode-avg-f-l-host" class="pcode-metric-host"></div>
@@ -1445,13 +1445,13 @@
 
                 <!-- DEBUG SECTION -->
                 <div id="debug-section" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4" style="display: none;">
-                    <p class="text-sm font-bold text-yellow-800 mb-2">🔧 DEBUG - Checkbox Style Test</p>
+                    <p class="text-sm font-bold text-yellow-800 mb-2">?? DEBUG - Checkbox Style Test</p>
                     <button type="button" onclick="testCheckboxStyling()" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">Test Styling</button>
                     <button type="button" onclick="inspectCheckboxes()" class="ml-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">Inspect All</button>
                     <pre id="debug-output" class="mt-2 text-xs bg-white p-2 rounded border overflow-auto max-h-64" style="display: none;"></pre>
                 </div>
 
-                <!-- Navigation Buttons (Fixed Footer) — Previous + morphing Next/Analyze -->
+                <!-- Navigation Buttons (Fixed Footer) � Previous + morphing Next/Analyze -->
                 <div class="clinical-stepper-footer pcode-action-bar pcode-clinical-actions flex flex-row items-center gap-3 w-full mt-6 pt-4 border-t border-white/[0.05] flex-shrink-0">
                     <button type="button" id="prev-btn" onclick="goToStep(currentStep - 1)" class="btn-ghost-glass clinical-stepper-btn flex-1 min-w-0"><span class="font-semibold">Previous</span></button>
                     <button type="button" id="next-btn" onclick="handleClinicalStepAdvance()" data-step-mode="next" aria-label="Go to next step" class="btn-purple-glass clinical-stepper-btn flex-1 min-w-0 text-purple-400 bg-purple-500/5 border-purple-500/20"><span class="font-semibold pcode-next-btn__label">Next</span><svg class="pcode-btn-icon pcode-next-btn__icon--next" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg><svg class="pcode-btn-icon pcode-next-btn__icon--analyze hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></button>
@@ -1472,14 +1472,14 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold text-gray-800">Ultrasound Analysis</h2>
-                            <p class="text-gray-600">AI Model — Ovarian Morphology</p>
+                            <p class="text-gray-600">AI Model � Ovarian Morphology</p>
                         </div>
                     </div>
                     <div class="ml-0 mb-4">
                         <label for="ultrasound_modality_upload" class="block text-sm font-medium text-gray-700 mb-1">Scan Modality (for image upload)</label>
                         <select id="ultrasound_modality_upload" class="clinical-modality-select max-w-md" aria-label="Ultrasound scan modality">
-                            <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) — Preferred</option>
-                            <option value="Transabdominal">Transabdominal / Pelvic — Fallback</option>
+                            <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) � Preferred</option>
+                            <option value="Transabdominal">Transabdominal / Pelvic � Fallback</option>
                             <option value="Other">Other Pelvic Scan</option>
                         </select>
                     </div>
@@ -1514,7 +1514,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="clinical-note-ultrasound-modality-upload" class="clinical-note-badge clinical-note-badge--primary-modality" role="note">⚠️ Primary Modality: Transvaginal Ultrasound (TVUS) scans are highly preferred for optimal follicle boundary detection and classification by our imaging AI model. Transabdominal/Pelvic scan inputs are permitted but may result in diminished feature extraction resolution.</div>
+                        <div id="clinical-note-ultrasound-modality-upload" class="clinical-note-badge clinical-note-badge--primary-modality" role="note">?? Primary Modality: Transvaginal Ultrasound (TVUS) scans are highly preferred for optimal follicle boundary detection and classification by our imaging AI model. Transabdominal/Pelvic scan inputs are permitted but may result in diminished feature extraction resolution.</div>
                     </div>
                 </div>
 
@@ -1827,12 +1827,12 @@
         function loadPatientsListImpl(retryCount = 0) {
             const select = document.getElementById('patient-select');
             if (!select) {
-                console.error('❌ patient-select element not found!');
+                console.error('? patient-select element not found!');
                 return;
             }
             
             console.log('Starting patient load... (attempt ' + (retryCount + 1) + ')');
-            select.innerHTML = '<option value="">⏳ Loading patients...</option>';
+            select.innerHTML = '<option value="">? Loading patients...</option>';
             
             const token = getDetectAuthToken();
             const sessionUser = getDetectSessionUser();
@@ -1850,12 +1850,12 @@
                 }
             }
             
-            console.log('🔍 User is guest:', isGuest);
+            console.log('?? User is guest:', isGuest);
             console.log('DEBUG: Token from sessionStorage:', token ? 'EXISTS' : 'MISSING');
             
             // **GUEST MODE**: Load only from sessionStorage (patients they detected/added in this session)
             if (isGuest) {
-                console.log('🚀 GUEST MODE - Loading only detected/added patients from sessionStorage');
+                console.log('?? GUEST MODE - Loading only detected/added patients from sessionStorage');
                 const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
                 const guestAddedPatients = JSON.parse(sessionStorage.getItem('guest_added_patients') || '[]');
                 
@@ -1863,7 +1863,7 @@
                 // This handles legacy data from before the ID/name fix
                 const validDetectedPatients = guestDetectedPatients.filter(p => {
                     if (!p.id || !p.id.startsWith('detected_') || !p.name || p.name === 'undefined') {
-                        console.warn('⚠️ Filtering out invalid detected patient (missing ID or name):', p);
+                        console.warn('?? Filtering out invalid detected patient (missing ID or name):', p);
                         return false;
                     }
                     return true;
@@ -1871,7 +1871,7 @@
                 
                 const validAddedPatients = guestAddedPatients.filter(p => {
                     if (!p.id || !p.id.startsWith('added_') || !p.name || p.name === 'undefined') {
-                        console.warn('⚠️ Filtering out invalid added patient (missing ID or name):', p);
+                        console.warn('?? Filtering out invalid added patient (missing ID or name):', p);
                         return false;
                     }
                     return true;
@@ -1905,13 +1905,13 @@
                     emptyOpt.value = '';
                     emptyOpt.text = 'No patients detected/added yet in this session';
                     select.appendChild(emptyOpt);
-                    console.log('⚠️ No guest patients in session');
+                    console.log('?? No guest patients in session');
                     
                     // Check if we filtered out bad data
                     const filteredOut = (guestDetectedPatients.length - validDetectedPatients.length) + 
                                        (guestAddedPatients.length - validAddedPatients.length);
                     if (filteredOut > 0) {
-                        console.warn(`⚠️ Removed ${filteredOut} corrupted patient record(s) - please add patients again`);
+                        console.warn(`?? Removed ${filteredOut} corrupted patient record(s) - please add patients again`);
                         select.style.borderColor = '#ef4444'; // Red border to indicate cleanup
                     }
                 } else {
@@ -1921,17 +1921,17 @@
                         option.value = patient.id;
                         option.text = patient.name;
                         select.appendChild(option);
-                        console.log('✅ Added guest patient:', patient.name, 'with ID:', patient.id, 'type:', typeof patient.id);
+                        console.log('? Added guest patient:', patient.name, 'with ID:', patient.id, 'type:', typeof patient.id);
                         
                         // SECURITY CHECK
                         if (!patient.id) {
-                            console.error('❌ CRITICAL: Patient has no ID!', patient);
+                            console.error('? CRITICAL: Patient has no ID!', patient);
                         }
                     });
                     
                     allPatients = allGuestPatients;
                     select.style.borderColor = '#22c55e';
-                    console.log('✅ Successfully loaded ' + allGuestPatients.length + ' guest patient(s)');
+                    console.log('? Successfully loaded ' + allGuestPatients.length + ' guest patient(s)');
                 }
                 tryAutoLoadPatientAfterList();
                 return; // Exit - don't call API for guests
@@ -1982,12 +1982,12 @@
                             option.value = patient.id || (pid ? 'PMOS-' + pid.padStart(3, '0') : '');
                             option.text = patient.name || patient.patient_name || option.value;
                             select.appendChild(option);
-                            console.log('✅ Added patient:', option.text);
+                            console.log('? Added patient:', option.text);
                         });
                         
                         allPatients = data.data;
                         select.style.borderColor = '#22c55e';
-                        console.log('✅ Successfully loaded ' + data.data.length + ' patient(s)');
+                        console.log('? Successfully loaded ' + data.data.length + ' patient(s)');
                         tryAutoLoadPatientAfterList();
                     } else if (data && data.success && (!data.data || data.data.length === 0)) {
                         select.innerHTML = '<option value="">No patients in database</option>';
@@ -1999,7 +1999,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('❌ Load error:', error.message);
+                    console.error('? Load error:', error.message);
                     
                     // Only retry if it's a network error, not a format error
                     if (retryCount < 2 && !error.message.includes('Invalid response') && !error.message.includes('JSON')) {
@@ -2060,7 +2060,7 @@
                 if (window.clinicalFormGuard) window.clinicalFormGuard.markClean();
             }, 150);
             if (typeof window.pcodeShowCenterAlert === 'function') {
-                window.pcodeShowCenterAlert('Patient data loaded — ready to analyze.', 'success');
+                window.pcodeShowCenterAlert('Patient data loaded � ready to analyze.', 'success');
             }
         }
 
@@ -2086,7 +2086,7 @@
             patientSelect.value = selectValue;
             isAutoLoadFromPatientsPage = true;
 
-            console.log('[AutoLoad] Loading patient data for', loadId, '→ select value', selectValue);
+            console.log('[AutoLoad] Loading patient data for', loadId, '? select value', selectValue);
             loadPatientData();
 
             if (window.history && window.history.replaceState) {
@@ -2118,7 +2118,7 @@
                         userModifiedFields.add(this.name);
                         // Remove from database-loaded if it's there and being user-modified
                         databaseLoadedFields.delete(this.name);
-                        console.log(`✏️  User modified field: ${this.name}`);
+                        console.log(`??  User modified field: ${this.name}`);
                     }
                 });
                 
@@ -2139,12 +2139,12 @@
                     if (!isLoadingPatientData && !isSettingCheckboxesFromDB) {
                         userModifiedFields.add(this.name);
                         databaseLoadedFields.delete(this.name);
-                        console.log(`✏️  User modified checkbox: ${this.name}`);
+                        console.log(`??  User modified checkbox: ${this.name}`);
                     }
                 });
             });
             
-            console.log('✅ Form input tracking initialized');
+            console.log('? Form input tracking initialized');
         }
 
         // Auto-calculate BMI from height and weight
@@ -2161,7 +2161,7 @@
                 const bmi = weight / (heightInMeters * heightInMeters);
                 if (bmiEl) {
                     bmiEl.value = bmi.toFixed(1);
-                    console.log(`📊 BMI auto-calculated: ${bmi.toFixed(1)} (Weight: ${weight}kg, Height: ${height}cm)`);
+                    console.log(`?? BMI auto-calculated: ${bmi.toFixed(1)} (Weight: ${weight}kg, Height: ${height}cm)`);
                 }
             }
         }
@@ -2179,7 +2179,7 @@
                 const ratio = lh / fsh;
                 if (ratioEl) {
                     ratioEl.value = ratio.toFixed(2);
-                    console.log(`📊 LH/FSH Ratio auto-calculated: ${ratio.toFixed(2)} (LH: ${lh}, FSH: ${fsh})`);
+                    console.log(`?? LH/FSH Ratio auto-calculated: ${ratio.toFixed(2)} (LH: ${lh}, FSH: ${fsh})`);
                 }
             }
         }
@@ -2197,7 +2197,7 @@
                 const whr = waist / hip;
                 if (whrEl) {
                     whrEl.value = whr.toFixed(2);
-                    console.log(`📊 WHR auto-calculated: ${whr.toFixed(2)} (Waist: ${waist}, Hip: ${hip})`);
+                    console.log(`?? WHR auto-calculated: ${whr.toFixed(2)} (Waist: ${waist}, Hip: ${hip})`);
                 }
             }
         }
@@ -2241,7 +2241,7 @@
                 hipEl.addEventListener('change', calculateWHRAuto);
             }
             
-            console.log('✅ Auto-calculation event listeners initialized');
+            console.log('? Auto-calculation event listeners initialized');
         }
 
         let detectProviderBootstrapped = false;
@@ -2287,7 +2287,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ PAGE READY - Initializing...');
+            console.log('? PAGE READY - Initializing...');
             
             // Initialize all functions
             setupFileUpload();
@@ -2328,7 +2328,7 @@
                     });
                 }
 
-                // Restore any locally saved draft silently — no intrusive popup on every page open.
+                // Restore any locally saved draft silently � no intrusive popup on every page open.
                 window.clinicalFormAutosave.tryRestoreDraft({ notify: false });
 
                 // ---- Unsaved-changes guard for the full-page clinical form ----
@@ -2651,13 +2651,13 @@
                     inlineBackground: testCheckbox.style.backgroundColor
                 });
                 
-                alert('✓ Test checkbox set to CHECKED.\n\nCheck console (F12) to see the styles.\nLook at the checkbox - it should be PURPLE with a CHECKMARK.\n\nIf not purple, there\'s a CSS blocking issue.\nIf purple but no checkmark, the SVG isn\'t loading.\n\nShare the console output with the inline styles values.');
+                alert('? Test checkbox set to CHECKED.\n\nCheck console (F12) to see the styles.\nLook at the checkbox - it should be PURPLE with a CHECKMARK.\n\nIf not purple, there\'s a CSS blocking issue.\nIf purple but no checkmark, the SVG isn\'t loading.\n\nShare the console output with the inline styles values.');
             }, 100);
         }
         
         function inspectCheckboxes() {
             const symptoms = ['Weight_gain', 'Hair_growth', 'Skin_darkening', 'Hair_loss', 'Pimples', 'Fast_food', 'Reg_Exercise'];
-            let output = '🔍 CHECKBOX INSPECTION REPORT\n';
+            let output = '?? CHECKBOX INSPECTION REPORT\n';
             output += '='.repeat(50) + '\n\n';
             
             symptoms.forEach(symptom => {
@@ -2665,16 +2665,16 @@
                 if (checkbox) {
                     const styles = window.getComputedStyle(checkbox);
                     output += `${symptom}:\n`;
-                    output += `  Found: ✓ YES (ID: ${checkbox.id}, Name: ${checkbox.name})\n`;
-                    output += `  Checked: ${checkbox.checked ? '✓ YES' : '✗ NO'}\n`;
-                    output += `  Has .loaded-checked class: ${checkbox.classList.contains('loaded-checked') ? '✓ YES' : '✗ NO'}\n`;
+                    output += `  Found: ? YES (ID: ${checkbox.id}, Name: ${checkbox.name})\n`;
+                    output += `  Checked: ${checkbox.checked ? '? YES' : '? NO'}\n`;
+                    output += `  Has .loaded-checked class: ${checkbox.classList.contains('loaded-checked') ? '? YES' : '? NO'}\n`;
                     output += `  BgColor: ${styles.backgroundColor}\n`;
                     output += `  BorderColor: ${styles.borderColor}\n`;
-                    output += `  BackgroundImage: ${styles.backgroundImage ? '✓ YES' : '✗ NO'}\n`;
+                    output += `  BackgroundImage: ${styles.backgroundImage ? '? YES' : '? NO'}\n`;
                     output += `  Data from API: ${dataLoadedFromDB && dataLoadedFromDB[symptom] !== undefined ? dataLoadedFromDB[symptom] : 'N/A'}\n`;
                     output += '\n';
                 } else {
-                    output += `${symptom}: ✗ NOT FOUND\n\n`;
+                    output += `${symptom}: ? NOT FOUND\n\n`;
                 }
             });
             
@@ -2829,7 +2829,7 @@
             setUltrasoundDropzonePreview(false);
             resetDetectCardLayoutState();
             
-            console.log('✅ Form cleared and field tracking reset. All data treated as user-entry from now on.');
+            console.log('? Form cleared and field tracking reset. All data treated as user-entry from now on.');
         }
 
         function loadPatientData() {
@@ -2843,7 +2843,7 @@
         }
 
         function loadPatientDataImpl() {
-            console.warn('🔴 LOAD PATIENT DATA FUNCTION CALLED');
+            console.warn('?? LOAD PATIENT DATA FUNCTION CALLED');
             const patientSelect = document.getElementById('patient-select');
             const selectedPatient = patientSelect.value;
             
@@ -2864,7 +2864,7 @@
             
             // **GUEST MODE**: Check if selected patient is a temporary guest patient
             if (selectedPatient.startsWith('detected_') || selectedPatient.startsWith('added_')) {
-                console.log('🚀 GUEST TEMPORARY PATIENT MODE - Loading from sessionStorage');
+                console.log('?? GUEST TEMPORARY PATIENT MODE - Loading from sessionStorage');
                 
                 // Find the patient in sessionStorage
                 const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
@@ -2879,14 +2879,14 @@
                 const patientData = allGuestPatients.find(p => p.id === selectedPatient);
                 
                 if (!patientData) {
-                    console.error('❌ Guest patient not found in sessionStorage:', selectedPatient);
+                    console.error('? Guest patient not found in sessionStorage:', selectedPatient);
                     alert('Guest patient data not found. Please refresh the patient list.');
                     return;
                 }
                 
-                console.log('✅ Found guest temporary patient:', patientData);
-                console.log('🔍 Available fields in patient:', Object.keys(patientData).sort());
-                console.log('📋 Full patient object:', JSON.stringify(patientData, null, 2));
+                console.log('? Found guest temporary patient:', patientData);
+                console.log('?? Available fields in patient:', Object.keys(patientData).sort());
+                console.log('?? Full patient object:', JSON.stringify(patientData, null, 2));
                 isLoadingPatientData = true;
                 
                 // For detected patients, use clinical_data directly
@@ -2991,7 +2991,7 @@
                             }
                             databaseLoadedFields.add(mapping.formId);
                             loadedFieldsCount++;
-                            console.log(`✅ Loaded ${mapping.formId} = ${value} (from ${dataKey || 'fallback'})`);
+                            console.log(`? Loaded ${mapping.formId} = ${value} (from ${dataKey || 'fallback'})`);
                         } else {
                             missingFieldsCount++;
                             missingFields.push(mapping.formId);
@@ -2999,22 +2999,22 @@
                     }
                 });
                 
-                console.log(`📊 FIELD LOADING SUMMARY: ${loadedFieldsCount} fields loaded, ${missingFieldsCount} fields empty`);
+                console.log(`?? FIELD LOADING SUMMARY: ${loadedFieldsCount} fields loaded, ${missingFieldsCount} fields empty`);
                 if (missingFields.length > 0 && missingFields.length <= 10) {
-                    console.log('⚠️ Empty fields:', missingFields.join(', '));
+                    console.log('?? Empty fields:', missingFields.join(', '));
                 }
                 
                 isLoadingPatientData = false;
-                console.log('✅ Guest patient data loaded from sessionStorage');
+                console.log('? Guest patient data loaded from sessionStorage');
                 
                 // **LOAD ULTRASOUND IMAGE** for guest added patients
-                console.log('🔍 Checking for ultrasound image...');
+                console.log('?? Checking for ultrasound image...');
                 console.log('   isDetected:', isDetected);
                 console.log('   Has Ultrasound_image prop:', !!clinicalData.Ultrasound_image);
                 console.log('   Image size:', clinicalData.Ultrasound_image ? clinicalData.Ultrasound_image.length : 0);
                 
                 if (!isDetected && clinicalData.Ultrasound_image) {
-                    console.log('📸 LOADING ULTRASOUND IMAGE for guest added patient');
+                    console.log('?? LOADING ULTRASOUND IMAGE for guest added patient');
                     const previewImg = document.getElementById('preview-img-ultrasound');
                     
                     console.log('   previewImg exists:', !!previewImg);
@@ -3022,30 +3022,30 @@
                     if (previewImg) {
                         // Set the image source
                         previewImg.src = clinicalData.Ultrasound_image;
-                        previewImg.onload = () => console.log('✅ Image loaded successfully');
-                        previewImg.onerror = () => console.error('❌ Image failed to load');
+                        previewImg.onload = () => console.log('? Image loaded successfully');
+                        previewImg.onerror = () => console.error('? Image failed to load');
                         
                         setUltrasoundDropzonePreview(true);
-                        console.log('✅ Ultrasound image displayed for guest patient');
+                        console.log('? Ultrasound image displayed for guest patient');
                         
                         // Store the image so it's available for prediction
                         uploadedImages.ultrasound = clinicalData.Ultrasound_image;
                         
                         if (!isAutoLoadFromPatientsPage) {
-                            console.log('🔄 Attempting to jump to Step 6 (Ultrasound)');
+                            console.log('?? Attempting to jump to Step 6 (Ultrasound)');
                             try {
                                 goToStep(6);
                             } catch (e) {
-                                console.error('❌ Error calling goToStep(6):', e.message);
+                                console.error('? Error calling goToStep(6):', e.message);
                             }
                         }
                     } else {
-                        console.error('❌ Required image elements not found!');
+                        console.error('? Required image elements not found!');
                     }
                 } else if (!isDetected) {
-                    console.log('⚠️ Guest added patient has no ultrasound image property');
+                    console.log('?? Guest added patient has no ultrasound image property');
                 } else {
-                    console.log('📋 Detected patient - image handled separately');
+                    console.log('?? Detected patient - image handled separately');
                 }
 
                 if (isAutoLoadFromPatientsPage) {
@@ -3161,7 +3161,7 @@
                                 
                                 // For dropdown fields, convert numeric to text values
                                 if (element.tagName === 'SELECT') {
-                                    // Cycle Regularity: any truthy value or 'Regular' → Regular, 0/'Irregular' → Irregular
+                                    // Cycle Regularity: any truthy value or 'Regular' ? Regular, 0/'Irregular' ? Irregular
                                     if (mapping.formId === 'Cycle_R_I') {
                                         if (value === 'Regular' || (typeof value === 'number' && value > 0) || value === '1') {
                                             element.value = 'Regular';
@@ -3174,7 +3174,7 @@
                                         }
                                         console.log('Cycle_R_I SET TO:', element.value);
                                     }
-                                    // Pregnant: 0/No → No, 1/Yes → Yes
+                                    // Pregnant: 0/No ? No, 1/Yes ? Yes
                                     else if (mapping.formId === 'Pregnant_status') {
                                         if (value === 1 || value === '1' || value === 'Yes') {
                                             element.value = 'Yes';
@@ -3222,10 +3222,10 @@
                             const lhFshRatio = parseFloat(data.FSH_LH).toFixed(2);
                             lhFshElement.value = lhFshRatio;
                             databaseLoadedFields.add('LH_FSH_Ratio');
-                            console.log('✅ LH/FSH Ratio loaded:', lhFshRatio, '(from database FSH_LH column)');
+                            console.log('? LH/FSH Ratio loaded:', lhFshRatio, '(from database FSH_LH column)');
                         } else if (lhFshElement) {
                             lhFshElement.value = '';
-                            console.log('⚠️ FSH_LH not available for ratio calculation');
+                            console.log('?? FSH_LH not available for ratio calculation');
                         }
                         
                         
@@ -3273,7 +3273,7 @@
                                     // Reset all inline styles that might interfere
                                     checkbox.style.cssText = '';
                                 } else {
-                                    console.warn(`🟡 WARNING: Checkbox element not found for: ${symptom}`);
+                                    console.warn(`?? WARNING: Checkbox element not found for: ${symptom}`);
                                 }
                             });
                             
@@ -3297,7 +3297,7 @@
                                     }
                                     console.log(`[SET] ${symptom}: checked=${checkbox.checked}, value=${dbValue}, type=${typeof dbValue}`);
                                 } else {
-                                    console.error(`❌ Checkbox not found: ${symptom}`);
+                                    console.error(`? Checkbox not found: ${symptom}`);
                                 }
                             });
                             
@@ -3375,13 +3375,13 @@
              */
             const form = document.getElementById('clinical-form');
             if (!form) {
-                console.error('❌ clinical-form not found!');
-                return { isComplete: false, message: '❌ Form not initialized', fieldsCount: 0 };
+                console.error('? clinical-form not found!');
+                return { isComplete: false, message: '? Form not initialized', fieldsCount: 0 };
             }
             
             // Get all checkboxes in the form
             const allCheckboxes = form.querySelectorAll('input[type="checkbox"]');
-            console.log(`📊 Total checkboxes found: ${allCheckboxes.length}`);
+            console.log(`?? Total checkboxes found: ${allCheckboxes.length}`);
             
             let clinicalCheckboxCount = 0;
             const checkboxElements = [];
@@ -3391,16 +3391,16 @@
                 const name = checkbox.name;
                 // Skip non-clinical checkboxes
                 if (name === 'remember-me' || name === 'agree-terms') {
-                    console.log(`⏭️  Skipping non-clinical checkbox: ${name}`);
+                    console.log(`??  Skipping non-clinical checkbox: ${name}`);
                     continue;
                 }
                 // Count any other checkbox as clinical data
                 clinicalCheckboxCount++;
                 checkboxElements.push(checkbox);
-                console.log(`✅ Counting clinical checkbox: ${name || checkbox.id}`);
+                console.log(`? Counting clinical checkbox: ${name || checkbox.id}`);
             }
             
-            console.log(`📊 Clinical checkboxes counted: ${clinicalCheckboxCount}`);
+            console.log(`?? Clinical checkboxes counted: ${clinicalCheckboxCount}`);
             
             // Count all clinical checkbox elements as meaningful data
             let meaningfulFieldCount = clinicalCheckboxCount;
@@ -3411,7 +3411,7 @@
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             
-            console.log(`📊 Form fields with values: ${Object.keys(data).length}`);
+            console.log(`?? Form fields with values: ${Object.keys(data).length}`);
             
             // Count non-checkbox fields with actual values
             for (const [key, value] of Object.entries(data)) {
@@ -3429,18 +3429,18 @@
                 // For other fields: count only if they have a non-empty value
                 if (value !== undefined && value !== '' && value !== null && value !== 'null') {
                     meaningfulFieldCount++;
-                    console.log(`✅ Counting field: ${key} = ${value}`);
+                    console.log(`? Counting field: ${key} = ${value}`);
                 }
             }
             
-            console.log(`🔢 Total meaningful fields: ${meaningfulFieldCount}`);
+            console.log(`?? Total meaningful fields: ${meaningfulFieldCount}`);
             
             const isComplete = meaningfulFieldCount >= 6;
             const message = isComplete 
-                ? `✅ Form has sufficient data (${meaningfulFieldCount} fields filled)`
-                : `❌ Insufficient data. Please fill in at least 6 fields. Currently: ${meaningfulFieldCount} fields`;
+                ? `? Form has sufficient data (${meaningfulFieldCount} fields filled)`
+                : `? Insufficient data. Please fill in at least 6 fields. Currently: ${meaningfulFieldCount} fields`;
             
-            console.log(`📋 Completeness check result: ${JSON.stringify({isComplete, message, fieldsCount: meaningfulFieldCount})}`);
+            console.log(`?? Completeness check result: ${JSON.stringify({isComplete, message, fieldsCount: meaningfulFieldCount})}`);
             
             return {
                 isComplete,
@@ -3454,7 +3454,7 @@
             const completenessCheck = checkDataCompleteness();
             if (!completenessCheck.isComplete) {
                 // PREVENT prediction - show error and return
-                alert('❌ Insufficient Data\n\n' + completenessCheck.message + '\n\nPlease fill in at least 6 fields with patient data before analyzing.');
+                alert('? Insufficient Data\n\n' + completenessCheck.message + '\n\nPlease fill in at least 6 fields with patient data before analyzing.');
                 return;  // Stop execution - do not proceed with prediction
             }
             
@@ -3515,7 +3515,7 @@
                 }
             }
             
-            console.log('📊 Data sent to model:');
+            console.log('?? Data sent to model:');
             console.log('   User-modified fields:', Array.from(userModifiedFields));
             console.log('   Database-loaded fields (cleared if not modified):', Array.from(databaseLoadedFields));
             console.log('   Final data for prediction:', clinicalDataForModel);
@@ -3578,7 +3578,7 @@
             const isRegularUser = role === 'regular user' && !isGuest;
             // Regular Users: stronger smoothing (less extreme probabilities)
             const xgbSmoothingFactor = isRegularUser ? 0.70 : null;
-            fetch('https://p-code.onrender.com/predict-xgboost', {
+            fetch('https://p-code-nqak.onrender.com/predict-xgboost', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -3598,7 +3598,7 @@
                 }
                 
                 // DEBUG: Log entire API response
-                console.log('🔍 API RESPONSE DEBUG:');
+                console.log('?? API RESPONSE DEBUG:');
                 console.log('   - result.success:', result.success);
                 console.log('   - result.probability_percentage:', result.probability_percentage);
                 console.log('   - result.shap_explanation type:', typeof result.shap_explanation);
@@ -3622,7 +3622,7 @@
                             console.log('SHAP not available:', result.shap_explanation.error);
                         } else {
                             const shap = result.shap_explanation;
-                            console.log('📊 Model Decision Breakdown:');
+                            console.log('?? Model Decision Breakdown:');
                             console.log(`   Base probability: ${(shap.base_value * 100).toFixed(2)}%`);
                             console.log(`   Total factors analyzed: ${shap.total_features_analyzed}`);
                             
@@ -3630,28 +3630,28 @@
                                 const totalInfluence = shap.total_influence || 1;
                                 const posInfluencePct = (shap.positive_influence_total / totalInfluence * 100).toFixed(2);
                                 const negInfluencePct = (shap.negative_influence_total / totalInfluence * 100).toFixed(2);
-                                console.log(`\n🎯 Prediction Direction: ${shap.prediction_direction}`);
+                                console.log(`\n?? Prediction Direction: ${shap.prediction_direction}`);
                                 console.log(`   Risk-INCREASING factors: ${posInfluencePct}% of total influence`);
                                 console.log(`   Risk-DECREASING factors: ${negInfluencePct}% of total influence`);
                             }
                             
-                            console.log('\n🔥 TOP INFLUENTIAL FACTORS (Prioritized by Influence Score):');
+                            console.log('\n?? TOP INFLUENTIAL FACTORS (Prioritized by Influence Score):');
                             if (result.shap_explanation.top_contributions) {
                                 let displayCount = 0;
                                 result.shap_explanation.top_contributions.forEach((contrib, idx) => {
                                     if (contrib.was_missing) return;
                                     displayCount++;
                                     
-                                    const direction = contrib.shap_value > 0 ? '📈 INCREASES' : '📉 DECREASES';
+                                    const direction = contrib.shap_value > 0 ? '?? INCREASES' : '?? DECREASES';
                                     const value = contrib.value !== null ? ` (value: ${contrib.value.toFixed(2)})` : ' (missing)';
                                     const influenceScore = (contrib.influence_score || 0).toFixed(3);
                                     const cumulativePct = (contrib.cumulative_influence_pct || 0).toFixed(2);
                                     
                                     let ranking = '';
-                                    if (idx === 0) ranking = ' 🔥 #1 MOST INFLUENTIAL';
-                                    else if (idx === 1) ranking = ' ⚡ #2 MOST INFLUENTIAL';
+                                    if (idx === 0) ranking = ' ?? #1 MOST INFLUENTIAL';
+                                    else if (idx === 1) ranking = ' ? #2 MOST INFLUENTIAL';
                                     else if (idx === 2) ranking = ' ++ #3 MOST INFLUENTIAL';
-                                    else if (displayCount < Math.ceil(result.shap_explanation.total_features_analyzed * 0.3)) ranking = ' 📍 HIGH INFLUENCE';
+                                    else if (displayCount < Math.ceil(result.shap_explanation.total_features_analyzed * 0.3)) ranking = ' ?? HIGH INFLUENCE';
                                     
                                     console.log(
                                         `  ${displayCount}. ${contrib.feature}${ranking}` +
@@ -3683,9 +3683,9 @@
                 // Store this prediction in guest's session detected patients list
                 let guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
                 
-                console.log('📦 STORING GUEST PATIENT - Full result object:', result);
-                console.log('📦 result.shap_explanation before storage:', result.shap_explanation);
-                console.log('📦 typeof result.shap_explanation:', typeof result.shap_explanation);
+                console.log('?? STORING GUEST PATIENT - Full result object:', result);
+                console.log('?? result.shap_explanation before storage:', result.shap_explanation);
+                console.log('?? typeof result.shap_explanation:', typeof result.shap_explanation);
                 
                 // Create patient object from clinical data and prediction result
                 const detectedPatient = {
@@ -3703,7 +3703,7 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                console.log('🔍 DEBUG - detectedPatient being stored:');
+                console.log('?? DEBUG - detectedPatient being stored:');
                 console.log('   - Has api_response?', !!detectedPatient.api_response);
                 console.log('   - api_response.shap_explanation?', !!detectedPatient.api_response.shap_explanation);
                 if (detectedPatient.api_response.shap_explanation) {
@@ -3713,12 +3713,12 @@
                 
                 guestDetectedPatients.push(detectedPatient);
                 sessionStorage.setItem('guest_detected_patients', JSON.stringify(guestDetectedPatients));
-                console.log('✅ Guest detected patient stored in sessionStorage:', detectedPatient);
+                console.log('? Guest detected patient stored in sessionStorage:', detectedPatient);
                 
                 // VERIFICATION: Immediately read back from sessionStorage to confirm
                 const verification = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
                 const storedPatient = verification[verification.length - 1];
-                console.log('🔍 VERIFICATION - Read back from sessionStorage:');
+                console.log('?? VERIFICATION - Read back from sessionStorage:');
                 console.log('   - Total patients stored:', verification.length);
                 console.log('   - Last patient:', storedPatient);
                 console.log('   - Has api_response:', !!storedPatient?.api_response);
@@ -3744,7 +3744,7 @@
                     const errorBox = document.createElement('div');
                     errorBox.className = 'mt-6 p-4 bg-red-50 border border-red-300 rounded-lg';
                     errorBox.innerHTML = `
-                        <h4 class="text-lg font-semibold text-red-800 mb-2">⚠️ Unable to Generate Prediction</h4>
+                        <h4 class="text-lg font-semibold text-red-800 mb-2">?? Unable to Generate Prediction</h4>
                         <p class="text-red-700 mb-3">${result.error || 'Unknown error occurred'}</p>
                     `;
                     
@@ -3927,7 +3927,7 @@
             if (smoothingFactor) {
                 cnnPayload.smoothing_factor = smoothingFactor;
             }
-            fetch('https://p-code.onrender.com/predict-cnn', {
+            fetch('https://p-code-nqak.onrender.com/predict-cnn', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4078,7 +4078,7 @@
             if (smoothingFactor) {
                 cnnPayload.smoothing_factor = smoothingFactor;
             }
-            fetch('https://p-code.onrender.com/predict-cnn', {
+            fetch('https://p-code-nqak.onrender.com/predict-cnn', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4178,7 +4178,7 @@
                             lastPatient.ultrasound_image = uploadedImages.ultrasound;
                         }
                         sessionStorage.setItem('guest_detected_patients', JSON.stringify(guestDetectedPatients));
-                        console.log('✅ Guest imaging result added to detected patient:', lastPatient);
+                        console.log('? Guest imaging result added to detected patient:', lastPatient);
                     }
 
                     // Display results
@@ -4589,7 +4589,7 @@
             const waitingOnOtherModel = clinicalAnalyzing || imagingAnalyzing;
             const imagingRejected = !!imagingData && !imagingOk;
 
-            // Per-model bars — rejected non-ultrasound imaging stays out of the final score
+            // Per-model bars � rejected non-ultrasound imaging stays out of the final score
             setFinalBar('clinical', clinicalProb, clinicalAnalyzing);
             if (imagingRejected) {
                 setFinalBar('imaging', null, false);
@@ -4613,7 +4613,7 @@
             } else if (clinicalProb !== null) {
                 combinedProbability = clinicalProb;
                 caption = imagingRejected
-                    ? 'Clinical-only confidence (imaging excluded — not a confirmed ultrasound)'
+                    ? 'Clinical-only confidence (imaging excluded � not a confirmed ultrasound)'
                     : 'Clinical-only confidence';
             } else if (imagingProb !== null) {
                 combinedProbability = imagingProb;
@@ -4731,7 +4731,7 @@
                 if (!overlay) {
                     overlay = document.createElement('div');
                     overlay.className = 'gauge-no-analysis-overlay';
-                    overlay.innerHTML = '<div class="overlay-icon">✖</div><div class="overlay-text">No analysis<br>performed</div>';
+                    overlay.innerHTML = '<div class="overlay-icon">?</div><div class="overlay-text">No analysis<br>performed</div>';
                     container.appendChild(overlay);
                 } else {
                     overlay.style.display = 'flex';
@@ -4776,7 +4776,7 @@
                     // Create and add neutral "no analysis" overlay
                     const overlay = document.createElement('div');
                     overlay.className = 'gauge-no-analysis-overlay';
-                    overlay.innerHTML = '<div class="overlay-icon">✖</div><div class="overlay-text">No analysis conducted</div>';
+                    overlay.innerHTML = '<div class="overlay-icon">?</div><div class="overlay-text">No analysis conducted</div>';
                     container.appendChild(overlay);
                 }
             });
@@ -4803,12 +4803,12 @@
                 if (overlay) {
                     overlay.classList.remove('gauge-analyzing-overlay');
                     overlay.classList.add('gauge-no-analysis-overlay');
-                    overlay.innerHTML = '<div class="overlay-icon">✖</div><div class="overlay-text">No analysis conducted</div>';
+                    overlay.innerHTML = '<div class="overlay-icon">?</div><div class="overlay-text">No analysis conducted</div>';
                 } else {
                     // If no overlay exists, create one
                     const newOverlay = document.createElement('div');
                     newOverlay.className = 'gauge-no-analysis-overlay';
-                    newOverlay.innerHTML = '<div class="overlay-icon">✖</div><div class="overlay-text">No analysis conducted</div>';
+                    newOverlay.innerHTML = '<div class="overlay-icon">?</div><div class="overlay-text">No analysis conducted</div>';
                     container.appendChild(newOverlay);
                 }
             }
@@ -4872,7 +4872,7 @@
                 }
             } else if (imagingData && imagingData.reliable === false) {
                 if (!quiet) {
-                    alert('Save blocked — unreliable ultrasound image. Please upload a valid pelvic ultrasound and re-run imaging analysis.');
+                    alert('Save blocked � unreliable ultrasound image. Please upload a valid pelvic ultrasound and re-run imaging analysis.');
                 }
                 return Promise.resolve(false);
             }
@@ -4922,7 +4922,7 @@
                 
                 const selectedPatient = allPatients.find(p => p.id === patientSelectValue);
                 if (!selectedPatient) {
-                    if (!quiet) alert('❌ ERROR: Selected patient not found in session. The patient may have been lost. Please reload and reselect.');
+                    if (!quiet) alert('? ERROR: Selected patient not found in session. The patient may have been lost. Please reload and reselect.');
                     console.error('[SAVE] Patient not found:', patientSelectValue);
                     console.error('[SAVE] Available patients:', allPatients.map(p => p.id));
                     return Promise.resolve(false);
@@ -4941,20 +4941,20 @@
                         console.warn('[SAVE] No database patient_id found, attempting to use creation_sequence');
                         // For new guest patients, they should have patient_id or database_id set
                         // If not, we cannot save to database permanently
-                        if (!quiet) alert('⚠️  This patient was detected in this session only and does not have a permanent database ID.\n\nGuest users can view results but cannot permanently save them.\n\nTo permanently save diagnostic results, please create an account.');
+                        if (!quiet) alert('??  This patient was detected in this session only and does not have a permanent database ID.\n\nGuest users can view results but cannot permanently save them.\n\nTo permanently save diagnostic results, please create an account.');
                         console.log('[SAVE] Guest patient analysis stored in sessionStorage only');
                         return Promise.resolve(false);
                     } else {
-                        if (!quiet) alert('❌ ERROR: Patient ID not found. Guest patients must be registered to save results permanently.\n\nPlease create an account to save diagnostic analyses.');
+                        if (!quiet) alert('? ERROR: Patient ID not found. Guest patients must be registered to save results permanently.\n\nPlease create an account to save diagnostic analyses.');
                         console.error('[SAVE] No patient_id available');
                         return Promise.resolve(false);
                     }
                 }
             } else {
-                // Logged-in user — accept numeric id or PMOS-XXX display id
+                // Logged-in user � accept numeric id or PMOS-XXX display id
                 patientId = parsePatientNumericId(patientSelectValue);
                 if (isNaN(patientId) || patientId <= 0) {
-                    if (!quiet) alert('❌ ERROR: Invalid patient ID. ' + patientSelectValue + ' is not a valid numeric ID.');
+                    if (!quiet) alert('? ERROR: Invalid patient ID. ' + patientSelectValue + ' is not a valid numeric ID.');
                     console.error('[SAVE] Invalid patient_id:', patientSelectValue);
                     return Promise.resolve(false);
                 }
@@ -5092,7 +5092,7 @@
                     }
                 } catch (e) {
                     console.error('[SAVE] Failed to update patient parameters:', e);
-                    alert(`❌ Failed to save patient parameters:\n${e.message}`);
+                    alert(`? Failed to save patient parameters:\n${e.message}`);
                     return false;
                 }
 
@@ -5126,22 +5126,22 @@
                     console.log('[SAVE] Response data:', data);
 
                     if (data && data.success) {
-                        console.log('[SAVE] ✅ SUCCESS - Diagnosis ID:', data.diagnosis_id);
+                        console.log('[SAVE] ? SUCCESS - Diagnosis ID:', data.diagnosis_id);
                         if (window.clinicalFormAutosave) window.clinicalFormAutosave.clearDraft();
                         if (window.clinicalFormGuard) window.clinicalFormGuard.notifySaved('Results saved to database');
                         if (!quiet) {
-                            alert(`✅ Analysis results saved successfully!\n\nDiagnosis ID: ${data.diagnosis_id}\n\nUse “View XAI Insights” when you want the explainable AI breakdown.`);
+                            alert(`? Analysis results saved successfully!\n\nDiagnosis ID: ${data.diagnosis_id}\n\nUse �View XAI Insights� when you want the explainable AI breakdown.`);
                         }
                         return true;
                     }
 
-                    console.error('[SAVE] ❌ FAILED - Server response:', data);
-                    alert(`❌ Failed to save: ${data?.error || data?.message || 'Unknown error'}`);
+                    console.error('[SAVE] ? FAILED - Server response:', data);
+                    alert(`? Failed to save: ${data?.error || data?.message || 'Unknown error'}`);
                     return false;
                 } catch (error) {
-                    console.error('[SAVE] ❌ EXCEPTION - Error saving results:', error);
+                    console.error('[SAVE] ? EXCEPTION - Error saving results:', error);
                     console.error('[SAVE] Error message:', error.message);
-                    alert(`❌ Error saving results:\n${error.message}\n\nPlease check the console (F12) for more details.`);
+                    alert(`? Error saving results:\n${error.message}\n\nPlease check the console (F12) for more details.`);
                     return false;
                 }
             })();
@@ -5195,9 +5195,9 @@
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating...</span>';
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF report…');
+                window.pcodeShowExportLoading('Generating PDF report�');
             } else if (typeof window.pcodeShowCenterAlert === 'function') {
-                window.pcodeShowCenterAlert('Generating PDF report…', 'loading', { persist: true });
+                window.pcodeShowCenterAlert('Generating PDF report�', 'loading', { persist: true });
             }
 
             try {
@@ -5242,7 +5242,7 @@
 
                 btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Preparing heatmap...</span>';
                 if (typeof window.pcodeShowExportLoading === 'function') {
-                    window.pcodeShowExportLoading('Preparing ultrasound heatmap for PDF…');
+                    window.pcodeShowExportLoading('Preparing ultrasound heatmap for PDF�');
                 }
                 const gradcamSrc = helpers.resolveGradcamForExport
                     ? await helpers.resolveGradcamForExport(imagingData, uploadedImages.ultrasound)
@@ -5270,7 +5270,7 @@
 
                 btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating PDF...</span>';
                 if (typeof window.pcodeShowExportLoading === 'function') {
-                    window.pcodeShowExportLoading('Generating PDF report…');
+                    window.pcodeShowExportLoading('Generating PDF report�');
                 }
 
                 const response = await fetch('api/export_xai_pdf.php', {
@@ -5306,7 +5306,7 @@
                     showDetectToast('Error: ' + ((data && data.message) || 'Failed to generate report'), 'error');
                 }
             } catch (error) {
-                console.error('❌ Export error:', error);
+                console.error('? Export error:', error);
                 if (typeof window.pcodeHideExportLoading === 'function') {
                     window.pcodeHideExportLoading();
                 }
@@ -5390,7 +5390,7 @@
             if (menuIcon) menuIcon.classList.remove('hidden');
         }
 
-        // Note: in “desktop site” mode we keep hamburger + profile actions,
+        // Note: in �desktop site� mode we keep hamburger + profile actions,
         // but hide the sidebar navigation link list via CSS (when present).
     </script>
     <script>

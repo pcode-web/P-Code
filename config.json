@@ -3,7 +3,7 @@
     "name": "PMOS Decision Support System",
     "version": "2.1.4",
     "environment": "production",
-    "apiBaseUrl": "https://p-code.onrender.com/api/",
+    "apiBaseUrl": "https://p-code-nqak.onrender.com/api/",
     "frontendUrl": "./"
   },
   "authentication": {
@@ -16,7 +16,7 @@
   },
   "mlModels": {
     "xgboost": {
-      "endpoint": "https://p-code.onrender.com/predict-xgboost",
+      "endpoint": "https://p-code-nqak.onrender.com/predict-xgboost",
       "version": "2.1.4",
       "features": [
         "age",
@@ -37,7 +37,7 @@
       "confidenceThreshold": 0.85
     },
     "cnn": {
-      "endpoint": "https://p-code.onrender.com/predict-cnn",
+      "endpoint": "https://p-code-nqak.onrender.com/predict-cnn",
       "version": "2.1.4",
       "inputSize": [224, 224],
       "channels": 3,
@@ -50,7 +50,7 @@
       "confidenceThreshold": 0.90
     },
     "cnnGradcam": {
-      "endpoint": "https://p-code.onrender.com/predict-cnn-gradcam"
+      "endpoint": "https://p-code-nqak.onrender.com/predict-cnn-gradcam"
     },
     "xai": {
       "shap": {

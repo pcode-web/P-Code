@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -735,7 +735,7 @@
         <a href="history-user.html" class="btn-purple-glass inline-flex items-center justify-center whitespace-nowrap" onclick="return auth.requireAuth(this.href)">Open History</a>
       </div>
       <div id="home-screening-history-preview" class="pcode-home-history-preview" aria-live="polite">
-        <p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening historyâ€¦</p>
+        <p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>
       </div>
     </div>
 
@@ -1013,12 +1013,12 @@
 
   <script src="js/pcode-maps-config.js"></script>
   <script type="module" src="js/firebase-config.js"></script>
-  <script src="js/nearby-care-google.js?v=20260724-contacts" defer></script>
+  <script src="js/nearby-care-google.js?v=20260730-advanced-markers" defer></script>
 
   <!-- Auth Module -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="js/auth.js?v=20260730-corsfix"></script>
-  <script src="js/pcode-google-auth.js?v=20260730-corsfix"></script>
+  <script src="js/auth.js?v=20260730-nqak"></script>
+  <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
   <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
@@ -1203,7 +1203,7 @@
       revealEl(historyCard);
 
       if (!preview) return;
-      preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening historyâ€¦</p>';
+      preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>';
 
       const token = sessionStorage.getItem("PMOS_auth_token") || "";
       if (!token) {
@@ -1267,7 +1267,7 @@
             '<ul class="pcode-home-history-list" role="list">' +
             shown.map(function (entry) {
               const rawDate = String(entry.created_at_display || entry.created_at || "").trim();
-              const dateParts = rawDate.split(/\s*[Â·â€¢|]\s*/);
+              const dateParts = rawDate.split(/\s*[·•|]\s*/);
               const dateMain = (dateParts[0] || rawDate).trim();
               const dateTime = (dateParts[1] || "").trim();
               const label = entry.status_label || "Pending";
@@ -1275,7 +1275,7 @@
               const pct =
                 entry.confidence_percent != null && isFinite(Number(entry.confidence_percent))
                   ? Number(entry.confidence_percent).toFixed(1) + "%"
-                  : "â€”";
+                  : "—";
               return (
                 '<li class="pcode-home-history-item">' +
                   '<div class="pcode-home-history-item__left">' +
@@ -1760,7 +1760,7 @@
           const cnnCard = document.getElementById("my-screening-cnn-card");
           const cnnProbLine = document.getElementById("my-screening-cnn-prob-line");
 
-          // Always keep Imaging / Clinical / Overall cards visible â€” missing runs show PENDING
+          // Always keep Imaging / Clinical / Overall cards visible — missing runs show PENDING
           if (overallCard) overallCard.style.display = "";
           if (overallProbLine) overallProbLine.style.display = "";
           if (xgCard) xgCard.style.display = "";

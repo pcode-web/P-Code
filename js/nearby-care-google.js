@@ -249,9 +249,43 @@
 
   function clearPlaceMarkers() {
     placeMarkers.forEach(function (m) {
-      m.setMap(null);
+      m.map = null;
     });
     placeMarkers = [];
+  }
+
+  function markerPosition(marker) {
+    if (!marker || !marker.position) return null;
+    var p = marker.position;
+    if (typeof p.lat === "function") {
+      return { lat: p.lat(), lng: p.lng() };
+    }
+    return { lat: Number(p.lat), lng: Number(p.lng) };
+  }
+
+  function numberedPinContent(n) {
+    var el = document.createElement("div");
+    el.textContent = String(n);
+    el.style.cssText =
+      "box-sizing:border-box;min-width:28px;height:28px;padding:0 7px;" +
+      "display:flex;align-items:center;justify-content:center;" +
+      "border-radius:999px;background:#4f46e5;color:#fff;" +
+      "font:700 12px/1 system-ui,sans-serif;border:2px solid #fff;" +
+      "box-shadow:0 1px 4px rgba(15,23,42,.35);";
+    return el;
+  }
+
+  function userPinContent() {
+    var el = document.createElement("div");
+    el.style.cssText =
+      "width:16px;height:16px;border-radius:50%;background:#6366f1;" +
+      "border:2px solid #4f46e5;box-shadow:0 0 0 2px #fff," +
+      "0 1px 4px rgba(15,23,42,.35);";
+    return el;
+  }
+
+  function createAdvancedMarker(opts) {
+    return new google.maps.marker.AdvancedMarkerElement(opts);
   }
 
   function loadGoogleMaps(apiKey) {
@@ -259,7 +293,8 @@
       if (
         window.google &&
         window.google.maps &&
-        window.google.maps.places
+        window.google.maps.places &&
+        window.google.maps.marker
       ) {
         resolve(window.google.maps);
         return;
@@ -285,7 +320,7 @@
       s.src =
         "https://maps.googleapis.com/maps/api/js?key=" +
         encodeURIComponent(apiKey) +
-        "&libraries=places&callback=" +
+        "&libraries=places,marker&v=weekly&callback=" +
         cbName;
       s.onerror = function () {
         reject(new Error("Google Maps script failed to load."));
@@ -582,19 +617,21 @@
     if (!map) return;
 
     var bounds = new google.maps.LatLngBounds();
-    if (userMarker) {
-      bounds.extend(userMarker.getPosition());
+    var userPos = markerPosition(userMarker);
+    if (userPos) {
+      bounds.extend(userPos);
     }
 
     places.forEach(function (p, idx) {
       var pos = { lat: p.lat, lng: p.lon };
-      var marker = new google.maps.Marker({
+      var marker = createAdvancedMarker({
         map: map,
         position: pos,
         title: p.name || "Facility",
-        label: String(idx + 1)
+        content: numberedPinContent(idx + 1),
+        gmpClickable: true
       });
-      marker.addListener("click", function () {
+      marker.addListener("gmp-click", function () {
         if (!infoWindow) return;
         infoWindow.setContent(placeInfoHtml(p));
         infoWindow.open({ map: map, anchor: marker });
@@ -674,7 +711,8 @@
           map.setZoom(16);
           var mk = placeMarkers[idx];
           if (mk && infoWindow) {
-            google.maps.event.trigger(mk, "click");
+            infoWindow.setContent(placeInfoHtml(p));
+            infoWindow.open({ map: map, anchor: mk });
           }
         });
       })
@@ -703,20 +741,14 @@
         var posLatLng = { lat: lat, lng: lon };
 
         if (userMarker) {
-          userMarker.setMap(null);
+          userMarker.map = null;
         }
-        userMarker = new google.maps.Marker({
+        userMarker = createAdvancedMarker({
           map: map,
           position: posLatLng,
           title: "You are here",
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: "#6366f1",
-            fillOpacity: 0.95,
-            strokeColor: "#4f46e5",
-            strokeWeight: 2
-          }
+          content: userPinContent(),
+          gmpClickable: true
         });
         if (infoWindow) {
           infoWindow.setContent(
@@ -749,6 +781,7 @@
     map = new google.maps.Map(el, {
       center: DEFAULT_CENTER,
       zoom: 12,
+      mapId: "DEMO_MAP_ID",
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: true

@@ -3,8 +3,9 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.75rem;
+  gap: 1rem;
   width: 100%;
+  overflow: visible;
 }
 
 .pcode-google-signin-mount,
@@ -14,7 +15,49 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 44px;
+  min-height: 52px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+}
+
+/* Let GIS size the button; don't stretch it full-bleed (logo looks inset) */
+.pcode-google-signin-mount > div,
+#google-signin-mount > div,
+#google-signin-mount-login > div {
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.pcode-google-signin-mount iframe,
+#google-signin-mount iframe,
+#google-signin-mount-login iframe {
+  display: block !important;
+  position: relative !important;
+  margin: 0 auto !important;
+  max-width: 100% !important;
+}
+
+.pcode-oauth-disclaimer,
+#pcode-oauth-disclaimer {
+  margin: 0.35rem 0 0;
+  padding: 0.15rem 0.35rem 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  text-align: center;
+  color: rgba(161, 161, 170, 0.95);
+  position: relative;
+  z-index: 0;
+  flex: 0 0 auto;
 }
 
 /* Dark login cards — GIS declarative button shell */
@@ -77,16 +120,6 @@ html.login-bento-page .oauth-google-button-shell-inner {
   max-width: 100% !important;
 }
 
-.pcode-oauth-disclaimer,
-#pcode-oauth-disclaimer {
-  margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.75rem;
-  line-height: 1.45;
-  text-align: center;
-  color: rgba(161, 161, 170, 0.95);
-}
-
 html.login-bento-page .pcode-oauth-disclaimer,
 html.login-bento-page #pcode-oauth-disclaimer {
   color: rgba(221, 214, 255, 0.78);
@@ -100,7 +133,8 @@ html.login-bento-page #pcode-oauth-disclaimer {
 }
 
 .auth-modal-content .pcode-google-signin-mount {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+  min-height: 56px;
 }
 
 /* Modal / light surfaces keep outline GIS buttons */
@@ -148,16 +182,15 @@ html.login-bento-page #pcode-oauth-disclaimer {
   position: relative;
   z-index: 1001;
   width: min(52rem, calc(100vw - 2rem));
-  max-height: min(94dvh, 960px);
+  max-height: min(96dvh, 920px);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Keep scroll; hide the visible scrollbar */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* legacy Edge/IE */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   margin: 0 auto;
-  padding: 1.75rem 1.75rem 2.75rem;
-  border-radius: 2.25rem !important;
+  padding: 1.25rem 1.25rem 1.75rem;
+  border-radius: 1.75rem !important;
   background: rgba(13, 11, 20, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow:
@@ -166,6 +199,11 @@ html.login-bento-page #pcode-oauth-disclaimer {
   color: #f5f3ff !important;
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
+}
+
+/* Narrower card once the user is on email/Google sign-in */
+.auth-modal .pcode-auth-float-card:has(#auth-tabs-section:not(.hidden)) {
+  width: min(26rem, calc(100vw - 2rem));
 }
 
 .auth-modal .auth-modal-content.pcode-auth-float-card::-webkit-scrollbar,
@@ -327,8 +365,23 @@ html.pcode-app-bento-root.dark body.pcode-app-bento .auth-modal .pcode-auth-floa
 
 .pcode-auth-float-signin {
   text-align: center;
-  padding-top: 0.25rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.25rem;
+}
+
+.auth-modal .pcode-auth-float-logo--sm {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.auth-modal .pcode-auth-float-signin-sub {
+  margin: 0.25rem 0 0.65rem;
+}
+
+.auth-modal .pcode-auth-float-cred-form {
+  gap: 0.65rem;
+  margin-top: 0.25rem;
 }
 
 .auth-modal .pcode-google-oauth-panel,
@@ -338,8 +391,8 @@ html.pcode-app-bento-root.dark body.pcode-app-bento .auth-modal .pcode-auth-floa
   align-items: stretch;
   gap: 0.65rem;
   width: 100%;
-  margin: 0.35rem 0 0.25rem;
-  padding-bottom: 0.35rem;
+  margin: 0.35rem 0 0.15rem;
+  padding-bottom: 0.15rem;
   overflow: visible;
 }
 
@@ -350,11 +403,21 @@ html.pcode-app-bento-root.dark body.pcode-app-bento .auth-modal .pcode-auth-floa
   align-items: center;
   width: 100%;
   min-height: 48px;
+  margin-bottom: 0;
   overflow: visible;
+  flex: 0 0 auto;
+}
+
+.auth-modal .pcode-oauth-disclaimer,
+.auth-modal #pcode-oauth-disclaimer,
+.auth-modal .pcode-auth-float-card .pcode-oauth-disclaimer {
+  margin-top: 0 !important;
+  padding-top: 0.1rem !important;
+  clear: both;
 }
 
 .auth-modal .pcode-auth-float-divider {
-  margin: 1rem 0 0.85rem;
+  margin: 0.75rem 0 0.65rem;
 }
 
 .pcode-auth-float-back {

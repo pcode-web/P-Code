@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
   <html lang="en" class="pcode-app-bento-root dark">
     <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -251,7 +251,7 @@
                                 </div>
                               </div>
                             </div>
-                            <!-- Auth Modal ‚Äî floating portal chooser -->
+                            <!-- Auth Modal ó floating portal chooser -->
                               <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
                                 <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
                                 <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
@@ -386,7 +386,7 @@
                       </svg>
                     </div>
                   </div>
-                  <p class="pcode-mp-footnote text-blue-400/90">Convolutional Neural Network on transvaginal ultrasound ‚Äî held-out test performance</p>
+                  <p class="pcode-mp-footnote text-blue-400/90">Convolutional Neural Network on transvaginal ultrasound ó held-out test performance</p>
                 </div>
                 <div class="pcode-card-static metric-card pcode-bento-card shadow-lg pcode-metric-tile pcode-metric-tile--stacked pcode-metric-tile--accent-blue w-full min-w-0">
                   <div class="pcode-metric-tile__row">
@@ -406,12 +406,12 @@
 <!-- Performance Metrics -->
   <!-- XGBoost Data Split Chart -->
   <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost ‚Äî Dataset Split</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost ó Dataset Split</h2>
     <div class="pcode-chart-panel w-full min-w-0"><div id="data-split-chart" class="pcb-echart-host pcode-chart-host w-full h-full min-h-0"></div></div>
     <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
       <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
         <li><strong>Total Dataset:</strong> 578 patients (214 positive PMOS cases, 364 negative cases)</li>
-        <li><strong>Training Set (70%):</strong> 404 patients (150 positive, 254 negative) ‚Äî Used to train the XGBoost model</li>
+        <li><strong>Training Set (70%):</strong> 404 patients (150 positive, 254 negative) ó Used to train the XGBoost model</li>
         <li><strong>Test Set (30%):</strong> 174 patients (64 positive, 110 negative) - Used to evaluate final model performance on unseen data</li>
         <li><strong>Why this split:</strong> Stratified split ensures both datasets have the same proportion of positive/negative cases, preventing bias and providing reliable performance estimates</li>
       </ul>
@@ -493,7 +493,7 @@
 </div>
 <!-- XGBoost Model Performance -->
   <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost ‚Äî Model Performance</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">XGBoost ó Model Performance</h2>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-stretch mb-4 sm:mb-6 md:mb-8">
       <!-- Test Set Metrics -->
       <div class="mp-test-set-shell p-6">
@@ -552,7 +552,7 @@
           </div>
         </div>
         <div class="mt-4 pt-4 px-4 pb-4 mp-glass-inset">
-          <p class="text-xs leading-relaxed">The XGBoost model shows excellent diagnostic performance with 95.40% accuracy and 96.20% AUC-PR. Cross-validation confirms consistent reliability across patient populations with minimal variability (¬±3.08%), validating it as a clinically viable PMOS screening tool. With 95.30% recall and 92.40% precision, the model effectively balances sensitivity and specificity for workflow integration.</p>
+          <p class="text-xs leading-relaxed">The XGBoost model shows excellent diagnostic performance with 95.40% accuracy and 96.20% AUC-PR. Cross-validation confirms consistent reliability across patient populations with minimal variability (±3.08%), validating it as a clinically viable PMOS screening tool. With 95.30% recall and 92.40% precision, the model effectively balances sensitivity and specificity for workflow integration.</p>
         </div>
       </div>
     </div>
@@ -560,12 +560,12 @@
 
   <!-- CNN Dataset Split Chart -->
   <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ‚Äî Dataset Split</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ó Dataset Split</h2>
     <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-data-split-chart" class="pcb-echart-host"></div></div>
     <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
       <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
         <li><strong>Total Dataset:</strong> 7,445 ultrasound images (3,619 PMOS Positive Cases, 3,826 Normal Negative cases)</li>
-        <li><strong>Training Set:</strong> 5,211 images (2,533 PMOS Positive, 2,678 Normal Negative) ‚Äî Used to train the CNN model on diverse follicular patterns</li>
+        <li><strong>Training Set:</strong> 5,211 images (2,533 PMOS Positive, 2,678 Normal Negative) ó Used to train the CNN model on diverse follicular patterns</li>
         <li><strong>Validation Set:</strong> 1,117 images (543 PMOS Positive, 574 Normal Negative) - Used to tune model hyperparameters and monitor learning during training</li>
         <li><strong>Test Set:</strong> 1,117 images (543 PMOS Positive, 574 Normal Negative) - Used to evaluate final model performance on completely unseen ultrasound images</li>
         <li><strong>Why this split:</strong> The stratified split ensures both train, validation, and test sets maintain the same class proportions, preventing bias and providing reliable performance estimates on medical imaging data</li>
@@ -575,7 +575,7 @@
 
   <!-- CNN Training History -->
   <div class="pcode-card-static pcode-bento-card shadow-lg mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ‚Äî Training History</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ó Training History</h2>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
       <!-- Accuracy Chart -->
       <div>
@@ -614,12 +614,12 @@
     </div>
 
     <div class="mt-4 pt-4 px-4 pb-4 bg-blue-50 rounded-lg border border-blue-200">
-      <p class="text-xs text-gray-700 leading-relaxed">The CNN model demonstrates stable learning progression across 10 training epochs. Training accuracy improves consistently from 94.6% to 97.0%, while validation accuracy remains high (96.9‚Äì97.3%), indicating excellent generalization without overfitting. The model achieves strong performance with minimal gap between training and validation metrics, suggesting robust feature learning for ovarian ultrasound interpretation.</p>
+      <p class="text-xs text-gray-700 leading-relaxed">The CNN model demonstrates stable learning progression across 10 training epochs. Training accuracy improves consistently from 94.6% to 97.0%, while validation accuracy remains high (96.9ñ97.3%), indicating excellent generalization without overfitting. The model achieves strong performance with minimal gap between training and validation metrics, suggesting robust feature learning for ovarian ultrasound interpretation.</p>
     </div>
 
     <!-- CNN Test Set Performance Metrics Bar Graph -->
     <div class="mt-8">
-      <h3 class="text-xl font-bold text-gray-800 mb-4">CNN ‚Äî Test Set Performance</h3>
+      <h3 class="text-xl font-bold text-gray-800 mb-4">CNN ó Test Set Performance</h3>
       <div class="pcode-chart-scroll w-full overflow-x-auto scrollbar-none"><div id="cnn-performance-metrics-chart" class="pcb-echart-host"></div></div>
       <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <ul class="text-sm text-gray-700 leading-relaxed space-y-2">
@@ -641,7 +641,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 items-stretch mb-4 sm:mb-6 md:mb-8">
     <!-- CNN Test Set Evaluation -->
     <div class="pcode-card-static pcode-bento-card shadow-lg">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ‚Äî Test Set Evaluation</h2>
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">CNN ó Test Set Evaluation</h2>
       <div class="bento-glass-card rounded-xl p-6">
         <!-- Overall Metrics -->
         <div class="pcode-mp-stat-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -743,7 +743,7 @@
         <li><strong>XGBoost:</strong> Achieved 95.4% accuracy with 92.42% precision and 95.31% recall on the Rotterdam criteria dataset PMOS, providing excellent balance between false positives and missed diagnoses.</li>
         <li><strong>CNN PMOS-positive:</strong> 93.28% precision with 99.63% recall minimizes missed PMOS cases, prioritizing sensitivity for disease detection.</li>
         <li><strong>CNN (normal):</strong> 99.63% precision limits false positives when classifying normal ovarian morphology, with 93.21% recall maintaining strong specificity.</li>
-        <li><strong>Integrated Clinical View:</strong> Both modalities demonstrate complementary strengths ‚Äî XGBoost provides balanced overall accuracy on clinical &amp; lab metrics, while the CNN excels at follicular pattern classification with exceptional recall for PMOS-positive cases.</li>
+        <li><strong>Integrated Clinical View:</strong> Both modalities demonstrate complementary strengths ó XGBoost provides balanced overall accuracy on clinical &amp; lab metrics, while the CNN excels at follicular pattern classification with exceptional recall for PMOS-positive cases.</li>
       </ul>
     </div>
   </div>
@@ -760,8 +760,8 @@
 
     <!-- Auth Module -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/auth.js?v=20260730-corsfix" defer></script>
-    <script src="js/pcode-google-auth.js?v=20260730-corsfix" defer></script>
+    <script src="js/auth.js?v=20260730-nqak" defer></script>
+    <script src="js/pcode-google-auth.js?v=20260730-nqak" defer></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
     <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
     <script src="js/pcode-confusion-bento.js?v=20260724-cmcenter" defer></script>
@@ -843,7 +843,7 @@
         if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
         if (menuIcon) menuIcon.classList.remove('hidden');
       }
-      // Note: in ‚Äúdesktop site‚Äù mode we keep hamburger + profile actions,
+      // Note: in ìdesktop siteî mode we keep hamburger + profile actions,
       // but hide the sidebar navigation link list via CSS (when present).
     </script>
 
@@ -899,7 +899,7 @@
   function pcbIsBentoDark() {
     var html = document.documentElement;
     if (!html) return false;
-    // Match CSS `:not(.dark)` ‚Äî class is source of truth for light mode.
+    // Match CSS `:not(.dark)` ó class is source of truth for light mode.
     if (!html.classList.contains('dark')) return false;
     var attr = html.getAttribute('data-pcode-theme');
     if (attr === 'light') return false;
@@ -1137,7 +1137,7 @@
       const barMuted = th.dark ? pcbBarFill('#c084fc', '#5b21b6') : '#7c3aed';
       const barCnnPos = th.dark ? pcbBarFill('#a855f7', '#4f46e5') : '#4f46e5';
       const barCnnNeg = th.dark ? pcbBarFill('#818cf8', '#4338ca') : '#6366f1';
-      /* Dark heatmap: keep max intensity in saturated violet ‚Äî never near-white (was washing out labels + visualMap). */
+      /* Dark heatmap: keep max intensity in saturated violet ó never near-white (was washing out labels + visualMap). */
       const hmRamp = th.dark ? ['#05030c', '#1a0d36', '#4c1d95', '#6d28d9', '#a855f7'] : null;
 
       // Data Split Chart

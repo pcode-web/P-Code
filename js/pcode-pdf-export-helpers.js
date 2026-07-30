@@ -131,7 +131,7 @@
 
   function fetchGradcamFromApi(ultrasoundImage) {
     if (!ultrasoundImage) return Promise.resolve(null);
-    return fetch('https://p-code.onrender.com/predict-cnn-gradcam', {
+    return fetch('https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: ultrasoundImage, generate_gradcam: true }),

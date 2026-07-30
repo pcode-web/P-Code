@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -104,7 +104,7 @@
       input, select, textarea { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
     }
 
-    /* XAI glass panels â€” contributor rows + clinical notes (dark bento) */
+    /* XAI glass panels — contributor rows + clinical notes (dark bento) */
     .pcode-xai-glass-item {
       background: rgba(255, 255, 255, 0.02);
       -webkit-backdrop-filter: blur(12px);
@@ -231,7 +231,7 @@
           <div class="xai-selection-field">
             <label for="screening-selector" class="xai-selection-label">Diagnosis screening</label>
             <select id="screening-selector" class="xai-selection-control" disabled aria-label="Select diagnosis screening">
-              <option value="">Select a patient firstâ€¦</option>
+              <option value="">Select a patient first…</option>
             </select>
           </div>
           <div class="xai-selection-action">
@@ -261,7 +261,7 @@
           </svg>
         </div>
         <p id="xai-loading-title" class="text-white font-semibold text-lg sm:text-xl tracking-tight">Loading Interpretability...</p>
-        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your clinical parameter insights and ultrasound heatmap interpretationâ€”this usually takes just a moment.</p>
+        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your clinical parameter insights and ultrasound heatmap interpretation—this usually takes just a moment.</p>
       </div>
     </div>
 
@@ -327,7 +327,7 @@
             This chart shows which patient details the system pays the most attention to when reviewing cases. Items near the top usually have a stronger influence on the overall result than items lower on the list.
           </p>
           <p class="text-sm mt-3 px-4 py-3 pcode-xai-clinical-note">
-            <span class="pcode-xai-clinical-note__label">Helpful hint:</span> Use this as a quick review listâ€”if a top item looks unusual, missing, or out of range, compare it with the patient's chart, lab results, and visit notes before relying on the output.
+            <span class="pcode-xai-clinical-note__label">Helpful hint:</span> Use this as a quick review list—if a top item looks unusual, missing, or out of range, compare it with the patient's chart, lab results, and visit notes before relying on the output.
           </p>
         </div>
 
@@ -346,7 +346,7 @@
           </div>
           <div>
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Clinical interpretation summary</h2>
-            <p class="text-sm text-gray-600 mt-1">Narrative complement to the chartsâ€”always cross-check against the case record.</p>
+            <p class="text-sm text-gray-600 mt-1">Narrative complement to the charts—always cross-check against the case record.</p>
           </div>
         </div>
         <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">Select a patient and load XAI to generate a short narrative for this case.</div>
@@ -389,7 +389,7 @@
               </div>
             </div>
             <p id="gradcam-heatmap-caption" class="text-sm text-gray-500 mt-3 italic border-l-4 border-blue-400 pl-3 bg-blue-50 py-2 px-3">
-              <span class="font-semibold">How to read:</span> Smooth AI attention heatmap with light grain, weighted toward peripheral follicles (string of pearls) â€” <strong>Red</strong> highest AI model attribution, <strong>Yellow/Green</strong> moderate, <strong>Blue/Cyan</strong> lower. 40% overlay over grayscale ultrasound (60% base).
+              <span class="font-semibold">How to read:</span> Smooth AI attention heatmap with light grain, weighted toward peripheral follicles (string of pearls) — <strong>Red</strong> highest AI model attribution, <strong>Yellow/Green</strong> moderate, <strong>Blue/Cyan</strong> lower. 40% overlay over grayscale ultrasound (60% base).
             </p>
           </div>
         </div>
@@ -502,7 +502,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/auth.js?v=20260730-corsfix"></script>
+  <script src="js/auth.js?v=20260730-nqak"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
@@ -529,8 +529,8 @@
       const status = entry.status_label || 'Unknown';
       const confidence = entry.confidence_percent != null ? `${Number(entry.confidence_percent).toFixed(1)}%` : 'N/A';
       const origin = entry.origin_label || entry.created_by || 'Screening';
-      const latestTag = index === 0 ? ' Â· Latest' : '';
-      return `${dateLabel} â€” ${status} (${confidence}) Â· ${origin}${latestTag}`;
+      const latestTag = index === 0 ? ' · Latest' : '';
+      return `${dateLabel} — ${status} (${confidence}) · ${origin}${latestTag}`;
     }
 
     function buildPatientPayloadFromHistory(patient, entry) {
@@ -580,7 +580,7 @@
       const screeningSelector = document.getElementById('screening-selector');
       if (!screeningSelector) return;
       patientHistoryEntries = [];
-      screeningSelector.innerHTML = `<option value="">${message || 'Select a patient firstâ€¦'}</option>`;
+      screeningSelector.innerHTML = `<option value="">${message || 'Select a patient first…'}</option>`;
       screeningSelector.disabled = true;
       screeningSelector.value = '';
       updateScreeningHint('');
@@ -602,7 +602,7 @@
 
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = 'Select diagnosis screeningâ€¦';
+      placeholder.textContent = 'Select diagnosis screening…';
       screeningSelector.appendChild(placeholder);
 
       patientHistoryEntries.forEach((entry, index) => {
@@ -621,12 +621,12 @@
       updateScreeningHint(
         patientHistoryEntries.length === 1
           ? '1 screening available for this patient.'
-          : `${patientHistoryEntries.length} screenings available â€” pick any past run to review its inputs and XAI explanation.`
+          : `${patientHistoryEntries.length} screenings available — pick any past run to review its inputs and XAI explanation.`
       );
     }
 
     async function loadPatientScreeningHistory(patient) {
-      resetScreeningSelector('Loading diagnosis historyâ€¦');
+      resetScreeningSelector('Loading diagnosis history…');
 
       const numericId = resolveNumericPatientId(patient);
       if (!numericId) {
@@ -668,7 +668,7 @@
       const patientSelector = document.getElementById('patient-selector');
       const selectedPatientId = patientSelector?.value;
       if (!selectedPatientId) {
-        resetScreeningSelector('Select a patient firstâ€¦');
+        resetScreeningSelector('Select a patient first…');
         return;
       }
 
@@ -901,7 +901,7 @@
         
         allPatients = guestDetectedPatients; // Store for later reference
         console.log('? loadPatientList() COMPLETED - Guest mode with', optionCount, 'patients');
-        resetScreeningSelector('Select a patient firstâ€¦');
+        resetScreeningSelector('Select a patient first…');
         return; // Exit - don't call API for guests
       }
       
@@ -983,7 +983,7 @@
             });
             
             console.log('Patient dropdown populated with', optionCount, 'options');
-            resetScreeningSelector('Select a patient firstâ€¦');
+            resetScreeningSelector('Select a patient first…');
             console.log('=== loadPatientList() COMPLETED SUCCESSFULLY ===');
           } else {
             console.error('Data validation failed');
@@ -1033,7 +1033,7 @@
         return;
       }
       
-      // Show loading spinner â€” paint before heavy async work
+      // Show loading spinner — paint before heavy async work
       await paintXaiLoadingBeforeWork();
       
       console.log('Looking for patient with ID:', selectedPatientId);
@@ -1054,8 +1054,8 @@
         const origin = selectedPatientForXai.history_origin_label || 'Screening';
         const when = selectedPatientForXai.history_created_at || '';
         screeningContext.textContent = when
-          ? `Explaining screening from ${when} Â· ${origin}`
-          : `Explaining selected screening Â· ${origin}`;
+          ? `Explaining screening from ${when} · ${origin}`
+          : `Explaining selected screening · ${origin}`;
         screeningContext.classList.remove('hidden');
       }
       
@@ -1387,7 +1387,7 @@
       console.log('Fetching XGBoost SHAP explanation with data:', predictionData);
 
       // Call XGBoost prediction API for SHAP explanations
-      fetch('https://p-code.onrender.com/predict-xgboost', {
+      fetch('https://p-code-nqak.onrender.com/predict-xgboost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(predictionData)
@@ -2279,7 +2279,7 @@
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
-        const safeValue = String(formatted.value ?? 'â€”')
+        const safeValue = String(formatted.value ?? '—')
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
@@ -2596,7 +2596,7 @@
       if (mode === 'pending') {
         const scoreText = Number.isFinite(Number(options.imagingScore))
           ? Number(options.imagingScore).toFixed(2) + '%'
-          : 'â€”';
+          : '—';
         container.innerHTML = `
           <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p class="text-sm font-semibold text-gray-800">Imaging Prediction Results</p>
@@ -2617,7 +2617,7 @@
 
       if (mode === 'ready') {
         const cnnScore = resolveCnnImagingScore(options.result, options.imagingScore);
-        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : 'â€”';
+        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—';
         const classification = resolveImagingClassificationLabel(
           options.result && options.result.classification,
           cnnScore
@@ -2655,7 +2655,7 @@
       if (!caption) return;
       caption.innerHTML = window.PcodeXaiClinical
         ? PcodeXaiClinical.gradcamHeatmapCaptionHtml('provider')
-        : '<span class="font-semibold">How to read:</span> Smooth AI attention heatmap â€” <strong>Red</strong> highest AI model attribution.';
+        : '<span class="font-semibold">How to read:</span> Smooth AI attention heatmap — <strong>Red</strong> highest AI model attribution.';
     }
 
     function buildGradcamInterpretationHtml(imagingScore, meta) {
@@ -2744,7 +2744,7 @@
       
       console.log('?? Grad-CAM Request Data:', requestData);
       
-      fetch('https://p-code.onrender.com/predict-cnn-gradcam', {
+      fetch('https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

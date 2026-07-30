@@ -5,7 +5,7 @@
 (function (global) {
   'use strict';
 
-  var BASE = 'https://p-code.onrender.com';
+  var BASE = 'https://p-code-nqak.onrender.com';
 
   global.PCODE_ML_API_BASE = BASE;
 

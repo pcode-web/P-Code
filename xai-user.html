@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -13,7 +13,7 @@
     html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; width: 100%; max-width: 100vw; margin: 0; padding: 0; }
 
-    /* —— Near-black canvas + light lavender purple trim —— */
+    /* �� Near-black canvas + light lavender purple trim �� */
     body.xai-bento-page {
       --xai-bg-deep: #000000;
       --xai-bg-mid: #000000;
@@ -254,7 +254,7 @@
     #mobile-menu-btn { min-width: 44px; min-height: 44px; flex-shrink: 0; }
     nav .flex.justify-between { min-height: 64px; flex-wrap: nowrap; }
     .mobile-menu { width: min(320px, 85vw); max-width: 90vw; -webkit-overflow-scrolling: touch; }
-    /* .auth-modal / .auth-modal-content: use css/tailwind.css (input.css) — same max-w-md + card as XAI / login loading */
+    /* .auth-modal / .auth-modal-content: use css/tailwind.css (input.css) � same max-w-md + card as XAI / login loading */
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .spinner { display: inline-block; animation: spin 1s linear infinite !important; will-change: transform; }
     /* Modal Styles */
@@ -384,7 +384,7 @@
     </div>
   </nav>
 
-  <!-- Auth Modal — floating portal chooser (injected/upgraded by auth.js if needed) -->
+  <!-- Auth Modal � floating portal chooser (injected/upgraded by auth.js if needed) -->
   <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
     <div class="auth-modal-overlay" onclick="auth.closeAuthModal()"></div>
     <div class="auth-modal-content pcode-auth-float-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
@@ -501,7 +501,7 @@
           </p>
         </div>
         <h1 class="pcode-hero-title font-extrabold">Why your result looks this way</h1>
-        <p class="text-base sm:text-lg hero-sub leading-relaxed mt-2">Plain-language explanations of which details and ultrasound patterns most influenced your PMOS screening — helpful for questions at your next clinic visit.</p>
+        <p class="text-base sm:text-lg hero-sub leading-relaxed mt-2">Plain-language explanations of which details and ultrasound patterns most influenced your PMOS screening � helpful for questions at your next clinic visit.</p>
         <div class="pcode-user-actions justify-center mt-5">
           <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero" href="index.html#pmos-learn">What is PMOS?</a>
           <a class="pcode-user-cta pcode-user-cta--secondary pcode-user-cta--on-hero" href="detect-user.html">Update screening</a>
@@ -534,7 +534,7 @@
           </svg>
         </div>
         <p id="xai-loading-title" class="text-white font-semibold text-lg sm:text-xl tracking-tight">Loading Interpretability...</p>
-        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your health-factor insights and ultrasound heatmap interpretation—this usually takes just a moment.</p>
+        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your health-factor insights and ultrasound heatmap interpretation�this usually takes just a moment.</p>
       </div>
     </div>
 
@@ -586,7 +586,7 @@
             This chart shows which details pushed the result <span class="font-semibold">toward higher risk</span> or <span class="font-semibold">toward lower risk</span>. Bigger bars mean that factor had a stronger effect on the outcome.
           </p>
           <p class="text-sm mt-3 bento-callout bento-callout--note px-4 py-3">
-            <span class="font-semibold text-amber-200">Note:</span> This is a supportive explanation from the AI model. It’s not a medical diagnosis by itself—use it together with clinical assessment.
+            <span class="font-semibold text-amber-200">Note:</span> This is a supportive explanation from the AI model. It�s not a medical diagnosis by itself�use it together with clinical assessment.
           </p>
         </div>
       </div>
@@ -622,11 +622,11 @@
           </div>
           <div>
             <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">What this means, in simple terms</h2>
-            <p class="text-sm text-gray-600 mt-1">A short, everyday explanation—separate from the charts above.</p>
+            <p class="text-sm text-gray-600 mt-1">A short, everyday explanation�separate from the charts above.</p>
           </div>
         </div>
         <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">When your insights load, a brief summary of the main takeaway will appear here.</div>
-        <p class="text-sm mt-4 italic bento-callout bento-callout--note px-3 py-2 rounded-r">This section is for education and context only—it is not a medical diagnosis. Use it alongside your own judgment. <span class="font-semibold text-violet-100 not-italic">Seeking a qualified clinician’s advice is strongly recommended</span>, especially before you change care or if you have symptoms or concerns.</p>
+        <p class="text-sm mt-4 italic bento-callout bento-callout--note px-3 py-2 rounded-r">This section is for education and context only�it is not a medical diagnosis. Use it alongside your own judgment. <span class="font-semibold text-violet-100 not-italic">Seeking a qualified clinician�s advice is strongly recommended</span>, especially before you change care or if you have symptoms or concerns.</p>
       </div>
 
       <div id="gradcam-results-card" class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10" style="display:none;">
@@ -665,7 +665,7 @@
               </div>
             </div>
             <p id="gradcam-heatmap-caption" class="text-sm mt-3 italic bento-callout bento-callout--info px-3 py-2">
-              <span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap with light grain, weighted toward peripheral follicles (string of pearls) — <strong class="text-white">Red</strong> highest AI model attribution, <strong class="text-white">Yellow/Green</strong> moderate, <strong class="text-white">Blue/Cyan</strong> lower. 40% overlay over grayscale ultrasound (60% base).
+              <span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap with light grain, weighted toward peripheral follicles (string of pearls) � <strong class="text-white">Red</strong> highest AI model attribution, <strong class="text-white">Yellow/Green</strong> moderate, <strong class="text-white">Blue/Cyan</strong> lower. 40% overlay over grayscale ultrasound (60% base).
             </p>
           </div>
         </div>
@@ -751,7 +751,7 @@
               
               <div class="space-y-3">
                   <button onclick="goToRegisterFromXAI()" class="w-full px-6 py-3 btn-accent rounded-xl font-semibold">
-                      ⚡ Register to Unlock XAI Features
+                      ? Register to Unlock XAI Features
                   </button>
                   
                   <button onclick="closeGuestRegistrationModalXAI()" class="w-full px-6 py-3 btn-ghost font-semibold rounded-xl">
@@ -778,7 +778,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/auth.js?v=20260730-corsfix"></script>
+  <script src="js/auth.js?v=20260730-nqak"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
@@ -950,7 +950,7 @@
         const payload = await resp.json().catch(() => null);
         if (!resp.ok || !payload?.success || !payload?.data) {
           setXaiLoading(false);
-          alert('No saved screening found yet. Please go to Detect, run an analysis, then click “Save My Record”.');
+          alert('No saved screening found yet. Please go to Detect, run an analysis, then click �Save My Record�.');
           return;
         }
 
@@ -1035,11 +1035,11 @@
       }
       
       const isGuest = parsedToken && parsedToken.isGuest === true;
-      console.log('🔍 User is guest:', isGuest);
+      console.log('?? User is guest:', isGuest);
       
       // **GUEST FLOW**: Load from sessionStorage instead of API
       if (isGuest) {
-        console.log('🚀 GUEST MODE ACTIVATED - Loading detected patients from sessionStorage');
+        console.log('?? GUEST MODE ACTIVATED - Loading detected patients from sessionStorage');
         const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
         console.log('Guest detected patients in sessionStorage:', guestDetectedPatients.length);
         
@@ -1047,7 +1047,7 @@
         selector.innerHTML = '<option value="">Select patient for XAI analysis...</option>';
         
         if (guestDetectedPatients.length === 0) {
-          console.warn('⚠️ No detected patients found in guest session');
+          console.warn('?? No detected patients found in guest session');
           selector.innerHTML = '<option value="">No patients detected yet - please use Detect page to analyze patients</option>';
           return;
         }
@@ -1066,11 +1066,11 @@
           option.textContent = `${patient.name} - Combined Score: ${finalScore}%`;
           selector.appendChild(option);
           optionCount++;
-          console.log(`✅ Added guest patient option ${optionCount}: ${option.textContent}`);
+          console.log(`? Added guest patient option ${optionCount}: ${option.textContent}`);
         });
         
         allPatients = guestDetectedPatients; // Store for later reference
-        console.log('✅ loadPatientList() COMPLETED - Guest mode with', optionCount, 'patients');
+        console.log('? loadPatientList() COMPLETED - Guest mode with', optionCount, 'patients');
         return; // Exit - don't call API for guests
       }
       
@@ -1229,7 +1229,7 @@
       }
       
       console.log('Selected patient:', selectedPatient);
-      console.log('🔍 PATIENT ANALYSIS:');
+      console.log('?? PATIENT ANALYSIS:');
       console.log('   - patient.id:', selectedPatient.id);
       console.log('   - starts with detected_?', selectedPatient.id?.startsWith('detected_'));
       console.log('   - has clinical_data?', !!selectedPatient.clinical_data);
@@ -1241,10 +1241,10 @@
       
       // **GUEST MODE**: Handle guest's detected patient data
       if (selectedPatient.clinical_data && selectedPatient.clinical_result && selectedPatient.id && selectedPatient.id.startsWith('detected_')) {
-        console.log('🚀 GUEST DETECTED PATIENT MODE - Using stored clinical data');
-        console.log('🔥 FULL selectedPatient object:', JSON.stringify(selectedPatient, null, 2));
-        console.log('🔥 selectedPatient keys:', Object.keys(selectedPatient));
-        console.log('🔥 Has api_response:', 'api_response' in selectedPatient);
+        console.log('?? GUEST DETECTED PATIENT MODE - Using stored clinical data');
+        console.log('?? FULL selectedPatient object:', JSON.stringify(selectedPatient, null, 2));
+        console.log('?? selectedPatient keys:', Object.keys(selectedPatient));
+        console.log('?? Has api_response:', 'api_response' in selectedPatient);
         
         const clinicalData = selectedPatient.clinical_data;
         const clinicalResult = selectedPatient.clinical_result;
@@ -1252,45 +1252,45 @@
         const ultrasoundImage = selectedPatient.ultrasound_image || null;
         
         // CRITICAL: Extract SHAP from api_response
-        console.log('🔍 Checking api_response:');
+        console.log('?? Checking api_response:');
         console.log('   - selectedPatient.api_response exists?', !!selectedPatient.api_response);
         console.log('   - selectedPatient.api_response:', selectedPatient.api_response);
         
         let shapExplanation = null;
         if (selectedPatient.api_response && selectedPatient.api_response.shap_explanation) {
           shapExplanation = selectedPatient.api_response.shap_explanation;
-          console.log('✅ FOUND SHAP in api_response:', shapExplanation);
+          console.log('? FOUND SHAP in api_response:', shapExplanation);
         } else {
-          console.log('❌ NO SHAP in api_response. Checking for direct shap_explanation field...');
+          console.log('? NO SHAP in api_response. Checking for direct shap_explanation field...');
           if (selectedPatient.shap_explanation) {
             shapExplanation = selectedPatient.shap_explanation;
-            console.log('✅ Found SHAP in direct field:', shapExplanation);
+            console.log('? Found SHAP in direct field:', shapExplanation);
           } else {
-            console.log('❌ NO SHAP found anywhere');
+            console.log('? NO SHAP found anywhere');
             console.log('   - selectedPatient.shap_explanation:', selectedPatient.shap_explanation);
           }
         }
         
         // Try to use stored SHAP explanation first
         let features = [];
-        console.log('🔍 Attempting to create features from SHAP or clinical data');
+        console.log('?? Attempting to create features from SHAP or clinical data');
         console.log('   - shapExplanation:', shapExplanation);
         console.log('   - hasTopContributions:', shapExplanation && shapExplanation.top_contributions);
         console.log('   - isArray:', Array.isArray(shapExplanation?.top_contributions));
         console.log('   - length:', shapExplanation?.top_contributions?.length);
         
         if (shapExplanation && shapExplanation.top_contributions && Array.isArray(shapExplanation.top_contributions) && shapExplanation.top_contributions.length > 0) {
-          console.log('✅ Using stored SHAP explanation - found', shapExplanation.top_contributions.length, 'contributions');
+          console.log('? Using stored SHAP explanation - found', shapExplanation.top_contributions.length, 'contributions');
           features = shapExplanation.top_contributions.map((contrib, idx) => ({
             name: contrib.feature,
             value: clinicalData[contrib.feature] || 'N/A',
             contribution: (contrib.shap_value * 50),
             importance: contrib.abs_shap_value || Math.abs(contrib.shap_value)
           })).slice(0, 10); // Top 10 features
-          console.log('✅ SHAP features created:', features);
+          console.log('? SHAP features created:', features);
         } else {
           // Fallback: Convert clinical data to synthetic features for SHAP display
-          console.log('⚠️ Falling back to synthetic features from clinical data');
+          console.log('?? Falling back to synthetic features from clinical data');
           console.log('   - clinicalData keys:', Object.keys(clinicalData).slice(0, 10));
           console.log('   - clinicalData sample:', JSON.stringify(Object.entries(clinicalData).slice(0, 3)));
           features = Object.entries(clinicalData).map(([key, value]) => ({
@@ -1301,7 +1301,7 @@
           })).filter(f => f.value !== null && f.value !== undefined && f.value !== '')
             .sort((a, b) => b.importance - a.importance)
             .slice(0, 10); // Top 10 features
-          console.log('⚠️ Synthetic features created:', features);
+          console.log('?? Synthetic features created:', features);
         }
         
         const clinicalScore = clinicalResult.probability || 0;
@@ -1340,20 +1340,20 @@
         
         // Load Grad-CAM visualization if image is available
         if (imagingResult && ultrasoundImage) {
-          console.log('🎨 Loading Grad-CAM visualization for guest patient');
+          console.log('?? Loading Grad-CAM visualization for guest patient');
           console.log('   - ultrasoundImage exists:', !!ultrasoundImage);
           console.log('   - imagingScore:', imagingScore);
           
           // Check if we have pre-stored Grad-CAM from CNN prediction
           if (imagingResult.gradcam_visualization) {
-            console.log('✅ Using pre-stored Grad-CAM visualization');
+            console.log('? Using pre-stored Grad-CAM visualization');
             displayGradCAMForGuest(imagingResult.gradcam_visualization, imagingScore);
           } else if (selectedPatient.cnn_api_response && selectedPatient.cnn_api_response.gradcam_visualization) {
-            console.log('✅ Using Grad-CAM from cnn_api_response');
+            console.log('? Using Grad-CAM from cnn_api_response');
             displayGradCAMForGuest(selectedPatient.cnn_api_response.gradcam_visualization, imagingScore);
           } else {
             // Fall back to API call if not pre-stored - but construct patient object correctly for API
-            console.log('⚠️ Grad-CAM not pre-stored, calling API with proper patient structure');
+            console.log('?? Grad-CAM not pre-stored, calling API with proper patient structure');
             const gradcamPatient = {
               patient_id: selectedPatient.id,
               id: selectedPatient.id,
@@ -1361,11 +1361,11 @@
               Ultrasound_image: ultrasoundImage,  // Add both formats for compatibility
               CNN_diagnosis_probability_percentage: imagingScore
             };
-            console.log('🔧 Grad-CAM patient object:', gradcamPatient);
+            console.log('?? Grad-CAM patient object:', gradcamPatient);
             loadGradCAMVisualization(gradcamPatient, imagingScore);
           }
         } else {
-          console.log('⚠️ Cannot load Grad-CAM - missing imagingResult or ultrasoundImage');
+          console.log('?? Cannot load Grad-CAM - missing imagingResult or ultrasoundImage');
           console.log('   - imagingResult:', imagingResult);
           console.log('   - ultrasoundImage:', !!ultrasoundImage);
         }
@@ -1533,7 +1533,7 @@
       console.log('Fetching XGBoost SHAP explanation with data:', predictionData);
 
       // Call XGBoost prediction API for SHAP explanations
-      fetch('https://p-code.onrender.com/predict-xgboost', {
+      fetch('https://p-code-nqak.onrender.com/predict-xgboost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(predictionData)
@@ -1610,7 +1610,7 @@
             // Try exact match first
             if (featureValueMap.hasOwnProperty(contrib.feature)) {
               patientValue = featureValueMap[contrib.feature];
-              console.log(`✓ Exact match found: ${patientValue}`);
+              console.log(`? Exact match found: ${patientValue}`);
             } else {
               // Try case-insensitive and fuzzy matching with improved logic
               const normalize = (s) => String(s || '')
@@ -1632,14 +1632,14 @@
                     normKey === normFeature ||
                     (normKey && normFeature && (normFeature.includes(normKey) || normKey.includes(normFeature)))) {
                   patientValue = value;
-                  console.log(`✓ Fuzzy match found (${key}): ${patientValue}`);
+                  console.log(`? Fuzzy match found (${key}): ${patientValue}`);
                   break;
                 }
               }
             }
             
             if (patientValue === 'N/A') {
-              console.warn(`✗ No match for: "${contrib.feature}"`);
+              console.warn(`? No match for: "${contrib.feature}"`);
               console.log('Available keys:', Object.keys(featureValueMap));
             }
             
@@ -2427,7 +2427,7 @@
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
-        const safeValue = String(formatted.value ?? '—')
+        const safeValue = String(formatted.value ?? '�')
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
@@ -2757,7 +2757,7 @@
       if (mode === 'pending') {
         const scoreText = Number.isFinite(Number(options.imagingScore))
           ? Number(options.imagingScore).toFixed(2) + '%'
-          : '—';
+          : '�';
         container.innerHTML = `
           <div class="p-4 bento-callout bento-callout--info rounded-xl">
             <p class="text-sm font-semibold text-white">Imaging Prediction Results</p>
@@ -2778,7 +2778,7 @@
 
       if (mode === 'ready') {
         const cnnScore = resolveCnnImagingScore(options.result, options.imagingScore);
-        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—';
+        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '�';
         const classification = resolveImagingClassificationLabel(
           options.result && options.result.classification,
           cnnScore
@@ -2823,7 +2823,7 @@
       if (!caption) return;
       caption.innerHTML = window.PcodeXaiClinical
         ? PcodeXaiClinical.gradcamHeatmapCaptionHtml('user')
-        : '<span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap — <strong class="text-white">Red</strong> highest AI model attribution.';
+        : '<span class="font-semibold text-violet-100">How to read this:</span> Smooth AI attention heatmap � <strong class="text-white">Red</strong> highest AI model attribution.';
     }
 
     function buildGradcamInterpretationHtml(imagingScore, meta) {
@@ -2910,9 +2910,9 @@
         image: patientData.ultrasound_image || patientData.Ultrasound_image || null  // Handle both formats
       };
       
-      console.log('🔍 Grad-CAM Request Data:', requestData);
+      console.log('?? Grad-CAM Request Data:', requestData);
       
-      fetch('https://p-code.onrender.com/predict-cnn-gradcam', {
+      fetch('https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3067,7 +3067,7 @@
     }
 
     function displayGradCAMForGuest(gradcamVisualization, imagingScore) {
-      console.log('🎯 Displaying stored Grad-CAM visualization for guest patient');
+      console.log('?? Displaying stored Grad-CAM visualization for guest patient');
       
       // Show export section and hide loading notice
       const exportSection = document.getElementById('export-section');
@@ -3158,7 +3158,7 @@
       if (menuIcon) menuIcon.classList.remove('hidden');
     }
 
-    // Note: in “desktop site” mode we keep hamburger + profile actions,
+    // Note: in �desktop site� mode we keep hamburger + profile actions,
     // but hide the sidebar navigation link list via CSS.
 
     // Guest registration modal functions for XAI features

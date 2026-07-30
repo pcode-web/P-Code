@@ -817,6 +817,509 @@ def api_google_auth():
         return _json_error("Database error", 500, detail=str(exc))
 
 
+# --- JWT helpers / provider-scoped patient APIs -----------------------------
+def _b64decode_pad(value: str) -> bytes:
+    pad = "=" * (-len(value) % 4)
+    return base64.b64decode(value + pad)
+
+
+def decode_jwt(token: str) -> dict:
+    import hmac as _hmac
+    import json as _json
+    import time as _time
+
+    raw = (token or "").strip()
+    if raw.lower().startswith("bearer "):
+        raw = raw[7:].strip()
+    parts = raw.split(".")
+    if len(parts) != 3:
+        raise ValueError("Invalid token format")
+    header_b64, payload_b64, sig_b64 = parts
+    expected = _hmac.new(
+        JWT_SECRET.encode("utf-8"),
+        f"{header_b64}.{payload_b64}".encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    try:
+        got = _b64decode_pad(sig_b64)
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError("Invalid token signature encoding") from exc
+    if not _hmac.compare_digest(expected, got):
+        raise ValueError("Invalid token signature")
+    try:
+        payload = _json.loads(_b64decode_pad(payload_b64))
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError("Invalid token payload") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid token payload")
+    exp = int(payload.get("exp") or 0)
+    if exp and exp < int(_time.time()):
+        raise ValueError("Token expired")
+    return payload
+
+
+def _require_provider_auth() -> dict:
+    auth_header = request.headers.get("Authorization") or ""
+    token = auth_header or str(request.args.get("token") or "")
+    try:
+        decoded = decode_jwt(token)
+    except ValueError as exc:
+        raise PermissionError(str(exc)) from exc
+    uid = int(decoded.get("id") or 0)
+    if uid <= 0:
+        raise PermissionError("Invalid auth token")
+    source = str(decoded.get("auth_source") or "")
+    role = str(decoded.get("role") or "").lower()
+    if source == "users" and role in ("regular user", "patient", "user", "guest"):
+        raise PermissionError("OB-GYN provider access required")
+    if bool(decoded.get("isGuest")):
+        raise PermissionError("Guest users cannot access provider patient records")
+    return decoded
+
+
+def _diagnosis_label(code: Any) -> str:
+    if code is None or code == "":
+        return "pending"
+    try:
+        n = int(code)
+    except (TypeError, ValueError):
+        return "pending"
+    return {0: "negative", 1: "positive", 2: "borderline"}.get(n, "pending")
+
+
+def _norm_prob_percent(value: Any) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    try:
+        n = float(value)
+    except (TypeError, ValueError):
+        return None
+    if n <= 1.0:
+        n *= 100.0
+    return round(n, 2)
+
+
+def _ensure_owner_provider_column(cur) -> None:
+    try:
+        cur.execute(
+            """
+            ALTER TABLE patient_personal_info
+            ADD COLUMN owner_provider_id INT NULL
+            """
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _format_ultrasound(value: Any) -> Any:
+    if value is None or value == "":
+        return None
+    if isinstance(value, str) and value.startswith("data:image"):
+        return value
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return "data:image/jpeg;base64," + base64.b64encode(bytes(value)).decode("ascii")
+    if isinstance(value, str):
+        return value if value.startswith("data:") else "data:image/jpeg;base64," + value
+    return None
+
+
+_PATIENT_PARAM_FIELDS = (
+    "Age_yrs", "Weight_kg", "Height_cm", "BMI", "Blood_Group", "Pulse_rate_bpm", "RR_breath_min",
+    "Hb_g_dl", "CycleR_I", "Cycle_length_days", "Marriage_Status_years", "Pregnant", "No_of_abortions",
+    "I_beta_HCG_mIU_mL", "II_beta_HCG_mIU_mL", "FSH_mIU_mL", "LH_mIU_mL", "FSH_LH", "Hip_inch",
+    "Waist_inch", "Waist_hip_ratio", "TSH_mIU_L", "AMH_ng_mL", "PRL_ng_mL", "Vit_D3_ng_mL",
+    "PRG_ng_mL", "RBS_mg_dl", "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss",
+    "Pimples", "Fast_food", "Reg_Exercise", "Follicle_no_L", "Follicle_no_R",
+    "Avg_F_size_L_mm", "Avg_F_size_R_mm", "Endometrium_mm", "Ultrasound_image",
+)
+
+
+@app.get("/api/patients/get_patients_list")
+@app.get("/api/patients/get_patients_list.php")
+def api_get_patients_list():
+    """Provider patient dashboard grid — mirrors PHP get_patients_list.php shape."""
+    try:
+        decoded = _require_provider_auth()
+    except PermissionError as exc:
+        return _json_error(str(exc), 401)
+
+    provider_id = int(decoded.get("id") or 0)
+    patients: list[dict[str, Any]] = []
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                cur.execute(
+                    """
+                    SELECT
+                        p.patient_id,
+                        p.patient_name,
+                        p.age,
+                        p.date_of_birth,
+                        p.contact_no,
+                        p.civil_status,
+                        p.address,
+                        p.occupation,
+                        p.religion,
+                        p.reffered_by AS referred_by,
+                        p.clinical_recommendations,
+                        p.linked_user_id,
+                        p.owner_provider_id,
+                        DATE_FORMAT(p.date_added, '%%Y-%%m-%%d') AS date_added,
+                        r.diagnosis_id,
+                        r.screening_id,
+                        r.XGBoost_diagnosis,
+                        r.XGBoost_diagnosis_probability_percentage,
+                        r.CNN_diagnosis,
+                        r.CNN_diagnosis_probability_percentage,
+                        r.Overall_diagnosis,
+                        r.Overall_diagnosis_probability_percentage,
+                        r.created_by AS result_created_by,
+                        r.created_at AS last_screened_at
+                    FROM patient_personal_info p
+                    LEFT JOIN patient_diagnosis_results r
+                        ON r.patient_id = p.patient_id
+                       AND r.diagnosis_id = (
+                            SELECT r2.diagnosis_id
+                            FROM patient_diagnosis_results r2
+                            WHERE r2.patient_id = p.patient_id
+                            ORDER BY r2.created_at DESC, r2.diagnosis_id DESC
+                            LIMIT 1
+                       )
+                    WHERE p.owner_provider_id = %s
+                    ORDER BY COALESCE(r.created_at, p.date_added) DESC, p.patient_id DESC
+                    """,
+                    (provider_id,),
+                )
+                rows = cur.fetchall() or []
+
+                for row in rows:
+                    pid = int(row["patient_id"])
+                    cur.execute(
+                        """
+                        SELECT *
+                        FROM patient_diagnosis_parameters
+                        WHERE patient_id = %s
+                          AND (screening_id IS NULL OR screening_id = '')
+                        ORDER BY parameter_id DESC
+                        LIMIT 1
+                        """,
+                        (pid,),
+                    )
+                    params = cur.fetchone() or {}
+
+                    xg_label = _diagnosis_label(row.get("XGBoost_diagnosis"))
+                    cnn_label = _diagnosis_label(row.get("CNN_diagnosis"))
+                    overall_label = _diagnosis_label(row.get("Overall_diagnosis"))
+                    if overall_label == "pending" and (xg_label != "pending" or cnn_label != "pending"):
+                        overall_label = xg_label if xg_label != "pending" else cnn_label
+
+                    last_screened = row.get("last_screened_at")
+                    last_screened_iso = _serialize_value(last_screened)
+                    last_tested_display = None
+                    if isinstance(last_screened, datetime):
+                        last_tested_display = last_screened.strftime("%b %d, %Y · %I:%M %p")
+                    elif last_screened_iso:
+                        last_tested_display = str(last_screened_iso)
+
+                    formatted: dict[str, Any] = {
+                        "id": f"PMOS-{pid:03d}",
+                        "patient_id": pid,
+                        "name": row.get("patient_name"),
+                        "age": int(row.get("age") or 0),
+                        "date_added": row.get("date_added"),
+                        "address": row.get("address"),
+                        "contact_no": row.get("contact_no"),
+                        "DOB": _serialize_value(row.get("date_of_birth")),
+                        "civil_status": row.get("civil_status"),
+                        "occupation": row.get("occupation"),
+                        "religion": row.get("religion"),
+                        "referred_by": row.get("referred_by"),
+                        "clinical_recommendations": row.get("clinical_recommendations"),
+                        "clinical_score_percentage": _norm_prob_percent(
+                            row.get("XGBoost_diagnosis_probability_percentage")
+                        ),
+                        "imaging_score_percentage": _norm_prob_percent(
+                            row.get("CNN_diagnosis_probability_percentage")
+                        ),
+                        "overall_diagnosis_percentage": _norm_prob_percent(
+                            row.get("Overall_diagnosis_probability_percentage")
+                        ),
+                        "xgboost_diagnosis": xg_label,
+                        "cnn_diagnosis": cnn_label,
+                        "overall_diagnosis": overall_label,
+                        "diagnosis_id": int(row["diagnosis_id"]) if row.get("diagnosis_id") else None,
+                        "screening_id": row.get("screening_id"),
+                        "last_screened_at": last_screened_iso,
+                        "last_tested_display": last_tested_display,
+                        "latest_screening_at": last_screened_iso,
+                        "latest_screening_display": last_tested_display,
+                        "latest_screening_origin": (
+                            "User App Self-Screening"
+                            if str(row.get("result_created_by") or "") == "Patient"
+                            else "Clinician Upload"
+                        ),
+                        "latest_screening_origin_code": row.get("result_created_by") or "Physician",
+                        "latest_screening_status": (
+                            "Positive"
+                            if overall_label == "positive"
+                            else ("Negative" if overall_label == "negative" else "Pending")
+                        ),
+                        "latest_screening_status_code": overall_label,
+                        "history_run_count": 0,
+                    }
+
+                    for field in _PATIENT_PARAM_FIELDS:
+                        if field not in params:
+                            continue
+                        val = params.get(field)
+                        if field == "Ultrasound_image":
+                            formatted[field] = _format_ultrasound(val)
+                        else:
+                            formatted[field] = _serialize_value(val)
+
+                    patients.append(formatted)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Patient list failed")
+        return _json_error("Failed to load patients", 500, detail=str(exc))
+
+    return jsonify({"success": True, "data": patients, "count": len(patients)}), 200
+
+
+@app.post("/api/delete_patient")
+@app.post("/api/delete_patient.php")
+def api_delete_patient():
+    try:
+        decoded = _require_provider_auth()
+    except PermissionError as exc:
+        return _json_error(str(exc), 401)
+
+    provider_id = int(decoded.get("id") or 0)
+    payload = request.get_json(silent=True) or {}
+    patient_id = payload.get("patient_id") or request.args.get("id")
+    try:
+        patient_id = int(patient_id)
+    except (TypeError, ValueError):
+        patient_id = 0
+    if patient_id <= 0:
+        return _json_error("Patient ID is required", 400)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                cur.execute(
+                    "DELETE FROM patient_diagnosis_results WHERE patient_id = %s",
+                    (patient_id,),
+                )
+                cur.execute(
+                    "DELETE FROM patient_diagnosis_parameters WHERE patient_id = %s",
+                    (patient_id,),
+                )
+                cur.execute(
+                    """
+                    DELETE FROM patient_personal_info
+                    WHERE patient_id = %s AND owner_provider_id = %s
+                    """,
+                    (patient_id, provider_id),
+                )
+                if cur.rowcount == 0:
+                    return _json_error("You can only delete patients in your own care", 403)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Delete patient failed")
+        return _json_error("Failed to delete patient", 500, detail=str(exc))
+
+    return _json_ok(message="Patient deleted successfully")
+
+
+@app.post("/api/save_patient")
+@app.post("/api/save_patient.php")
+def api_save_patient():
+    """Create/update personal info + draft clinical parameters for a provider."""
+    try:
+        decoded = _require_provider_auth()
+    except PermissionError as exc:
+        return _json_error(str(exc), 401)
+
+    provider_id = int(decoded.get("id") or 0)
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not payload:
+        return _json_error("No data provided", 400)
+
+    # Remap common form aliases
+    data = dict(payload)
+    alias_map = {
+        "name": "patient_name",
+        "age": "Age_yrs",
+        "date_of_birth": "DOB",
+        "referred_by": "referred_by",
+        "height": "Height_cm",
+        "weight": "Weight_kg",
+        "bmi": "BMI",
+        "recommendations": "clinical_recommendations",
+    }
+    for src, dst in alias_map.items():
+        if src in data and dst not in data:
+            data[dst] = data[src]
+
+    patient_id = data.get("patient_id")
+    if (not patient_id) and data.get("id"):
+        try:
+            patient_id = int(re.sub(r"^(?:PCOS|PMOS)-", "", str(data.get("id")), flags=re.I))
+        except (TypeError, ValueError):
+            patient_id = 0
+    try:
+        patient_id = int(patient_id) if patient_id not in (None, "") else 0
+    except (TypeError, ValueError):
+        patient_id = 0
+
+    name = str(data.get("patient_name") or data.get("name") or "").strip()
+    age = data.get("Age_yrs")
+    try:
+        age = int(age) if age not in (None, "") else None
+    except (TypeError, ValueError):
+        age = None
+    dob = data.get("DOB") or data.get("date_of_birth") or None
+    contact = data.get("contact_no")
+    address = data.get("address") or ""
+    civil_status = data.get("civil_status") or ""
+    occupation = data.get("occupation") or ""
+    religion = data.get("religion") or ""
+    referred_by = data.get("referred_by") or ""
+    has_recs = "clinical_recommendations" in data
+    clinical_recommendations = (
+        str(data.get("clinical_recommendations") or "").strip() if has_recs else ""
+    )
+
+    has_personal = bool(
+        name
+        or age is not None
+        or dob
+        or contact
+        or str(address).strip()
+        or str(civil_status).strip()
+        or str(occupation).strip()
+        or str(religion).strip()
+        or str(referred_by).strip()
+        or has_recs
+    )
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                exists = False
+                if patient_id > 0:
+                    cur.execute(
+                        """
+                        SELECT patient_id FROM patient_personal_info
+                        WHERE patient_id = %s AND owner_provider_id = %s
+                        LIMIT 1
+                        """,
+                        (patient_id, provider_id),
+                    )
+                    exists = cur.fetchone() is not None
+                    if not exists and not has_personal:
+                        return _json_error("Patient not found in your care", 404)
+
+                if not exists or has_personal:
+                    if exists:
+                        if has_recs:
+                            cur.execute(
+                                """
+                                UPDATE patient_personal_info
+                                SET patient_name=%s, age=%s, date_of_birth=%s, contact_no=%s,
+                                    address=%s, civil_status=%s, occupation=%s, religion=%s,
+                                    reffered_by=%s, clinical_recommendations=%s
+                                WHERE patient_id=%s AND owner_provider_id=%s
+                                """,
+                                (
+                                    name, age, dob, contact, address, civil_status, occupation,
+                                    religion, referred_by, clinical_recommendations,
+                                    patient_id, provider_id,
+                                ),
+                            )
+                        else:
+                            cur.execute(
+                                """
+                                UPDATE patient_personal_info
+                                SET patient_name=%s, age=%s, date_of_birth=%s, contact_no=%s,
+                                    address=%s, civil_status=%s, occupation=%s, religion=%s,
+                                    reffered_by=%s
+                                WHERE patient_id=%s AND owner_provider_id=%s
+                                """,
+                                (
+                                    name, age, dob, contact, address, civil_status, occupation,
+                                    religion, referred_by, patient_id, provider_id,
+                                ),
+                            )
+                    else:
+                        cur.execute(
+                            """
+                            INSERT INTO patient_personal_info
+                            (patient_name, age, date_of_birth, contact_no, address, civil_status,
+                             occupation, religion, reffered_by, clinical_recommendations, owner_provider_id)
+                            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                            """,
+                            (
+                                name, age, dob, contact, address, civil_status, occupation,
+                                religion, referred_by, clinical_recommendations, provider_id,
+                            ),
+                        )
+                        patient_id = int(cur.lastrowid)
+
+                # Draft clinical parameters upsert
+                clinical = _normalize_diagnosis_payload(data)
+                clinical.pop("patient_id", None)
+                clinical.pop("screening_id", None)
+                if clinical:
+                    clinical["patient_id"] = patient_id
+                    clinical.setdefault("created_by", "Physician")
+                    cur.execute(
+                        """
+                        SELECT parameter_id FROM patient_diagnosis_parameters
+                        WHERE patient_id = %s
+                          AND (screening_id IS NULL OR screening_id = '')
+                        ORDER BY parameter_id DESC LIMIT 1
+                        """,
+                        (patient_id,),
+                    )
+                    draft = cur.fetchone()
+                    if draft:
+                        cols = [c for c in DIAGNOSIS_INSERT_COLUMNS if c in clinical and c != "patient_id"]
+                        if cols:
+                            sets = ", ".join(f"`{c}`=%s" for c in cols)
+                            vals = [clinical[c] for c in cols] + [int(draft["parameter_id"])]
+                            cur.execute(
+                                f"UPDATE patient_diagnosis_parameters SET {sets} WHERE parameter_id=%s",
+                                vals,
+                            )
+                    else:
+                        cols = [c for c in DIAGNOSIS_INSERT_COLUMNS if c in clinical]
+                        if "patient_id" not in cols:
+                            cols = ["patient_id"] + cols
+                            clinical["patient_id"] = patient_id
+                        placeholders = ", ".join(["%s"] * len(cols))
+                        column_sql = ", ".join(f"`{c}`" for c in cols)
+                        cur.execute(
+                            f"INSERT INTO patient_diagnosis_parameters ({column_sql}) VALUES ({placeholders})",
+                            [clinical[c] for c in cols],
+                        )
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Save patient failed")
+        return _json_error("Failed to save patient", 500, detail=str(exc))
+
+    return _json_ok(
+        {
+            "patient_id": patient_id,
+            "id": f"PMOS-{int(patient_id):03d}",
+        },
+        message="Patient saved successfully",
+        patient_id=patient_id,
+    )
+
+
 # =============================================================================
 # Diagnostic parameters insert
 # =============================================================================

@@ -129,12 +129,18 @@ class AuthManager {
       '</button></div></div>' +
       '<div id="auth-tabs-section" class="hidden pcode-auth-float-signin">' +
       '<button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>' +
-      '<div class="pcode-auth-float-signin-body">' +
-      '<img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">' +
+      '<div class="pcode-auth-float-signin-body" data-pcode-auth-float-v="4">' +
+      '<img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="40" height="40" decoding="async">' +
       '<h3 id="auth-float-mode-title" class="pcode-auth-float-signin-title" data-title-signin="Sign in" data-title-register="Create an account">Sign in</h3>' +
       '<p id="auth-float-mode-sub" class="pcode-auth-float-signin-sub" data-subtitle-signin="Use Google or your email and password." data-subtitle-register="Create an account with email and password, or use Google.">Use Google or your email and password.</p>' +
       '<p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2" role="alert"></p>' +
       '<p id="auth-float-success" class="hidden text-sm text-green-600 text-center mt-2" role="status"></p>' +
+      '<div class="pcode-google-oauth-panel" data-auth-mode="signin">' +
+      '<div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>' +
+      '<button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>' +
+      '<p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">You can also sign in or register securely with Google.</p>' +
+      '</div>' +
+      '<div class="pcode-auth-float-divider" data-auth-mode="signin" aria-hidden="true">or continue with email</div>' +
       '<div id="login-form-container" data-auth-mode="signin">' +
       '<form id="login-form" class="pcode-auth-float-cred-form" novalidate>' +
       '<div class="pcode-auth-float-field"><label for="login-email">Email</label>' +
@@ -160,12 +166,7 @@ class AuthManager {
       '<button type="submit" id="register-btn" class="pcode-auth-float-submit">Create account</button>' +
       '<button type="button" class="pcode-auth-float-switch" data-auth-switch="signin">Already have an account? Sign in</button>' +
       '</form></div>' +
-      '<div class="pcode-auth-float-divider" data-auth-mode="signin" aria-hidden="true">or continue with Google</div>' +
-      '<div class="pcode-google-oauth-panel" data-auth-mode="signin">' +
-      '<div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>' +
-      '<button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>' +
-      '<p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">You can also sign in or register securely with Google.</p>' +
-      '</div></div></div></div></div>'
+      '</div></div></div></div>'
     );
   }
 
@@ -178,18 +179,14 @@ class AuthManager {
       if (typeof document === 'undefined') return null;
       this.ensureGoogleAuthStylesheet();
       const existing = document.getElementById('auth-modal');
-      const isFloat =
+      // Always rebuild unless the current Google-first layout (v4) is present.
+      const isCurrent =
         existing &&
-        existing.querySelector('.pcode-auth-float-card') &&
-        existing.querySelector('#auth-entry-chooser') &&
-        existing.querySelector('#auth-entry-community') &&
-        existing.querySelector('#auth-entry-provider') &&
-        existing.querySelector('#auth-tabs-section') &&
-        existing.querySelector('#google-signin-mount') &&
+        existing.querySelector('[data-pcode-auth-float-v="4"]') &&
         existing.querySelector('#login-form') &&
-        existing.querySelector('#register-form') &&
-        existing.querySelector('[data-pcode-register-minimal="1"]');
-      if (!isFloat) {
+        existing.querySelector('#google-signin-mount') &&
+        existing.querySelector('#auth-entry-chooser');
+      if (!isCurrent) {
         if (existing) existing.remove();
         const wrap = document.createElement('div');
         wrap.innerHTML = this.getAuthFloatModalHtml().trim();
@@ -746,6 +743,11 @@ class AuthManager {
         'auth/firebase_callback.php': 'auth/firebase',
         'sync_session.php': 'sync-session',
         'update_profile.php': 'update-profile',
+        'patients/get_patients_list.php': 'patients/get_patients_list',
+        'delete_patient.php': 'delete_patient',
+        'save_patient.php': 'save_patient',
+        'get_patients.php': 'patients/get_patients_list',
+        'get_patients_simple.php': 'patients/get_patients_list',
       };
       p = map[p] || p.replace(/\.php$/i, '');
     }
@@ -2030,7 +2032,7 @@ class AuthManager {
       }
     } catch (error) {
       this.invalidateSessionOnAuthFailure();
-      this.showErrorInline('login-general-error', 'Network error. Please try again.');
+      this.showErrorInline('login-general-error', 'Cannot reach the auth API (Render). Check that https://p-code-nqak.onrender.com/api/health is online.');
       console.error('Login error:', error);
     } finally {
       this.setLoading('login-btn', false);
@@ -3042,9 +3044,14 @@ class AuthManager {
       console.error('Google login error:', error);
       this.invalidateSessionOnAuthFailure();
       if (this.isLoginNewPortalUserContext()) {
-        this.showLoginNewCredentialsRejectedInline('Network error. Please try again.');
+        this.showLoginNewCredentialsRejectedInline(
+          'Cannot reach the auth API (Render is offline or unreachable).'
+        );
       } else {
-        this.showErrorInline('login-general-error', 'Network error. Please try again.');
+        this.showErrorInline(
+          'login-general-error',
+          'Cannot reach the auth API (Render is offline or unreachable).'
+        );
       }
       if (googleLoginBtn) {
         googleLoginBtn.disabled = false;

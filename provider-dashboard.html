@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -325,7 +325,7 @@
           <h2 class="text-2xl font-bold text-gray-800">Patient Diagnosis Overview</h2>
           <p class="text-sm text-gray-600 mt-1">Final diagnosis status across your patient panel</p>
         </div>
-        <p class="text-sm font-medium text-gray-600" id="diagnosis-summary-total">‚Äî patients</p>
+        <p class="text-sm font-medium text-gray-600" id="diagnosis-summary-total">ó patients</p>
       </div>
       <div id="diagnosis-summary-chips" class="pcode-diagnosis-chips-grid" aria-label="Diagnosis counts"></div>
       <div class="pcode-chart-panel w-full min-w-0">
@@ -341,7 +341,7 @@
         <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Recent Patients</h2>
         <div id="recent-patients-container" class="space-y-4"></div>
         <div class="mt-6 text-center">
-          <button onclick="window.location.href=`patients.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View All Patients ‚Üí</button>
+          <button onclick="window.location.href=`patients.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View All Patients ?</button>
         </div>
       </div>
       <div class="pcode-card-static pcode-bento-card shadow-lg p-3 sm:p-6">
@@ -353,7 +353,7 @@
           <div id="dashboard-comparative-legend" class="pcode-chart-legend" aria-label="Comparative model performance legend"></div>
         </div>
         <div class="mt-4 text-center">
-          <button onclick="window.location.href=`model-performance.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View Full Analysis ‚Üí</button>
+          <button onclick="window.location.href=`model-performance.html`" class="text-purple-600 hover:text-purple-800 font-semibold">View Full Analysis ?</button>
         </div>
       </div>
     </div>
@@ -368,7 +368,7 @@
     </footer>
 
   <!-- Auth Module -->
-  <script src="js/auth.js?v=20260730-corsfix"></script>
+  <script src="js/auth.js?v=20260730-nqak"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
   <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
   <script>
@@ -389,7 +389,7 @@
           : Promise.resolve(false);
         sync.then(function (ok) {
           if (!ok) {
-            console.warn("[Dashboard] Session sync failed ‚Äî metrics may show 0 until you sign in again");
+            console.warn("[Dashboard] Session sync failed ó metrics may show 0 until you sign in again");
           }
           startDashboardMetricsPolling();
         });
@@ -432,7 +432,7 @@
       if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
     }
 
-    // Note: in ‚Äúdesktop site‚Äù mode we keep hamburger + profile actions,
+    // Note: in ìdesktop siteî mode we keep hamburger + profile actions,
     // but hide the sidebar navigation link list via CSS.
 
     let diagnosisSummaryChart = null;
@@ -613,7 +613,7 @@
               </div>
               <div>
                 <p class="font-semibold text-gray-800">${patient.name || 'Patient'}</p>
-                <p class="text-sm text-gray-600">Age ${patient.age ?? '‚Äî'} ‚Ä¢ Clinical: ${clinical}% ‚Ä¢ Imaging: ${imaging}%</p>
+                <p class="text-sm text-gray-600">Age ${patient.age ?? 'ó'} ï Clinical: ${clinical}% ï Imaging: ${imaging}%</p>
               </div>
             </div>
           </div>
@@ -665,7 +665,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       setTimeout(checkAuthAndRedirect, 100);
 
-      // Typed welcome: first name only (same rules as index ‚Äî first word of name; email ‚Üí local part)
+      // Typed welcome: first name only (same rules as index ó first word of name; email ? local part)
       const firstNameFromUser = (raw, fallback = "Provider") => {
         const s = String(raw || "").trim();
         if (!s) return fallback;
