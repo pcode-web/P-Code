@@ -43,8 +43,8 @@ class AuthManager {
     this.token = null;
     this.refreshToken = null;
     this.tokenExpiry = null;
-    this.apiBaseUrl = './api/';  // Default relative path
-    this.apiStyle = 'php';
+    this.apiBaseUrl = AuthManager.defaultApiBaseUrl();
+    this.apiStyle = /onrender\.com/i.test(this.apiBaseUrl) ? 'flask' : 'php';
     this.selectedPortalType = null;
     this._tokenRefreshTimeoutId = null;
     /** Reserved for optional session polling (auto-logout disabled). */
@@ -712,16 +712,42 @@ class AuthManager {
     }
   }
 
+  /** Render API when on Firebase; relative PHP only for local XAMPP. */
+  static defaultApiBaseUrl() {
+    try {
+      const host = String(window.location.hostname || '');
+      if (
+        /\.web\.app$/i.test(host) ||
+        /\.firebaseapp\.com$/i.test(host) ||
+        host === 'pcode.web.app'
+      ) {
+        return 'https://p-code-nqak.onrender.com/api/';
+      }
+    } catch (_) {}
+    return './api/';
+  }
+
   async loadConfig() {
     try {
       const response = await fetch('config.json?v=' + Date.now());
       const config = await response.json();
-      this.apiBaseUrl = config.app.apiBaseUrl || './api/';
+      const fromConfig = (config.app && config.app.apiBaseUrl) || '';
+      this.apiBaseUrl = fromConfig || AuthManager.defaultApiBaseUrl();
+      // Never keep relative PHP API on Firebase Hosting (no PHP there → 404 HTML)
+      if (
+        /^\.?\/?api\/?$/i.test(String(this.apiBaseUrl).replace(/\/?$/, '/').replace(/^\.\//, '')) ||
+        String(this.apiBaseUrl).startsWith('./api')
+      ) {
+        const forced = AuthManager.defaultApiBaseUrl();
+        if (forced.indexOf('onrender.com') !== -1) {
+          this.apiBaseUrl = forced;
+        }
+      }
       this.apiStyle = /onrender\.com/i.test(this.apiBaseUrl) ? 'flask' : 'php';
     } catch (error) {
       console.warn('Config not loaded, using default API URL');
-      this.apiBaseUrl = './api/';
-      this.apiStyle = 'php';
+      this.apiBaseUrl = AuthManager.defaultApiBaseUrl();
+      this.apiStyle = /onrender\.com/i.test(this.apiBaseUrl) ? 'flask' : 'php';
     }
   }
 
@@ -730,7 +756,16 @@ class AuthManager {
    * @param {string} path e.g. "login.php" or "auth/google_callback.php"
    */
   resolveApiUrl(path) {
-    const base = String(this.apiBaseUrl || './api/').replace(/\/?$/, '/');
+    let base = String(this.apiBaseUrl || AuthManager.defaultApiBaseUrl()).replace(/\/?$/, '/');
+    // Safety: if still relative while on Firebase, force Render
+    if (base.indexOf('http') !== 0) {
+      const forced = AuthManager.defaultApiBaseUrl();
+      if (forced.indexOf('http') === 0) {
+        base = forced.replace(/\/?$/, '/');
+        this.apiBaseUrl = base;
+        this.apiStyle = 'flask';
+      }
+    }
     let p = String(path || '').replace(/^\//, '');
     const flask = this.apiStyle === 'flask' || /onrender\.com/i.test(base);
     if (flask) {
@@ -743,6 +778,7 @@ class AuthManager {
         'auth/firebase_callback.php': 'auth/firebase',
         'sync_session.php': 'sync_session',
         'sync-session': 'sync_session',
+        'update_profile.php': 'update-profile',
         'patients/get_patients_list.php': 'patients/get_patients_list',
         'get_patients.php': 'get_patients',
         'delete_patient.php': 'delete_patient',
