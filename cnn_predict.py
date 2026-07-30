@@ -1154,7 +1154,7 @@ if __name__ == '__main__':
         
         # Model paths
         model_dir = Path(__file__).parent / 'CNN Model'
-        model_path = str(model_dir / 'best_finetuned_model.keras')
+        model_path = str(model_dir / 'pcos_detection_modelv4.keras')
 
         # Verify model path exists
         if not Path(model_path).exists():

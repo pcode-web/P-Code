@@ -153,7 +153,7 @@ def _cors_preflight():
 CNN_MODEL_PATH = Path(
     os.environ.get(
         "CNN_MODEL_PATH",
-        str(BASE_DIR / "CNN Model" / "best_finetuned_model.keras"),
+        str(BASE_DIR / "CNN Model" / "pcos_detection_modelv4.keras"),
     )
 )
 XGB_MODEL_PATH = Path(
@@ -3075,7 +3075,7 @@ def predict_cnn():
     if not CNN_MODEL_PATH.is_file():
         return _json_error(
             f"CNN model not found at {CNN_MODEL_PATH}. "
-            "Upload best_finetuned_model.keras or set CNN_MODEL_PATH.",
+            "Upload pcos_detection_modelv4.keras or set CNN_MODEL_PATH.",
             503,
         )
 
