@@ -114,15 +114,27 @@
           document.body.classList.contains('pcode-detect-user-page') ||
           document.body.classList.contains('pcode-detect-provider-page');
 
+        // Prefer a compact standard button so the G isn't pinned to the far edge
+        // of a stretched "Sign in as…" chip.
+        var mountW = target.clientWidth || target.offsetWidth || 320;
+        var btnWidth = Math.min(280, Math.max(240, Math.round(mountW * 0.85)));
+
         global.google.accounts.id.renderButton(target, {
           type: 'standard',
           theme: isDarkLogin ? 'filled_black' : 'outline',
           size: 'large',
-          text: 'signin_with',
-          shape: 'pill',
+          text: 'continue_with',
+          shape: 'rectangular',
           logo_alignment: 'left',
-          width: Math.min(Math.max(target.offsetWidth || 320, 240), 400),
+          width: btnWidth,
           locale: 'en',
+        });
+
+        requestAnimationFrame(function () {
+          var iframe = target.querySelector('iframe');
+          if (!iframe) return;
+          var h = iframe.offsetHeight || parseInt(iframe.getAttribute('height'), 10) || 44;
+          target.style.minHeight = Math.max(48, h + 6) + 'px';
         });
       })
       .catch((err) => {

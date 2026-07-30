@@ -28,8 +28,28 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-import cnn_predict  # noqa: E402
-import xgboost_predict  # noqa: E402
+# Lazy ML imports — TensorFlow/XGBoost must NOT block auth/DB boot on Render
+cnn_predict = None  # type: ignore
+xgboost_predict = None  # type: ignore
+
+
+def _load_cnn():
+    global cnn_predict
+    if cnn_predict is None:
+        import cnn_predict as _cnn  # noqa: WPS433
+
+        cnn_predict = _cnn
+    return cnn_predict
+
+
+def _load_xgb():
+    global xgboost_predict
+    if xgboost_predict is None:
+        import xgboost_predict as _xgb  # noqa: WPS433
+
+        xgboost_predict = _xgb
+    return xgboost_predict
+
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
 logger = logging.getLogger("pcode")
@@ -52,10 +72,44 @@ CORS(
             "origins": _extra + _default_origin_patterns,
             "methods": ["GET", "POST", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type"],
+            "max_age": 86400,
         }
     },
     supports_credentials=False,
 )
+
+
+@app.after_request
+def _ensure_cors_headers(response):
+    """Guarantee CORS on every response (including 4xx) for the Firebase frontend."""
+    origin = request.headers.get("Origin", "")
+    allow = False
+    if origin:
+        if origin in _extra:
+            allow = True
+        elif re.match(r"^https://.*\.web\.app$", origin):
+            allow = True
+        elif re.match(r"^https://.*\.firebaseapp.com$", origin):
+            allow = True
+        elif re.match(r"^https://", origin):
+            allow = True
+        elif re.match(r"^http://localhost(:\d+)?$", origin):
+            allow = True
+        elif re.match(r"^http://127\.0\.0\.1(:\d+)?$", origin):
+            allow = True
+    if allow:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
+
+@app.route("/api/<path:_any>", methods=["OPTIONS"])
+@app.route("/<path:_any>", methods=["OPTIONS"])
+def _cors_preflight(_any: str = ""):
+    return ("", 204)
 
 # --- ML model paths ----------------------------------------------------------
 CNN_MODEL_PATH = Path(
@@ -866,7 +920,13 @@ def predict_cnn():
     smoothing_factor = max(0.50, min(0.95, smoothing_factor))
     user_mode = str(payload.get("user_mode") or "")
 
-    result = cnn_predict.predict(
+    try:
+        cnn = _load_cnn()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("CNN module failed to load")
+        return _json_error(f"CNN model runtime unavailable: {exc}", 503)
+
+    result = cnn.predict(
         image_bytes,
         str(CNN_MODEL_PATH),
         generate_gradcam=generate_gradcam,
@@ -911,12 +971,18 @@ def predict_xgboost():
         elif c in ("irregular", "amenorrhea"):
             clinical["Cycle_R_I"] = 0
 
-    result = xgboost_predict.predict(
+    try:
+        xgb = _load_xgb()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("XGBoost module failed to load")
+        return _json_error(f"XGBoost model runtime unavailable: {exc}", 503)
+
+    result = xgb.predict(
         clinical,
         str(XGB_MODEL_PATH),
         smoothing_factor=smoothing_factor,
     )
-    result = xgboost_predict.convert_to_python_types(result)
+    result = xgb.convert_to_python_types(result)
     status = 200 if result.get("success") else 500
     return jsonify(result), status
 
@@ -939,7 +1005,12 @@ def predict_cnn_gradcam():
         smoothing_factor = float(payload.get("smoothing_factor", 0.90))
     except (TypeError, ValueError):
         smoothing_factor = 0.90
-    result = cnn_predict.predict(
+    try:
+        cnn = _load_cnn()
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("CNN module failed to load")
+        return _json_error(f"CNN model runtime unavailable: {exc}", 503)
+    result = cnn.predict(
         image_bytes,
         str(CNN_MODEL_PATH),
         generate_gradcam=True,
