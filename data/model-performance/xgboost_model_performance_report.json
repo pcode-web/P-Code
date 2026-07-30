@@ -1,0 +1,110 @@
+{
+    "metadata": {
+        "model_type": "XGBoost",
+        "validation_strategy": "10-Fold Stratified Cross-Validation",
+        "primary_metric": "AUC-PR",
+        "test_size": 0.3,
+        "random_state": 100,
+        "test_threshold": 0.55,
+        "total_samples": 578
+    },
+    "stratified_10_fold_cv": [
+        {
+            "fold": 1,
+            "metrics": {
+                "auc_pr_score": 94.5748441597549
+            }
+        },
+        {
+            "fold": 2,
+            "metrics": {
+                "auc_pr_score": 89.87571823099458
+            }
+        },
+        {
+            "fold": 3,
+            "metrics": {
+                "auc_pr_score": 90.99804061687513
+            }
+        },
+        {
+            "fold": 4,
+            "metrics": {
+                "auc_pr_score": 96.25718886588453
+            }
+        },
+        {
+            "fold": 5,
+            "metrics": {
+                "auc_pr_score": 94.95465850275288
+            }
+        },
+        {
+            "fold": 6,
+            "metrics": {
+                "auc_pr_score": 92.64800724293009
+            }
+        },
+        {
+            "fold": 7,
+            "metrics": {
+                "auc_pr_score": 97.72727272727273
+            }
+        },
+        {
+            "fold": 8,
+            "metrics": {
+                "auc_pr_score": 96.80985680985681
+            }
+        },
+        {
+            "fold": 9,
+            "metrics": {
+                "auc_pr_score": 98.46313107182671
+            }
+        },
+        {
+            "fold": 10,
+            "metrics": {
+                "auc_pr_score": 99.78354978354977
+            }
+        }
+    ],
+    "global_cv_results": {
+        "metrics": {
+            "mean_auc_pr": 95.20922680116982,
+            "std_deviation": 3.0776714359432016,
+            "global_auc_pr_score": 94.90337724564658,
+            "accuracy": 90.13840830449827
+        },
+        "confusion_matrix": [
+            [
+                331,
+                33
+            ],
+            [
+                24,
+                190
+            ]
+        ]
+    },
+    "test_set_results": {
+        "metrics": {
+            "auc_pr_score": 96.2,
+            "accuracy": 95.4,
+            "precision": 92.42,
+            "recall": 95.31,
+            "f1_score": 93.85
+        },
+        "confusion_matrix": [
+            [
+                105,
+                5
+            ],
+            [
+                3,
+                61
+            ]
+        ]
+    }
+}

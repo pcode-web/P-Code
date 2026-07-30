@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P-Code - Provider Dashboard</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
   <!-- Local CSS Files (No CDN) -->
   <link rel="stylesheet" href="css/tailwind.css">
@@ -772,12 +773,12 @@
       if (dom) {
         const chart = echarts.init(dom);
         Promise.all([
-          fetch("XGBoost Model/model_performance_report.json?t=" + new Date().getTime()).then(r => r.json()).catch(() => null),
-          fetch("CNN Model/model_performance.json?t=" + new Date().getTime()).then(r => r.json()).catch(() => null),
+          fetch("data/model-performance/xgboost_model_performance_report.json?v=20260730").then(r => r.json()).catch(() => null),
+          fetch("data/model-performance/cnn_model_performance.json?v=20260730").then(r => r.json()).catch(() => null),
         ]).then(([xgb, cnn]) => {
           const xgbM = xgb?.test_set_results?.metrics || null;
           const cnnEval = cnn?.final_evaluation || null;
-          const cnnPMOS = cnn?.PMOS_specific || null;
+          const cnnPMOS = cnn?.PMOS_specific || cnn?.pcos_specific || null;
           const cnnNormal = cnn?.normal_specific || null;
           const toPct = (v) => { const n = Number(v); return Number.isFinite(n) ? Number(pcodePct2Floor(n)) : null; };
           const toPctFromUnit = (v) => { const n = Number(v); return Number.isFinite(n) ? Number(pcodePct2Floor(n * 100)) : null; };

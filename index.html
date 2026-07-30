@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P-Code - Homepage</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
   <!-- Local CSS Files (No CDN) -->
   <link rel="stylesheet" href="css/tailwind.css">
@@ -735,7 +736,7 @@
         <a href="history-user.html" class="btn-purple-glass inline-flex items-center justify-center whitespace-nowrap" onclick="return auth.requireAuth(this.href)">Open History</a>
       </div>
       <div id="home-screening-history-preview" class="pcode-home-history-preview" aria-live="polite">
-        <p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>
+        <p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening historyï¿½</p>
       </div>
     </div>
 
@@ -1203,7 +1204,7 @@
       revealEl(historyCard);
 
       if (!preview) return;
-      preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening history…</p>';
+      preview.innerHTML = '<p class="pcode-home-history-preview__status text-sm text-gray-600">Loading screening historyï¿½</p>';
 
       const token = sessionStorage.getItem("PMOS_auth_token") || "";
       if (!token) {
@@ -1267,7 +1268,7 @@
             '<ul class="pcode-home-history-list" role="list">' +
             shown.map(function (entry) {
               const rawDate = String(entry.created_at_display || entry.created_at || "").trim();
-              const dateParts = rawDate.split(/\s*[·•|]\s*/);
+              const dateParts = rawDate.split(/\s*[ï¿½ï¿½|]\s*/);
               const dateMain = (dateParts[0] || rawDate).trim();
               const dateTime = (dateParts[1] || "").trim();
               const label = entry.status_label || "Pending";
@@ -1275,7 +1276,7 @@
               const pct =
                 entry.confidence_percent != null && isFinite(Number(entry.confidence_percent))
                   ? Number(entry.confidence_percent).toFixed(1) + "%"
-                  : "—";
+                  : "ï¿½";
               return (
                 '<li class="pcode-home-history-item">' +
                   '<div class="pcode-home-history-item__left">' +
@@ -1760,7 +1761,7 @@
           const cnnCard = document.getElementById("my-screening-cnn-card");
           const cnnProbLine = document.getElementById("my-screening-cnn-prob-line");
 
-          // Always keep Imaging / Clinical / Overall cards visible — missing runs show PENDING
+          // Always keep Imaging / Clinical / Overall cards visible ï¿½ missing runs show PENDING
           if (overallCard) overallCard.style.display = "";
           if (overallProbLine) overallProbLine.style.display = "";
           if (xgCard) xgCard.style.display = "";
