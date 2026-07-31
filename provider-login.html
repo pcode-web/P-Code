@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260725-nolightglow">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="login-bento-page">
+<body class="login-bento-page" data-pcode-auth-portal="provider">
   <main class="oauth-login-card auth-main-card" aria-labelledby="provider-login-title">
     <img src="assets/logo.png" alt="" class="oauth-login-logo" width="72" height="72" decoding="async">
     <h1 id="provider-login-title"
@@ -137,8 +137,7 @@
           <div id="g_id_onload"
                data-client_id="953442697406-1nisk0lf775augnlkbbftpk19g4fkgl3.apps.googleusercontent.com"
                data-context="signin"
-               data-ux_mode="redirect"
-               data-login_uri="http://localhost/pcode/api/auth/google_callback.php"
+               data-ux_mode="popup"
                data-state="provider"
                data-auto_prompt="false">
           </div>
@@ -169,10 +168,10 @@
 
   <script src="js/pcode-password.js?v=20260720n"></script>
   <script src="js/pcode-auth-register.js?v=20260730-flasklogin"></script>
-  <script src="js/pcode-api.js?v=20260731-apifix2"></script>
-  <script src="js/auth.js?v=20260730-home-redirect"></script>
-  <script src="js/pcode-oauth-bootstrap.js?v=20260707d"></script>
-  <script src="js/pcode-login-google.js?v=20260707l"></script>
+  <script src="js/pcode-api.js?v=20260731-liveauth"></script>
+  <script src="js/auth.js?v=20260731-liveauth"></script>
+  <script src="js/pcode-oauth-bootstrap.js?v=20260731-liveauth"></script>
+  <script src="js/pcode-login-google.js?v=20260731-liveauth"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (window.PcodePassword) {

@@ -658,7 +658,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">AI Heatmap Image Interpretation</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">EigenCAM Image Interpretation</h2>
             <p class="text-lg text-gray-600">Shows the parts of the ultrasound image the model focused on</p>
           </div>
         </div>
@@ -676,7 +676,7 @@
             <div id="imaging-prediction-stats" class="mt-4 space-y-3"></div>
           </div>
 
-          <!-- AI Heatmap Image Interpretation -->
+          <!-- EigenCAM Image Interpretation -->
           <div>
             <h3 class="text-xl font-semibold text-gray-700 mb-4">Activation overlay</h3>
             <div id="gradcam-heatmap-container" class="img-well rounded-xl overflow-hidden" style="width: auto; height: auto; display: flex; align-items: center; justify-content: center;">
@@ -758,12 +758,12 @@
                   </svg>
               </div>
               <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">Unlock Advanced XAI Features</h2>
-              <p class="text-violet-100">Create an account to access detailed AI Interpretation of Clinical Parameters and AI Heatmap Image Interpretation</p>
+              <p class="text-violet-100">Create an account to access detailed AI Interpretation of Clinical Parameters and EigenCAM Image Interpretation</p>
           </div>
           
           <div class="px-6 py-8 modal-body-pad">
               <p class="text-center mb-6 text-violet-100/90">
-                  <strong class="text-white">Full XAI Analysis</strong> including feature importance charts, AI Heatmap Image Interpretation views, and detailed prediction explanations are available to registered users.
+                  <strong class="text-white">Full XAI Analysis</strong> including feature importance charts, EigenCAM Image Interpretation views, and detailed prediction explanations are available to registered users.
               </p>
               
               <p class="text-center text-sm mb-8 text-violet-300/80">
@@ -795,15 +795,15 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
   <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
   <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
-  <script src="js/pcode-xai-clinical-copy.js?v=20260731-chipfix"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260731-eigencam"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/pcode-api.js?v=20260731-apifix2"></script>
+  <script src="js/pcode-api.js?v=20260731-liveauth"></script>
   <script src="js/auth.js?v=20260731-btneq"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
-  <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
+  <script src="js/pcode-gradcam-canvas.js?v=20260731-eigencam"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
   <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
 
@@ -978,29 +978,40 @@
         }
 
         const history = Array.isArray(payload.history) ? payload.history : [];
-        // Ultrasound is stored on the live parameters row (not per-history snapshot).
-        // Enrich the latest entry so Grad-CAM can run for the most recent screening.
-        if (history.length > 0 && !history[0].ultrasound_image) {
-          try {
-            const latestResp = await fetch(
-              (typeof pcodeApiUrl === 'function')
-                ? pcodeApiUrl('./api/get_user_diagnosis.php')
-                : './api/get_user_diagnosis.php',
-              { method: 'GET', headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } }
-            );
-            const latestPayload = await latestResp.json().catch(() => null);
-            const latestData = latestPayload?.data || null;
-            const us =
-              latestData?.Ultrasound_image ||
-              latestData?.ultrasound_image ||
-              null;
-            if (us && String(latestData?.screening_id || '') === String(history[0].screening_id || '')) {
-              history[0].ultrasound_image = us;
-            } else if (us && !history[0].screening_id) {
-              history[0].ultrasound_image = us;
+        // Ultrasound lives on the live parameters row — enrich any history entry
+        // missing an image so EigenCAM can run for older screenings too.
+        let sharedUltrasound = null;
+        try {
+          const latestResp = await fetch(
+            (typeof pcodeApiUrl === 'function')
+              ? pcodeApiUrl('./api/get_user_diagnosis.php')
+              : 'https://p-code-nqak.onrender.com/api/get_user_diagnosis',
+            { method: 'GET', headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } }
+          );
+          const latestPayload = await latestResp.json().catch(() => null);
+          const latestData = latestPayload?.data || null;
+          sharedUltrasound =
+            latestData?.Ultrasound_image ||
+            latestData?.ultrasound_image ||
+            null;
+          if (sharedUltrasound && history.length > 0) {
+            history.forEach((entry) => {
+              if (!entry || entry.ultrasound_image) return;
+              const sameScreening =
+                !entry.screening_id ||
+                !latestData?.screening_id ||
+                String(entry.screening_id) === String(latestData.screening_id);
+              // Prefer exact screening match; otherwise attach latest image as fallback
+              // so EigenCAM still renders when history snapshots omit the blob.
+              if (sameScreening || !entry.screening_id) {
+                entry.ultrasound_image = sharedUltrasound;
+              }
+            });
+            if (!history[0].ultrasound_image) {
+              history[0].ultrasound_image = sharedUltrasound;
             }
-          } catch (_) { /* non-fatal */ }
-        }
+          }
+        } catch (_) { /* non-fatal */ }
         populateUserScreeningSelector(history);
       } catch (e) {
         console.error('[XAI] User screening history failed:', e);
@@ -1036,6 +1047,27 @@
         };
 
         const patientData = buildPatientPayloadFromUserHistory(entry);
+        // Ensure EigenCAM has an ultrasound even when history snapshot omitted it
+        if (!patientData.ultrasound_image && !patientData.Ultrasound_image) {
+          try {
+            const usResp = await fetch(
+              (typeof pcodeApiUrl === 'function')
+                ? pcodeApiUrl('./api/get_user_diagnosis.php')
+                : 'https://p-code-nqak.onrender.com/api/get_user_diagnosis',
+              { method: 'GET', headers: { Authorization: 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || ''), Accept: 'application/json' } }
+            );
+            const usPayload = await usResp.json().catch(() => null);
+            const usData = usPayload?.data || null;
+            const us =
+              usData?.Ultrasound_image ||
+              usData?.ultrasound_image ||
+              null;
+            if (us) {
+              patientData.ultrasound_image = us;
+              patientData.Ultrasound_image = us;
+            }
+          } catch (_) { /* non-fatal */ }
+        }
         const clinicalScore = Number(entry.xgboost_probability_percent);
         const imagingScore = Number(entry.cnn_probability_percent);
         const overallScore = Number(entry.confidence_percent);
@@ -1143,7 +1175,7 @@
           Ultrasound_image: row.Ultrasound_image || null
         };
 
-        // Ensure downstream Grad-CAM uses the same object
+        // Ensure downstream EigenCAM uses the same object
         currentPatient = patientData;
         updateUserScreeningContext({
           created_at_display: 'Latest saved screening',
@@ -1151,7 +1183,7 @@
           confidence_percent: overallScore
         });
 
-        // Use existing pipeline: fetch real SHAP + Grad-CAM
+        // Use existing pipeline: fetch real SHAP + EigenCAM
         fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, diagnosis);
         if (patientData.ultrasound_image) {
           loadGradCAMVisualization(patientData, imagingScore);
@@ -1586,7 +1618,7 @@
       console.log('   - has clinical_result?', !!selectedPatient.clinical_result);
       console.log('   - will enter GUEST mode?', selectedPatient.clinical_data && selectedPatient.clinical_result && selectedPatient.id?.startsWith('detected_'));
       
-      // Store current patient for use in Grad-CAM++ visualization
+      // Store current patient for use in EigenCAM visualization
       currentPatient = selectedPatient;
       
       // **GUEST MODE**: Handle guest's detected patient data
@@ -1673,7 +1705,7 @@
           }
         }
         
-        // Store current patient for Grad-CAM display
+        // Store current patient for EigenCAM display
         currentPatient = selectedPatient;
         currentPatient.clinical_score_percentage = clinicalScore;
         currentPatient.imaging_score_percentage = imagingScore;
@@ -1688,22 +1720,22 @@
           selectedPatient.name
         );
         
-        // Load Grad-CAM visualization if image is available
+        // Load EigenCAM visualization if image is available
         if (imagingResult && ultrasoundImage) {
-          console.log('?? Loading Grad-CAM visualization for guest patient');
+          console.log('?? Loading EigenCAM visualization for guest patient');
           console.log('   - ultrasoundImage exists:', !!ultrasoundImage);
           console.log('   - imagingScore:', imagingScore);
           
-          // Check if we have pre-stored Grad-CAM from CNN prediction
+          // Check if we have pre-stored EigenCAM from CNN prediction
           if (imagingResult.gradcam_visualization) {
-            console.log('? Using pre-stored Grad-CAM visualization');
+            console.log('? Using pre-stored EigenCAM visualization');
             displayGradCAMForGuest(imagingResult.gradcam_visualization, imagingScore);
           } else if (selectedPatient.cnn_api_response && selectedPatient.cnn_api_response.gradcam_visualization) {
-            console.log('? Using Grad-CAM from cnn_api_response');
+            console.log('? Using EigenCAM from cnn_api_response');
             displayGradCAMForGuest(selectedPatient.cnn_api_response.gradcam_visualization, imagingScore);
           } else {
             // Fall back to API call if not pre-stored - but construct patient object correctly for API
-            console.log('?? Grad-CAM not pre-stored, calling API with proper patient structure');
+            console.log('?? EigenCAM not pre-stored, calling API with proper patient structure');
             const gradcamPatient = {
               patient_id: selectedPatient.id,
               id: selectedPatient.id,
@@ -1711,11 +1743,11 @@
               Ultrasound_image: ultrasoundImage,  // Add both formats for compatibility
               CNN_diagnosis_probability_percentage: imagingScore
             };
-            console.log('?? Grad-CAM patient object:', gradcamPatient);
+            console.log('?? EigenCAM patient object:', gradcamPatient);
             loadGradCAMVisualization(gradcamPatient, imagingScore);
           }
         } else {
-          console.log('?? Cannot load Grad-CAM - missing imagingResult or ultrasoundImage');
+          console.log('?? Cannot load EigenCAM - missing imagingResult or ultrasoundImage');
           console.log('   - imagingResult:', imagingResult);
           console.log('   - ultrasoundImage:', !!ultrasoundImage);
         }
@@ -2088,7 +2120,7 @@
       // Hide ultrasound highlight card unless we have an imaging prediction AND an ultrasound image
       const gradcamCard = document.getElementById('gradcam-results-card');
       // Regular-user saves may not include a stored CNN diagnosis/probability, but we can still
-      // generate Grad-CAM from the ultrasound image alone. Gate on image availability.
+      // generate EigenCAM from the ultrasound image alone. Gate on image availability.
       if (gradcamCard) gradcamCard.style.display = hasUltrasoundImage ? 'block' : 'none';
 
       // Hide SHAP/clinical explanation blocks if no clinical prediction exists
@@ -2208,7 +2240,7 @@
         xgboostCard.style.display = (features && features.length) ? 'block' : 'none';
       }
       
-      // Load Grad-CAM++ visualization
+      // Load EigenCAM visualization
       try {
         const p = currentPatient;
         const hasImg = !!(p && (p.ultrasound_image || p.Ultrasound_image));
@@ -2216,7 +2248,7 @@
           loadGradCAMVisualization(p, imagingScore);
         }
       } catch (e) {
-        console.warn('[XAI] Grad-CAM trigger failed:', e);
+        console.warn('[XAI] EigenCAM trigger failed:', e);
       }
       
       document.getElementById('xai-content').classList.remove('hidden');
@@ -3000,7 +3032,7 @@
       }
     }
 
-    // Grad-CAM++ Visualization Functions
+    // EigenCAM Visualization Functions
     const GRADCAM_POSITIVE_THRESHOLD = 75;
 
     function resolveCnnImagingScore(result, fallbackScore) {
@@ -3111,7 +3143,7 @@
 
     function loadGradCAMVisualization(patientData, imagingScore) {
       if (!patientData || typeof patientData !== 'object') {
-        console.warn('[XAI] Skipping Grad-CAM: missing patient data.');
+        console.warn('[XAI] Skipping EigenCAM: missing patient data.');
         return;
       }
 
@@ -3123,7 +3155,7 @@
         return;
       }
 
-      console.log('Loading Grad-CAM++ visualization for patient:', patientData.patient_id || patientData.id || '(no id)');
+      console.log('Loading EigenCAM visualization for patient:', patientData.patient_id || patientData.id || '(no id)');
       
       // Show the gradcam card since we're attempting to load
       const gradcamCard = document.getElementById('gradcam-results-card');
@@ -3144,7 +3176,7 @@
         heatmapContainer.innerHTML = `
           <div id="gradcam-loading-spinner" class="text-center">
             <div class="spinner-circle mx-auto mb-4" style="width: 40px; height: 40px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></div>
-            <p class="text-violet-300/80">Generating AI Heatmap Image Interpretation...</p>
+            <p class="text-violet-300/80">Generating EigenCAM Image Interpretation...</p>
           </div>
         `;
       }
@@ -3180,13 +3212,13 @@
         }
       }
       
-      // Fetch Grad-CAM++ visualization from CNN model
+      // Fetch EigenCAM visualization from CNN model
       const requestData = {
         patient_id: patientData.patient_id || patientData.id,
         image: patientData.ultrasound_image || patientData.Ultrasound_image || null  // Handle both formats
       };
       
-      console.log('?? Grad-CAM Request Data:', requestData);
+      console.log('?? EigenCAM Request Data:', requestData);
       
       fetch((typeof pcodeMlUrl === 'function') ? pcodeMlUrl('gradcam') : 'https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
         method: 'POST',
@@ -3198,14 +3230,14 @@
       })
       .then(response => response.json())
       .then(result => {
-        console.log('Grad-CAM++ result:', result);
+        console.log('EigenCAM result:', result);
         
         // Check if there's an error in the result
         if (result.error) {
-          console.warn('Grad-CAM++ warning:', result.error);
+          console.warn('EigenCAM warning:', result.error);
           displayGradCAMError(result.error);
         } else if (result.success === false) {
-          console.error('Grad-CAM++ error:', result.error);
+          console.error('EigenCAM error:', result.error);
           displayGradCAMError(result.error || 'Unknown error');
         } else {
           // Display even if some processing failed - show what we have
@@ -3213,15 +3245,15 @@
         }
       })
       .catch(error => {
-        console.error('Error fetching Grad-CAM++ visualization:', error);
-        displayGradCAMError('Failed to load AI Heatmap Image Interpretation: ' + error.message);
+        console.error('Error fetching EigenCAM visualization:', error);
+        displayGradCAMError('Failed to load EigenCAM Image Interpretation: ' + error.message);
       });
     }
     
     function displayGradCAMHeatmap(result, imagingScore) {
-      console.log('Displaying Grad-CAM++ heatmap...');
+      console.log('Displaying EigenCAM heatmap...');
       if (result.gradcam_matrix_stats) {
-        console.log('[Grad-CAM] API matrix stats:', result.gradcam_matrix_stats);
+        console.log('[EigenCAM] API matrix stats:', result.gradcam_matrix_stats);
       }
       const ultrasoundCheckOk = result && result.ultrasound_check && typeof result.ultrasound_check.ok !== 'undefined'
         ? result.ultrasound_check.ok
@@ -3242,7 +3274,7 @@
       function showImage(src) {
         const img = new Image();
         img.src = src;
-        img.alt = 'AI Heatmap Image Interpretation';
+        img.alt = 'EigenCAM Image Interpretation';
         img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
         img.onload = function () {
           heatmapContainer.innerHTML = '';
@@ -3254,7 +3286,7 @@
       }
 
       function showCanvas(canvas) {
-        canvas.alt = 'AI Heatmap Image Interpretation';
+        canvas.alt = 'EigenCAM Image Interpretation';
         canvas.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
         heatmapContainer.appendChild(canvas);
       }
@@ -3274,16 +3306,16 @@
         )
           .then(showCanvas)
           .catch(function (err) {
-            console.warn('[Grad-CAM] Canvas render failed, falling back to server PNG:', err);
+            console.warn('[EigenCAM] Canvas render failed, falling back to server PNG:', err);
             if (result.gradcam_visualization) showImage(result.gradcam_visualization);
-            else heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">AI Heatmap Image Interpretation not generated</p></div>';
+            else heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">EigenCAM Image Interpretation not generated</p></div>';
           });
       } else if (result.gradcam_visualization) {
         showImage(result.gradcam_visualization);
       } else {
         const missMsg = (result && result.gradcam_error)
           ? String(result.gradcam_error)
-          : 'AI Heatmap Image Interpretation not generated';
+          : 'EigenCAM Image Interpretation not generated';
         heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">' + missMsg + '</p></div>';
       }
 
@@ -3302,7 +3334,7 @@
     }
 
     function displayGradCAMError(errorMessage) {
-      console.warn('Grad-CAM++ Warning:', errorMessage);
+      console.warn('EigenCAM Warning:', errorMessage);
       
       // Hide the gradcam-results-card when there are no CNN prediction results
       const gradcamCard = document.getElementById('gradcam-results-card');
@@ -3339,14 +3371,14 @@
       
       // Update interpretation text with helpful message
       document.getElementById('gradcam-text').innerHTML = `
-        <span class="text-violet-100/90">The AI Heatmap Image Interpretation could not be generated:</span> <span class="text-violet-300/80">${errorMessage}</span>
+        <span class="text-violet-100/90">The EigenCAM Image Interpretation could not be generated:</span> <span class="text-violet-300/80">${errorMessage}</span>
         <br><br>
         <span class="text-sm text-violet-300/75">This may occur if: no ultrasound image is available for this patient, the AI model is not accessible, or there is an issue with the imaging analysis.</span>
       `;
     }
 
     function displayGradCAMForGuest(gradcamVisualization, imagingScore) {
-      console.log('?? Displaying stored Grad-CAM visualization for guest patient');
+      console.log('?? Displaying stored EigenCAM visualization for guest patient');
       
       // Show export section and hide loading notice
       const exportSection = document.getElementById('export-section');
@@ -3368,12 +3400,12 @@
         originalSpinner.style.display = 'none';
       }
       
-      // Display the stored Grad-CAM heatmap visualization
+      // Display the stored EigenCAM heatmap visualization
       const heatmapContainer = document.getElementById('gradcam-heatmap-container');
       if (heatmapContainer && gradcamVisualization) {
         const img = new Image();
         img.src = gradcamVisualization;
-        img.alt = 'AI Heatmap Image Interpretation';
+        img.alt = 'EigenCAM Image Interpretation';
         img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
         
         img.onload = function() {
@@ -3382,7 +3414,7 @@
         };
         
         img.onerror = function() {
-          heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">Failed to display AI Heatmap Image Interpretation</p></div>';
+          heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-violet-300/80">Failed to display EigenCAM Image Interpretation</p></div>';
         };
       }
       

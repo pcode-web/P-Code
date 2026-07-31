@@ -994,6 +994,327 @@ def api_google_auth():
         return _json_error("Database error", 500, detail=str(exc))
 
 
+FIREBASE_WEB_API_KEY = _env(
+    "FIREBASE_WEB_API_KEY",
+    "PCODE_FIREBASE_WEB_API_KEY",
+    default="AIzaSyCQo5PMVcPN-49y3onIyoy3yzoDZNn3ab0",
+)
+FIREBASE_PROJECT_ID = _env(
+    "FIREBASE_PROJECT_ID",
+    "PCODE_FIREBASE_PROJECT_ID",
+    default="project-a3473fa6-d957-4693-96a",
+)
+
+
+def _verify_firebase_id_token(id_token: str) -> dict:
+    """Verify Firebase ID token via Identity Toolkit accounts:lookup."""
+    import json as _json
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    if not id_token:
+        raise ValueError("Missing Firebase ID token")
+    if not FIREBASE_WEB_API_KEY:
+        raise ValueError("Firebase is not configured on the server")
+
+    url = (
+        "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key="
+        + urllib.parse.quote(FIREBASE_WEB_API_KEY)
+    )
+    req = urllib.request.Request(
+        url,
+        data=_json.dumps({"idToken": id_token}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = _json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raise ValueError("invalid_token") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"Firebase token verification failed: {exc}") from exc
+
+    users = data.get("users") if isinstance(data, dict) else None
+    if not isinstance(users, list) or not users or not isinstance(users[0], dict):
+        raise ValueError("invalid_token")
+    user = users[0]
+    email = str(user.get("email") or "").strip().lower()
+    if not email:
+        raise ValueError("invalid_token")
+    if "emailVerified" in user and not bool(user.get("emailVerified")):
+        raise ValueError("Email is not verified")
+    return {
+        "email": email,
+        "email_verified": bool(user.get("emailVerified")),
+        "local_id": str(user.get("localId") or ""),
+        "name": str(user.get("displayName") or ""),
+    }
+
+
+def _derive_display_name(email: str, fallback: str = "") -> str:
+    if fallback and len(fallback.strip()) >= 2:
+        return fallback.strip()
+    local = (email or "").split("@", 1)[0].strip()
+    cleaned = re.sub(r"[._+\-]+", " ", local)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if len(cleaned) < 2:
+        return "P-Code User"
+    return " ".join(part.capitalize() for part in cleaned.split(" "))
+
+
+@app.post("/api/auth/refresh")
+@app.post("/api/auth/refresh.php")
+def api_auth_refresh():
+    """Renew a valid (or recently expired) JWT — used by auth.js session timer."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        payload = {}
+
+    auth_header = request.headers.get("Authorization") or ""
+    token = auth_header
+    if not token:
+        token = str(payload.get("token") or "")
+
+    try:
+        decoded = decode_jwt(token)
+        soft_ok = True
+    except ValueError as exc:
+        soft_ok = False
+        try:
+            raw = (token or "").strip()
+            if raw.lower().startswith("bearer "):
+                raw = raw[7:].strip()
+            parts = raw.split(".")
+            if len(parts) != 3:
+                raise ValueError(str(exc))
+            import json as _json
+            import hmac as _hmac
+
+            soft = _json.loads(_b64decode_pad(parts[1]))
+            if not isinstance(soft, dict) or not soft.get("id"):
+                raise ValueError(str(exc))
+            expected = _hmac.new(
+                JWT_SECRET.encode("utf-8"),
+                f"{parts[0]}.{parts[1]}".encode("utf-8"),
+                hashlib.sha256,
+            ).digest()
+            if not _hmac.compare_digest(expected, _b64decode_pad(parts[2])):
+                raise ValueError("Invalid token signature")
+            decoded = soft
+        except Exception:  # noqa: BLE001
+            return _json_error(str(exc), 401)
+
+    uid = int(decoded.get("id") or 0)
+    if uid <= 0:
+        return _json_error("Unauthorized: invalid token payload", 401)
+
+    new_token = generate_jwt(
+        {
+            "id": uid,
+            "email": str(decoded.get("email") or ""),
+            "name": str(decoded.get("name") or ""),
+            "role": str(decoded.get("role") or ""),
+            "auth_source": str(decoded.get("auth_source") or ""),
+            **({"isGuest": True} if decoded.get("isGuest") else {}),
+        }
+    )
+    return jsonify(
+        {
+            "success": True,
+            "message": "Token refreshed",
+            "token": new_token,
+            "expiresIn": JWT_EXPIRY,
+            "renewed": True,
+            "was_expired": not soft_ok,
+        }
+    ), 200
+
+
+@app.get("/api/auth/bootstrap_session")
+@app.get("/api/auth/bootstrap_session.php")
+def api_bootstrap_session():
+    """
+    PHP OAuth redirect used server sessions; on Render/Firebase we hydrate from
+    Authorization Bearer (popup Google flow) or return a clear 401.
+    """
+    auth_header = request.headers.get("Authorization") or ""
+    token = auth_header or str(request.args.get("token") or "")
+    if not token:
+        return _json_error("No active OAuth session", 401)
+    try:
+        decoded = decode_jwt(token)
+    except ValueError as exc:
+        return _json_error(str(exc) or "No active OAuth session", 401)
+
+    uid = int(decoded.get("id") or 0)
+    if uid <= 0:
+        return _json_error("No active OAuth session", 401)
+
+    name = str(decoded.get("name") or "")
+    email = str(decoded.get("email") or "")
+    role = str(decoded.get("role") or "")
+    source = str(decoded.get("auth_source") or "")
+    portal = "provider" if source == "clinical_providers" or role.lower() not in (
+        "regular user",
+        "patient",
+        "user",
+        "guest",
+        "",
+    ) else "patient"
+
+    return jsonify(
+        {
+            "success": True,
+            "token": token[7:].strip() if token.lower().startswith("bearer ") else token,
+            "user": {
+                "id": uid,
+                "email": email,
+                "name": name,
+                "role": role,
+                "institution": "",
+                "avatar": _default_avatar(name),
+                "picture": _default_avatar(name),
+                "authSource": source,
+            },
+            "expiresIn": JWT_EXPIRY,
+            "portal": portal,
+        }
+    ), 200
+
+
+@app.post("/api/auth/firebase")
+@app.post("/api/auth/firebase_callback.php")
+def api_firebase_auth():
+    """
+    Bridge a Firebase ID token (email link) into a P-Code JWT.
+    POST JSON: { id_token, expectedAccess?: "provider"|"community" }
+    """
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _json_error("Request body must be JSON", 400)
+
+    id_token = str(payload.get("id_token") or payload.get("credential") or "").strip()
+    expected = str(payload.get("expectedAccess") or "").strip().lower()
+    login_context = str(payload.get("loginContext") or "").strip().lower()
+
+    try:
+        token_data = _verify_firebase_id_token(id_token)
+    except ValueError as exc:
+        return _json_error(str(exc), 401)
+
+    email = str(token_data.get("email") or "").strip().lower()
+    name = _derive_display_name(email, str(token_data.get("name") or ""))
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                if expected == "provider":
+                    cur.execute(
+                        """
+                        SELECT id, email, user_name, role, institution, avatar, is_active
+                        FROM clinical_providers
+                        WHERE email = %s
+                        LIMIT 1
+                        """,
+                        (email,),
+                    )
+                    provider = cur.fetchone()
+                    if not provider or int(provider.get("is_active") or 0) != 1:
+                        return _json_error(
+                            "This email is not on the authorized clinical provider roster. Ask an administrator to add you.",
+                            403,
+                            code="provider_not_authorized",
+                        )
+                    return jsonify(
+                        _auth_success_payload(
+                            {
+                                "id": int(provider["id"]),
+                                "email": provider.get("email") or email,
+                                "name": provider.get("user_name") or name,
+                                "role": provider.get("role") or "Ob-Gyn",
+                                "institution": provider.get("institution") or "",
+                                "avatar": provider.get("avatar") or "",
+                            },
+                            "clinical_providers",
+                        )
+                    ), 200
+
+                cur.execute(
+                    """
+                    SELECT user_id, user_name, email, role, institution, avatar
+                    FROM users
+                    WHERE email = %s
+                    LIMIT 1
+                    """,
+                    (email,),
+                )
+                user_row = cur.fetchone()
+                if not user_row:
+                    cur.execute(
+                        """
+                        INSERT INTO users (user_name, email, password, role, institution, avatar)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            name,
+                            email,
+                            bcrypt.hashpw(
+                                _password_to_digest(os.urandom(16).hex()).encode("utf-8"),
+                                bcrypt.gensalt(),
+                            ).decode("utf-8"),
+                            "Regular User",
+                            "",
+                            None,
+                        ),
+                    )
+                    new_id = int(cur.lastrowid)
+                    user_row = {
+                        "user_id": new_id,
+                        "user_name": name,
+                        "email": email,
+                        "role": "Regular User",
+                        "institution": "",
+                        "avatar": "",
+                    }
+
+                role = str(user_row.get("role") or "Regular User")
+                if login_context == "portal-pick" and expected == "community":
+                    if role.lower() not in ("regular user", "patient", "user"):
+                        return _json_error(
+                            "This account cannot access the regular user portal.",
+                            403,
+                            code="portal_role_mismatch",
+                        )
+                elif expected == "community" and role.lower() not in (
+                    "regular user",
+                    "patient",
+                    "user",
+                ):
+                    return _json_error(
+                        "This account cannot access the Regular User portal",
+                        403,
+                    )
+
+                return jsonify(
+                    _auth_success_payload(
+                        {
+                            "id": int(user_row["user_id"]),
+                            "email": user_row.get("email") or email,
+                            "name": user_row.get("user_name") or name,
+                            "role": role,
+                            "institution": user_row.get("institution") or "",
+                            "avatar": user_row.get("avatar") or "",
+                        },
+                        "users",
+                    )
+                ), 200
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Firebase auth DB error")
+        return _json_error("Firebase authentication failed", 500, detail=str(exc))
+
+
 # --- JWT helpers / provider-scoped patient APIs -----------------------------
 def _b64decode_pad(value: str) -> bytes:
     pad = "=" * (-len(value) % 4)

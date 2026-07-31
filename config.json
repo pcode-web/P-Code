@@ -1,10 +1,10 @@
 {
   "app": {
     "name": "PMOS Decision Support System",
-    "version": "2.1.4",
+    "version": "2.1.5",
     "environment": "production",
     "apiBaseUrl": "https://p-code-nqak.onrender.com/api/",
-    "frontendUrl": "./"
+    "frontendUrl": "https://p-code.web.app/"
   },
   "authentication": {
     "enabled": true,
@@ -17,88 +17,52 @@
   "mlModels": {
     "xgboost": {
       "endpoint": "https://p-code-nqak.onrender.com/predict-xgboost",
-      "version": "2.1.4",
-      "features": [
-        "age",
-        "bmi",
-        "lh",
-        "fsh",
-        "amh",
-        "testosterone",
-        "cycle_length",
-        "acne_score",
-        "hirsutism_score",
-        "menstrual_regularity",
-        "fasting_glucose",
-        "fasting_insulin",
-        "tsh"
-      ],
+      "version": "2.1.5",
       "threshold": 0.5,
       "confidenceThreshold": 0.85
     },
     "cnn": {
       "endpoint": "https://p-code-nqak.onrender.com/predict-cnn",
-      "version": "2.1.4",
+      "version": "2.1.5",
       "inputSize": [224, 224],
       "channels": 3,
-      "preprocessing": {
-        "normalize": true,
-        "resize": [224, 224],
-        "augmentation": false
-      },
       "threshold": 0.5,
       "confidenceThreshold": 0.90
     },
-    "cnnGradcam": {
-      "endpoint": "https://p-code-nqak.onrender.com/predict-cnn-gradcam"
+    "cnnEigencam": {
+      "endpoint": "https://p-code-nqak.onrender.com/predict-cnn-gradcam",
+      "aliasOf": "predict-cnn-gradcam"
     },
     "xai": {
       "shap": {
-        "endpoint": "/api/v1/xai/shap/explain",
+        "endpoint": "https://p-code-nqak.onrender.com/predict-xgboost",
         "plotTypes": ["force", "summary", "dependence"],
         "maxDisplayFeatures": 10
       },
-      "gradcam++": {
-        "endpoint": "/api/v1/xai/gradcam++/explain",
-        "numSamples": 1000,
-        "numFeatures": 10,
-        "segmentation": "quickshift"
+      "eigencam": {
+        "endpoint": "https://p-code-nqak.onrender.com/predict-cnn-gradcam"
       }
     }
   },
   "database": {
-    "type": "postgresql",
+    "type": "mysql",
     "host": "${DB_HOST}",
-    "port": 5432,
-    "name": "pcos_dss_db",
+    "port": 3306,
+    "name": "${DB_NAME}",
     "ssl": true,
-    "poolSize": 20,
-    "timeout": 30000
-  },
-  "storage": {
-    "images": {
-      "provider": "aws-s3",
-      "bucket": "pcos-ultrasound-images",
-      "region": "us-east-1",
-      "encryption": "AES-256",
-      "maxFileSize": 10485760,
-      "allowedFormats": ["jpg", "jpeg", "png", "dcm"]
-    },
-    "models": {
-      "provider": "aws-s3",
-      "bucket": "pcos-ml-models",
-      "region": "us-east-1",
-      "versioning": true
-    }
+    "poolSize": 5,
+    "timeout": 30000,
+    "note": "Production uses Clever Cloud MySQL via Render Flask (not PostgreSQL)."
   },
   "security": {
-    "encryption": {
-      "algorithm": "AES-256-GCM",
-      "keyRotationInterval": 2592000
-    },
     "cors": {
       "enabled": true,
-      "allowedOrigins": ["https://pcos-ai.com", "https://app.pcos-ai.com"],
+      "allowedOrigins": [
+        "https://p-code.web.app",
+        "https://project-a3473fa6-d957-4693-96a.firebaseapp.com",
+        "http://localhost",
+        "http://127.0.0.1"
+      ],
       "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       "allowedHeaders": ["Content-Type", "Authorization", "X-API-Key"]
     },
@@ -106,36 +70,19 @@
       "enabled": true,
       "windowMs": 60000,
       "maxRequests": 100
-    },
-    "hipaa": {
-      "enabled": true,
-      "auditLogging": true,
-      "dataRetentionDays": 2555,
-      "accessLogging": true
     }
   },
   "features": {
     "realTimeUpdates": true,
-    "notifications": {
-      "email": true,
-      "push": true,
-      "sms": false
-    },
     "export": {
       "pdf": true,
       "csv": true,
       "json": true
-    },
-    "integrations": {
-      "hl7": true,
-      "fhir": true,
-      "dicom": true
     }
   },
   "logging": {
     "level": "info",
     "format": "json",
-    "destination": "cloudwatch",
     "retentionDays": 90
   }
 }

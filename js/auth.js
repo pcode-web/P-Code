@@ -88,6 +88,16 @@ class AuthManager {
     }
   }
 
+  /** Dedicated login pages already have their own forms — don't inject a full-screen chooser. */
+  isDedicatedLoginPage() {
+    try {
+      const path = String(window.location.pathname || '').toLowerCase();
+      return /(?:^|\/)(login\.html|login-new\.html|provider-login\.html|admin-login\.html)$/i.test(path);
+    } catch (_) {
+      return false;
+    }
+  }
+
   /** Canonical floating auth modal markup (chooser + email/password + Google). */
   getAuthFloatModalHtml() {
     return (
@@ -138,7 +148,7 @@ class AuthManager {
       '<div class="pcode-google-oauth-panel" data-auth-mode="signin">' +
       '<div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>' +
       '<button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>' +
-      '<p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">You can also sign in or register securely with Google.</p>' +
+      '<p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community" hidden aria-hidden="true" style="display:none"></p>' +
       '</div>' +
       '<div class="pcode-auth-float-divider" data-auth-mode="signin" aria-hidden="true">or continue with email</div>' +
       '<div id="login-form-container" data-auth-mode="signin">' +
@@ -177,6 +187,18 @@ class AuthManager {
   ensureAuthFloatModal() {
     try {
       if (typeof document === 'undefined') return null;
+      // login.html / provider-login / login-new already own the full page — injecting
+      // #auth-modal here leaves a full-screen overlay that steals all clicks.
+      if (this.isDedicatedLoginPage()) {
+        const stray = document.getElementById('auth-modal');
+        if (stray) {
+          stray.classList.add('hidden');
+          stray.setAttribute('aria-hidden', 'true');
+          stray.style.display = 'none';
+          stray.style.pointerEvents = 'none';
+        }
+        return null;
+      }
       this.ensureGoogleAuthStylesheet();
       const existing = document.getElementById('auth-modal');
       // Always rebuild unless the current Google-first layout (v4) is present.
@@ -191,7 +213,11 @@ class AuthManager {
         const wrap = document.createElement('div');
         wrap.innerHTML = this.getAuthFloatModalHtml().trim();
         const modal = wrap.firstElementChild;
-        if (modal) document.body.appendChild(modal);
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.appendChild(modal);
+        }
       }
       this.bindAuthFloatControls();
       return document.getElementById('auth-modal');
@@ -776,6 +802,9 @@ class AuthManager {
         'guest_login.php': 'guest-login',
         'auth/google_callback.php': 'auth/google',
         'auth/firebase_callback.php': 'auth/firebase',
+        'auth/bootstrap_session.php': 'auth/bootstrap_session',
+        'auth/refresh': 'auth/refresh',
+        'auth/refresh.php': 'auth/refresh',
         'sync_session.php': 'sync_session',
         'sync-session': 'sync_session',
         'update_profile.php': 'update-profile',
@@ -1050,7 +1079,7 @@ class AuthManager {
 
   ensureEditProfileStyles() {
     const hrefBase = /\/(obgyn|user)\//i.test(window.location.pathname || '') ? '../' : '';
-    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260723-eppad';
+    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260731-btneq';
     let link = document.getElementById('pcode-edit-profile-modal-css');
     if (link) {
       if (link.getAttribute('href') !== href) link.setAttribute('href', href);
@@ -1446,6 +1475,27 @@ class AuthManager {
   }
 
   /**
+   * Post-login destination for Regular User / community portal.
+   * Never send them to Detect — home is index.html (they can open Detect from nav).
+   */
+  resolveCommunityPostLoginRedirect(pendingRedirect) {
+    const raw = String(pendingRedirect || '').trim();
+    const page = raw.split(/[?#]/)[0].split('/').pop() || '';
+    if (!page) {
+      return 'index.html';
+    }
+    // Detect is a tool page, not the signed-in landing page.
+    if (/^detect-user\.html$/i.test(page) || /^detect-provider\.html$/i.test(page)) {
+      return 'index.html';
+    }
+    // Stay within community surfaces only.
+    if (/^(index|history-user|xai-user|about|model-performance)\.html$/i.test(page)) {
+      return page + (raw.includes('#') ? '#' + raw.split('#').slice(1).join('#') : '');
+    }
+    return 'index.html';
+  }
+
+  /**
    * Gate a page by portal without wiping a valid session (fixes post-login auto-logout).
    * @param {'community'|'provider'|'admin'|'any'} expectedPage
    * @returns {boolean} false if a redirect was triggered
@@ -1835,9 +1885,16 @@ class AuthManager {
       target = String(href || '').split('/').pop() || '';
     }
     if (target && target !== 'index.html' && target !== 'login-new.html') {
-      try {
-        sessionStorage.setItem('PMOS_post_login_redirect', target);
-      } catch (_) {}
+      // Detect is available after sign-in from the home nav — don't force it as the landing page.
+      if (!/^detect-user\.html$/i.test(target) && !/^detect-provider\.html$/i.test(target)) {
+        try {
+          sessionStorage.setItem('PMOS_post_login_redirect', target);
+        } catch (_) {}
+      } else {
+        try {
+          sessionStorage.removeItem('PMOS_post_login_redirect');
+        } catch (_) {}
+      }
     }
     this.ensureAuthFloatModal();
     if (document.getElementById('auth-modal')) {
@@ -2063,9 +2120,11 @@ class AuthManager {
 
         let redirectUrl = expectedAccess === 'provider' ? 'provider-dashboard.html' : 'index.html';
         if (pendingRedirect && expectedAccess !== 'provider') {
-          redirectUrl = pendingRedirect;
+          redirectUrl = this.resolveCommunityPostLoginRedirect(pendingRedirect);
         } else if (expectedAccess === 'provider' && pendingRedirect && /provider|patients|detect-provider|xai-provider|model-performance/i.test(pendingRedirect)) {
           redirectUrl = pendingRedirect;
+        } else if (expectedAccess !== 'provider') {
+          redirectUrl = this.getDefaultDashboardForUser(response.user) || 'index.html';
         }
         window.location.replace(redirectUrl);
       } else {
@@ -2481,12 +2540,13 @@ class AuthManager {
       return;
     }
     try {
-      const response = await fetch(`${this.apiBaseUrl}auth/refresh`, {
+      const response = await fetch(this.resolveApiUrl('auth/refresh'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ renew: true })
       });
 
       if (response.ok) {
@@ -3003,6 +3063,11 @@ class AuthManager {
               if (isAdmin) {
                 return undefined;
               }
+              try {
+                if (/provider-login\.html/i.test(String(window.location.pathname || ''))) {
+                  return 'provider';
+                }
+              } catch (_) {}
               if (!isLoginNew) {
                 return undefined;
               }
@@ -3032,10 +3097,9 @@ class AuthManager {
               if (p === 'provider' || this.isProviderUser(result.user)) {
                 redirectUrl = 'provider-dashboard.html';
               } else if (pendingRedirect) {
-                redirectUrl = pendingRedirect;
+                redirectUrl = this.resolveCommunityPostLoginRedirect(pendingRedirect);
               } else {
-                const current = this.getCurrentPageName() || 'index.html';
-                redirectUrl = current === 'login-new.html' ? 'index.html' : current;
+                redirectUrl = this.getDefaultDashboardForUser(result.user) || 'index.html';
               }
             }
 
@@ -3130,7 +3194,7 @@ class AuthManager {
         body.expectedAccess = portalForAuth;
         body.loginContext = 'portal-pick';
       }
-      const response = await fetch(this.apiBaseUrl + 'auth/firebase_callback.php', {
+      const response = await fetch(this.resolveApiUrl('auth/firebase_callback.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -3194,10 +3258,9 @@ class AuthManager {
           if (p === 'provider' || this.isProviderUser(result.user)) {
             redirectUrl = 'provider-dashboard.html';
           } else if (pendingRedirect) {
-            redirectUrl = pendingRedirect;
+            redirectUrl = this.resolveCommunityPostLoginRedirect(pendingRedirect);
           } else {
-            const current = this.getCurrentPageName() || 'index.html';
-            redirectUrl = current === 'login-new.html' ? 'index.html' : current;
+            redirectUrl = this.getDefaultDashboardForUser(result.user) || 'index.html';
           }
         }
 
@@ -3543,13 +3606,15 @@ function pcodeShowCenterAlert(message, type = 'info', options = {}) {
     (opts.replaceLoading !== false && (isLoading || type === 'success' || type === 'error'));
 
   const sub =
-    type === 'success'
-      ? 'This window will close in a few seconds.'
-      : type === 'error'
-        ? 'Please check the message above and try again if needed.'
-        : isLoading
-          ? 'Please wait — PDF export can take up to a minute.'
-          : 'This will close in a few seconds.';
+    typeof opts.subtitle === 'string' && opts.subtitle
+      ? opts.subtitle
+      : type === 'success'
+        ? 'This window will close in a few seconds.'
+        : type === 'error'
+          ? 'Please check the message above and try again if needed.'
+          : isLoading
+            ? 'Please wait a moment.'
+            : 'This will close in a few seconds.';
 
   const rootId = 'pcode-center-alert-overlay';
   const innerId = 'pcode-center-alert-inner';
@@ -3753,6 +3818,7 @@ window.pcodeShowCenterAlert = pcodeShowCenterAlert;
 window.pcodeDismissCenterAlert = pcodeDismissCenterAlert;
 window.pcodeShowExportLoading = pcodeShowExportLoading;
 window.pcodeHideExportLoading = pcodeHideExportLoading;
+window.pcodeDualRingSpinnerMarkup = pcodeDualRingSpinnerMarkup;
 
 // Initialize Auth Manager
 const auth = new AuthManager();

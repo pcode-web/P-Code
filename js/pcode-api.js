@@ -43,6 +43,8 @@
     "guest_login.php": "guest-login",
     "auth/google_callback.php": "auth/google",
     "auth/firebase_callback.php": "auth/firebase",
+    "auth/bootstrap_session.php": "auth/bootstrap_session",
+    "auth/refresh.php": "auth/refresh",
     "sync_session.php": "sync_session",
     "update_profile.php": "update-profile",
     "patients/get_patients_list.php": "patients/get_patients_list",
