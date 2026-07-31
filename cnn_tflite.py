@@ -197,6 +197,7 @@ _OUTPUT_DETAILS: Any = None
 _INTERPRETER_BACKEND: str = ""
 _INTERPRETER_PRESERVE_TENSORS: bool = False
 _GAP_FEATURE_INDEX: Optional[int] = None
+_SPATIAL_FEATURE_INDEX: Optional[int] = None
 
 
 def load_tflite_interpreter(
@@ -215,7 +216,7 @@ def load_tflite_interpreter(
     MobileNetV2 global-average-pooling (1280-d) activations can be read for OOD.
     """
     global _INTERPRETER, _INPUT_DETAILS, _OUTPUT_DETAILS, _INTERPRETER_BACKEND
-    global _INTERPRETER_PRESERVE_TENSORS, _GAP_FEATURE_INDEX
+    global _INTERPRETER_PRESERVE_TENSORS, _GAP_FEATURE_INDEX, _SPATIAL_FEATURE_INDEX
 
     tflite_path = Path(tflite_path).resolve()
     if not tflite_path.is_file():
@@ -237,11 +238,12 @@ def load_tflite_interpreter(
     ):
         return _INTERPRETER
 
-    # Reload if preserve flag changed (needed to expose GAP features).
+    # Reload if preserve flag changed (needed to expose GAP / spatial features).
     _INTERPRETER = None
     _INPUT_DETAILS = None
     _OUTPUT_DETAILS = None
     _GAP_FEATURE_INDEX = None
+    _SPATIAL_FEATURE_INDEX = None
 
     errors: list[str] = []
     for name, Interpreter in _interpreter_candidates():
@@ -271,10 +273,12 @@ def load_tflite_interpreter(
             _INTERPRETER_BACKEND = name
             _INTERPRETER_PRESERVE_TENSORS = bool(preserve_all_tensors)
             _GAP_FEATURE_INDEX = _find_gap_feature_index(interpreter)
+            _SPATIAL_FEATURE_INDEX = _find_spatial_feature_index(interpreter)
             print(
                 f"[cnn_tflite] Using interpreter backend: {name}"
                 f" (preserve_all_tensors={_INTERPRETER_PRESERVE_TENSORS},"
-                f" gap_index={_GAP_FEATURE_INDEX})"
+                f" gap_index={_GAP_FEATURE_INDEX},"
+                f" spatial_index={_SPATIAL_FEATURE_INDEX})"
             )
             return interpreter
         except Exception as exc:  # noqa: BLE001
@@ -314,6 +318,125 @@ def _find_gap_feature_index(interpreter: Any) -> Optional[int]:
                 continue
             fallback = int(d["index"])
     return preferred if preferred is not None else fallback
+
+
+def _find_spatial_feature_index(interpreter: Any) -> Optional[int]:
+    """Locate last MobileNetV2-style spatial map (e.g. 1×7×7×1280) for EigenCAM."""
+    import numpy as np
+
+    best: Optional[Tuple[int, int, list]] = None  # (score, index, dims)
+    for d in interpreter.get_tensor_details():
+        name = str(d.get("name") or "").lower()
+        shape = d.get("shape")
+        try:
+            dims = [int(x) for x in np.asarray(shape).tolist()] if shape is not None else []
+        except Exception:
+            dims = []
+        if len(dims) != 4:
+            continue
+        n, h, w, c = dims
+        if n != 1 or h < 4 or w < 4 or h > 56 or w > 56 or c < 64:
+            continue
+        if "global_average" in name or "fully_connected" in name or "/bias" in name:
+            continue
+        score = 0
+        if c == 1280:
+            score += 5
+        elif c >= 256:
+            score += 2
+        if "out_relu" in name or name.endswith("/relu"):
+            score += 3
+        if "conv" in name:
+            score += 1
+        # Prefer finer maps slightly less than the final 7×7 block
+        score += max(0, 16 - abs(7 - h))
+        if best is None or score > best[0]:
+            best = (score, int(d["index"]), dims)
+    return best[1] if best else None
+
+
+def extract_spatial_features(interpreter: Any) -> Optional[Any]:
+    """
+    Read last spatial activation map after ``interpreter.invoke()``.
+    Shape (H, W, C). Requires ``experimental_preserve_all_tensors=True``.
+    """
+    import numpy as np
+
+    global _SPATIAL_FEATURE_INDEX
+
+    indices: list[int] = []
+    if _SPATIAL_FEATURE_INDEX is not None:
+        indices.append(int(_SPATIAL_FEATURE_INDEX))
+    else:
+        found = _find_spatial_feature_index(interpreter)
+        if found is not None:
+            _SPATIAL_FEATURE_INDEX = found
+            indices.append(found)
+
+    for d in interpreter.get_tensor_details():
+        try:
+            indices.append(int(d["index"]))
+        except Exception:
+            continue
+
+    seen = set()
+    for idx in indices:
+        if idx in seen:
+            continue
+        seen.add(idx)
+        try:
+            tensor = np.asarray(interpreter.get_tensor(idx), dtype=np.float32)
+        except Exception:
+            continue
+        if tensor.ndim == 4 and tensor.shape[0] == 1:
+            _, h, w, c = tensor.shape
+            if 4 <= h <= 56 and 4 <= w <= 56 and c >= 64:
+                _SPATIAL_FEATURE_INDEX = idx
+                return tensor[0]
+        if tensor.ndim == 3 and 4 <= tensor.shape[0] <= 56 and 4 <= tensor.shape[1] <= 56:
+            _SPATIAL_FEATURE_INDEX = idx
+            return tensor
+    return None
+
+
+def compute_tflite_cam(spatial: Any) -> Optional[Any]:
+    """
+    Gradient-free saliency for TFLite (EigenCAM with mean-ReLU fallback).
+
+    Returns a float32 HxW map normalized to [0, 1], suitable as
+    ``gradcam_activation_matrix`` for the XAI canvas renderer.
+    """
+    import numpy as np
+
+    try:
+        acts = np.asarray(spatial, dtype=np.float64)
+        if acts.ndim != 3:
+            return None
+        h, w, c = acts.shape
+        acts = np.maximum(acts, 0.0)
+        flat = acts.reshape(h * w, c)
+        flat = flat - flat.mean(axis=0, keepdims=True)
+        cam = None
+        try:
+            # EigenCAM: first left singular vector of (HW × C) activations
+            u, _s, _vt = np.linalg.svd(flat, full_matrices=False)
+            cam = u[:, 0].reshape(h, w)
+            if float(np.mean(cam)) < 0.0:
+                cam = -cam
+            cam = np.maximum(cam, 0.0)
+        except Exception:
+            cam = None
+        if cam is None or float(np.max(cam) - np.min(cam)) < 1e-12:
+            cam = acts.mean(axis=-1)
+        mn = float(np.min(cam))
+        mx = float(np.max(cam))
+        if mx > mn:
+            cam = (cam - mn) / (mx - mn)
+        else:
+            cam = np.zeros((h, w), dtype=np.float64)
+        return cam.astype(np.float32)
+    except Exception:
+        return None
 
 
 def extract_gap_features(interpreter: Any, expected_dim: int = 1280) -> Optional[Any]:
@@ -399,14 +522,15 @@ def _raw_positive_probability(
     tflite_path: Union[str, Path],
     *,
     return_features: bool = False,
+    return_spatial: bool = False,
     feature_dim: int = 1280,
-) -> Tuple[float, list, Optional[Any]]:
-    """Run interpreter; return (P(positive), raw_output_list, optional GAP features)."""
+) -> Tuple[float, list, Optional[Any], Optional[Any]]:
+    """Run interpreter; return (P(positive), raw_output_list, GAP features, spatial map)."""
     import numpy as np
 
     interpreter = load_tflite_interpreter(
         tflite_path,
-        preserve_all_tensors=True if return_features else None,
+        preserve_all_tensors=True if (return_features or return_spatial) else None,
     )
     input_details = _INPUT_DETAILS
     output_details = _OUTPUT_DETAILS
@@ -442,11 +566,10 @@ def _raw_positive_probability(
             out = e / e.sum()
         positive_prob = float(out[-1])
 
-    features = None
-    if return_features:
-        features = extract_gap_features(interpreter, expected_dim=feature_dim)
+    features = extract_gap_features(interpreter, expected_dim=feature_dim) if return_features else None
+    spatial = extract_spatial_features(interpreter) if return_spatial else None
 
-    return positive_prob, out.tolist(), features
+    return positive_prob, out.tolist(), features, spatial
 
 
 def _to_percentage(
@@ -503,6 +626,7 @@ def build_api_result(
     smoothing_factor: float = 0.90,
     model_name: str = "pcos_detection_modelv4.tflite",
     generate_gradcam: bool = False,
+    gradcam_heatmap: Optional[Any] = None,
     mahalanobis: Optional[dict] = None,
     image_validation: Optional[dict] = None,
     ultrasound_check: Optional[dict] = None,
@@ -562,11 +686,27 @@ def build_api_result(
     if image_validation is not None:
         result["image_validation"] = image_validation
     if generate_gradcam:
-        # Grad-CAM needs intermediate Keras layers — not available under TFLite.
-        result["gradcam_error"] = (
-            "Grad-CAM heatmap is unavailable in TFLite mode. "
-            "Probability score still uses pcos_detection_modelv4.tflite."
-        )
+        if gradcam_heatmap is not None:
+            try:
+                import numpy as np
+
+                heat = np.asarray(gradcam_heatmap, dtype=np.float32)
+                result["gradcam_activation_matrix"] = heat.tolist()
+                result["gradcam_method"] = "tflite_eigencam"
+                result["gradcam_matrix_stats"] = {
+                    "rows": int(heat.shape[0]) if heat.ndim >= 2 else 0,
+                    "cols": int(heat.shape[1]) if heat.ndim >= 2 else 0,
+                    "min": float(np.min(heat)) if heat.size else 0.0,
+                    "max": float(np.max(heat)) if heat.size else 0.0,
+                    "mean": float(np.mean(heat)) if heat.size else 0.0,
+                }
+            except Exception as exc:  # noqa: BLE001
+                result["gradcam_error"] = f"Failed to serialize TFLite Grad-CAM map: {exc}"
+        else:
+            result["gradcam_error"] = (
+                "Grad-CAM heatmap unavailable: spatial feature map not exposed by TFLite interpreter. "
+                "Ensure experimental_preserve_all_tensors is supported on the host."
+            )
     return result
 
 
@@ -652,24 +792,28 @@ def predict_pcos_bytes(
         mu, _inv, _meta = try_load_mahalanobis_params()
         feature_dim = int(mu.shape[0]) if mu is not None else 1280
         want_maha = mu is not None
+        want_gradcam = bool(generate_gradcam)
 
         x = preprocess_image_bytes(image_bytes)
-        prob, raw, features = _raw_positive_probability(
+        prob, raw, features, spatial = _raw_positive_probability(
             x,
             tflite_path,
-            return_features=want_maha,
+            return_features=want_maha or want_gradcam,
+            return_spatial=want_gradcam,
             feature_dim=feature_dim,
         )
         us_check, maha_result, image_validation = _attach_mahalanobis_validation(
             image_bytes, features if want_maha else None
         )
+        heatmap = compute_tflite_cam(spatial) if (want_gradcam and spatial is not None) else None
         return build_api_result(
             prob,
             raw_output=raw,
             apply_smoothing=apply_smoothing,
             smoothing_factor=smoothing_factor,
             model_name=str(Path(tflite_path).name),
-            generate_gradcam=generate_gradcam,
+            generate_gradcam=want_gradcam,
+            gradcam_heatmap=heatmap,
             mahalanobis=maha_result,
             image_validation=image_validation,
             ultrasound_check=us_check,

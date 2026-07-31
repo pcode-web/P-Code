@@ -504,7 +504,7 @@
 
   <!-- Load auth module -->
   <script src="js/pcode-api.js?v=20260731-ml-parity"></script>
-  <script src="js/auth.js?v=20260730-home-redirect"></script>
+  <script src="js/auth.js?v=20260731-btneq"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
   <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
@@ -2743,7 +2743,7 @@
       
       console.log('?? Grad-CAM Request Data:', requestData);
       
-      fetch('https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
+      fetch((typeof pcodeMlUrl === 'function') ? pcodeMlUrl('gradcam') : 'https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2828,12 +2828,20 @@
           .catch(function (err) {
             console.warn('[Grad-CAM] Canvas render failed, falling back to server PNG:', err);
             if (result.gradcam_visualization) showImage(result.gradcam_visualization);
-            else heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-gray-500">AI Heatmap Image Interpretation not generated</p></div>';
+            else {
+              const missMsg = (result && result.gradcam_error)
+                ? String(result.gradcam_error)
+                : 'AI Heatmap Image Interpretation not generated';
+              heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-gray-500">' + missMsg + '</p></div>';
+            }
           });
       } else if (result.gradcam_visualization) {
         showImage(result.gradcam_visualization);
       } else {
-        heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-gray-500">AI Heatmap Image Interpretation not generated</p></div>';
+        const missMsg = (result && result.gradcam_error)
+          ? String(result.gradcam_error)
+          : 'AI Heatmap Image Interpretation not generated';
+        heatmapContainer.innerHTML = '<div class="text-center p-6"><p class="text-gray-500">' + missMsg + '</p></div>';
       }
 
       renderImagingPredictionStats('ready', { result, imagingScore });
