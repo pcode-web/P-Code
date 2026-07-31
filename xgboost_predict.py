@@ -26,7 +26,7 @@ except ImportError as e:
     SHAP_ERROR = str(e)
 
 # Bump when SHAP/prepare coercion changes — surfaced via /api/health for deploy checks.
-XGB_RUNTIME_REVISION = "20260731-shap-basescore-v4"
+XGB_RUNTIME_REVISION = "20260731-shap-basescore-v5"
 
 
 def coerce_scalar_numeric(raw):
@@ -145,32 +145,86 @@ def normalize_xgboost_base_score(model):
 def make_shap_tree_explainer(model):
     """
     Create shap.TreeExplainer, tolerating XGBoost base_score values like '[7.31835E-1]'.
-    Newer SHAP builds do float(base_score) and raise ValueError on bracketed sci-notation.
+    Newer SHAP builds do float(base_score) on that token and raise ValueError.
+    We rewrite base_score inside the decoded UBJSON model dict before SHAP floats it.
     """
-    try:
-        return shap.TreeExplainer(model)
-    except ValueError as first_err:
-        msg = str(first_err)
-        if "could not convert string to float" not in msg and "base_score" not in msg.lower():
-            raise
-        import builtins
+    import ast
 
-        real_float = builtins.float
+    from shap.explainers import _tree as tree_mod
 
-        def tolerant_float(value):
+    def _fix_learner_base_score(jmodel):
+        try:
+            lmp = jmodel["learner"]["learner_model_param"]
+            bs = lmp.get("base_score")
+            if not isinstance(bs, str):
+                return jmodel
+            parsed = None
             try:
-                return real_float(value)
-            except (TypeError, ValueError):
-                coerced = coerce_scalar_numeric(value)
-                if pd.isna(coerced):
-                    raise
-                return real_float(coerced)
+                parsed = ast.literal_eval(bs.strip())
+            except Exception:
+                parsed = coerce_scalar_numeric(bs)
+            if isinstance(parsed, (list, tuple, np.ndarray)):
+                if len(parsed) == 0:
+                    return jmodel
+                parsed = parsed[0]
+            fixed = coerce_scalar_numeric(parsed)
+            if pd.isna(fixed):
+                return jmodel
+            lmp["base_score"] = float(fixed)
+        except Exception:
+            return jmodel
+        return jmodel
 
-        builtins.float = tolerant_float
+    orig_decode = getattr(tree_mod, "decode_ubjson_buffer", None)
+    if callable(orig_decode):
+        def decode_fixed(fd, *args, **kwargs):
+            return _fix_learner_base_score(orig_decode(fd, *args, **kwargs))
+
+        tree_mod.decode_ubjson_buffer = decode_fixed
+    try:
         try:
             return shap.TreeExplainer(model)
-        finally:
-            builtins.float = real_float
+        except ValueError as first_err:
+            # Older SHAP / alternate loaders: last-resort tolerant float() without
+            # replacing the float type (avoids isinstance(..., float) breakage).
+            if "could not convert string to float" not in str(first_err):
+                raise
+            import builtins
+
+            real_float = builtins.float
+
+            def tolerant_call(value):
+                try:
+                    return real_float(value)
+                except (TypeError, ValueError):
+                    if isinstance(value, str):
+                        try:
+                            parsed = ast.literal_eval(value.strip())
+                            if isinstance(parsed, (list, tuple)) and parsed:
+                                return real_float(parsed[0])
+                            return real_float(parsed)
+                        except Exception:
+                            pass
+                    coerced = coerce_scalar_numeric(value)
+                    if pd.isna(coerced):
+                        raise
+                    return real_float(coerced)
+
+            # Inject into shap._tree module globals so LOAD_GLOBAL float hits this,
+            # while builtins.float stays the real type for isinstance checks.
+            _sentinel = object()
+            previous = tree_mod.__dict__.get("float", _sentinel)
+            tree_mod.float = tolerant_call
+            try:
+                return shap.TreeExplainer(model)
+            finally:
+                if previous is _sentinel:
+                    tree_mod.__dict__.pop("float", None)
+                else:
+                    tree_mod.float = previous
+    finally:
+        if callable(orig_decode):
+            tree_mod.decode_ubjson_buffer = orig_decode
 
 
 def load_xgboost_model(model_path):
