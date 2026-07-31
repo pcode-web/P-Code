@@ -26,7 +26,7 @@ except ImportError as e:
     SHAP_ERROR = str(e)
 
 # Bump when SHAP/prepare coercion changes — surfaced via /api/health for deploy checks.
-XGB_RUNTIME_REVISION = "20260731-shap-bracket-float-v3"
+XGB_RUNTIME_REVISION = "20260731-shap-basescore-v4"
 
 
 def coerce_scalar_numeric(raw):
@@ -109,13 +109,77 @@ def convert_to_python_types(obj):
     else:
         return obj
 
+def normalize_xgboost_base_score(model):
+    """
+    Newer SHAP versions call float(base_score) on the booster config.
+    Some XGBoost pickles store base_score as '[7.31835E-1]' which breaks that.
+    Best-effort rewrite via load_config; SHAP may still read the binary form.
+    """
+    try:
+        booster = model.get_booster() if hasattr(model, "get_booster") else model
+        config = json.loads(booster.save_config())
+        learner = config.get("learner") or {}
+        lmp = learner.get("learner_model_param") or {}
+        raw_bs = lmp.get("base_score")
+        if raw_bs is None:
+            return model
+        fixed = coerce_scalar_numeric(raw_bs)
+        if pd.isna(fixed):
+            try:
+                parsed = json.loads(raw_bs) if isinstance(raw_bs, str) else raw_bs
+                fixed = coerce_scalar_numeric(parsed)
+            except Exception:
+                return model
+        if pd.isna(fixed):
+            return model
+        plain = str(float(fixed))
+        lmp["base_score"] = plain
+        learner["learner_model_param"] = lmp
+        config["learner"] = learner
+        booster.load_config(json.dumps(config))
+    except Exception:
+        pass
+    return model
+
+
+def make_shap_tree_explainer(model):
+    """
+    Create shap.TreeExplainer, tolerating XGBoost base_score values like '[7.31835E-1]'.
+    Newer SHAP builds do float(base_score) and raise ValueError on bracketed sci-notation.
+    """
+    try:
+        return shap.TreeExplainer(model)
+    except ValueError as first_err:
+        msg = str(first_err)
+        if "could not convert string to float" not in msg and "base_score" not in msg.lower():
+            raise
+        import builtins
+
+        real_float = builtins.float
+
+        def tolerant_float(value):
+            try:
+                return real_float(value)
+            except (TypeError, ValueError):
+                coerced = coerce_scalar_numeric(value)
+                if pd.isna(coerced):
+                    raise
+                return real_float(coerced)
+
+        builtins.float = tolerant_float
+        try:
+            return shap.TreeExplainer(model)
+        finally:
+            builtins.float = real_float
+
+
 def load_xgboost_model(model_path):
     """Load the XGBoost model"""
     try:
         # Try loading with pickle using bytes encoding (handles cross-version compatibility)
         with open(model_path, 'rb') as f:
             model = pickle.load(f, encoding='bytes')
-        return model
+        return normalize_xgboost_base_score(model)
     except (pickle.UnpicklingError, EOFError) as e:
         raise Exception(f"Model file is corrupted. Please regenerate from Training page. Error: {str(e)[:100]}")
     except FileNotFoundError:
@@ -505,7 +569,7 @@ def get_shap_explanation(model, df, raw_prediction, missing_value_mask=None):
             df = df.apply(lambda s: s.map(coerce_scalar_numeric)).astype(np.float32)
         
         # Create SHAP explainer for XGBoost model
-        explainer = shap.TreeExplainer(model)
+        explainer = make_shap_tree_explainer(model)
         shap_values = explainer.shap_values(df)
         
         # For binary classification, shap_values can be a list or array
