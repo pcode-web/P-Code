@@ -2199,7 +2199,14 @@
                                 document.getElementById('Cycle_R_I').value = data.CycleR_I || '';
                             }
                             document.getElementById('Marriage_duration').value = (data.Marriage_Status_years && data.Marriage_Status_years !== 0) ? data.Marriage_Status_years : '';
-                            document.getElementById('Pregnant_status').value = data.Pregnant || '';
+                            const pregnantValue = data.Pregnant;
+                            if (pregnantValue === 1 || pregnantValue === '1' || String(pregnantValue).toLowerCase() === 'yes') {
+                                document.getElementById('Pregnant_status').value = 'Yes';
+                            } else if (pregnantValue === 0 || pregnantValue === '0' || String(pregnantValue).toLowerCase() === 'no') {
+                                document.getElementById('Pregnant_status').value = 'No';
+                            } else {
+                                document.getElementById('Pregnant_status').value = '';
+                            }
                             const abortionField = document.getElementById('No_abortions');
                             if (data.No_of_abortions !== null && data.No_of_abortions !== undefined && data.No_of_abortions !== '') {
                                 abortionField.value = data.No_of_abortions;
@@ -3544,12 +3551,12 @@
                                 
                                 // For dropdown fields, convert numeric to text values
                                 if (element.tagName === 'SELECT') {
-                                    // Cycle Regularity: any truthy value or 'Regular' ? Regular, 0/'Irregular' ? Irregular
+                                    // Cycle Regularity: Regular=0, Irregular=1 (model / user-save canonical)
                                     if (mapping.formId === 'Cycle_R_I') {
-                                        if (value === 'Regular' || (typeof value === 'number' && value > 0) || value === '1') {
+                                        if (value === 'Regular' || value === 0 || value === '0') {
                                             element.value = 'Regular';
                                             databaseLoadedFields.add(mapping.formId);
-                                        } else if (value === 'Irregular' || value === 0 || value === '0') {
+                                        } else if (value === 'Irregular' || value === 1 || value === '1' || value === 'Amenorrhea') {
                                             element.value = 'Irregular';
                                             databaseLoadedFields.add(mapping.formId);
                                         } else {
@@ -3887,11 +3894,9 @@
                 } else if (value === 'Regular') {
                     // Convert cycle regularity to numeric: Regular = 0
                     clinicalDataForModel[key] = 0;
-                } else if (value === 'Irregular') {
-                    // Convert cycle regularity to numeric: Irregular = 1
+                } else if (value === 'Irregular' || value === 'Amenorrhea') {
+                    // Convert cycle regularity to numeric: Irregular/Amenorrhea = 1
                     clinicalDataForModel[key] = 1;
-                } else if (value === 'Amenorrhea') {
-                    clinicalDataForModel[key] = 'Amenorrhea';
                 } else if (value === '0' || value === 0) {
                     clinicalDataForModel[key] = 0;
                 } else if (!isNaN(value) && value !== '') {

@@ -345,16 +345,16 @@ try {
     $string_fields = ['Ultrasound_image', 'last_menstrual_period_date', 'blood_draw_date', 'ultrasound_date', 'symptom_evaluation_date', 'ultrasound_modality'];
     
     // Convert cycle regularity strings to numeric values
+    // Canonical (matches xgboost_predict / user save): Regular=0, Irregular/Amenorrhea=1
     if (isset($data['Cycle_R_I']) && !isset($data['CycleR_I'])) {
         $data['CycleR_I'] = $data['Cycle_R_I'];
     }
     if (isset($data['CycleR_I']) && is_string($data['CycleR_I'])) {
-        if (strtolower($data['CycleR_I']) === 'regular') {
+        $cycleLower = strtolower(trim($data['CycleR_I']));
+        if ($cycleLower === 'regular' || $cycleLower === '0') {
+            $data['CycleR_I'] = 0;
+        } elseif (in_array($cycleLower, ['irregular', 'amenorrhea', 'amenorrhoea', '1'], true)) {
             $data['CycleR_I'] = 1;
-        } elseif (strtolower($data['CycleR_I']) === 'irregular') {
-            $data['CycleR_I'] = 0;
-        } elseif (in_array(strtolower($data['CycleR_I']), ['amenorrhea', 'amenorrhoea'], true)) {
-            $data['CycleR_I'] = 0;
         }
     }
 
@@ -382,9 +382,10 @@ try {
     
     foreach ($binary_yes_no_fields as $field) {
         if (isset($data[$field]) && is_string($data[$field])) {
-            if (strtolower($data[$field]) === 'yes') {
+            $binLower = strtolower(trim($data[$field]));
+            if (in_array($binLower, ['yes', 'y', '1', 'true', 'on'], true)) {
                 $data[$field] = 1;
-            } elseif (strtolower($data[$field]) === 'no') {
+            } elseif (in_array($binLower, ['no', 'n', '0', 'false', 'off'], true)) {
                 $data[$field] = 0;
             }
         }

@@ -332,9 +332,12 @@ _DIAGNOSIS_ALIASES: dict[str, str] = {
     "age": "Age_yrs",
     "Age": "Age_yrs",
     "Cycle_R_I": "CycleR_I",
+    "cycle_regularity": "CycleR_I",
+    "cycle_r_i": "CycleR_I",
     "Cycle_length": "Cycle_length_days",
     "Marriage_duration": "Marriage_Status_years",
     "Pregnant_status": "Pregnant",
+    "pregnant": "Pregnant",
     "No_abortions": "No_of_abortions",
     "I_Beta_HCG": "I_beta_HCG_mIU_mL",
     "II_Beta_HCG": "II_beta_HCG_mIU_mL",
@@ -348,11 +351,19 @@ _DIAGNOSIS_ALIASES: dict[str, str] = {
     "RBS": "RBS_mg_dl",
     "Hemoglobin": "Hb_g_dl",
     "Pulse_rate": "Pulse_rate_bpm",
+    "pulse_rate": "Pulse_rate_bpm",
     "RR_breath": "RR_breath_min",
     "BP_systolic": "BP_Systolic_mmHg",
+    "bp_systolic": "BP_Systolic_mmHg",
     "BP_diastolic": "BP_Diastolic_mmHg",
+    "bp_diastolic": "BP_Diastolic_mmHg",
     "Avg_F_size_L": "Avg_F_size_L_mm",
     "Avg_F_size_R": "Avg_F_size_R_mm",
+    "LH_FSH_Ratio": "FSH_LH",
+    "lh_fsh_ratio": "FSH_LH",
+    "blood_group": "Blood_Group",
+    "Regular_exercise": "Reg_Exercise",
+    "reg_exercise": "Reg_Exercise",
     "image": "Ultrasound_image",
     "image_base64": "Ultrasound_image",
 }
@@ -1101,8 +1112,28 @@ def _table_columns(cur, table: str) -> set[str]:
         return set()
 
 
+def _normalize_ultrasound_modality(raw: Any) -> str:
+    text = str(raw or "").strip().lower()
+    if text in {"tvus", "transvaginal", "trans-vaginal", "vaginal", "transvaginal ultrasound"}:
+        return "TVUS"
+    if text in {"transabdominal", "taus", "pelvic", "abdominal", "transabdominal/pelvic"}:
+        return "Transabdominal"
+    if text in {"other", "alternate"}:
+        return "Other"
+    return "TVUS"
+
+
+def _coerce_yes_no(raw: str) -> Optional[int]:
+    low = raw.strip().lower()
+    if low in {"yes", "y", "1", "true", "on"}:
+        return 1
+    if low in {"no", "n", "0", "false", "off"}:
+        return 0
+    return None
+
+
 def _coerce_user_param_value(column: str, value: Any) -> Any:
-    """Coerce clinical form values into DB-safe types (CycleR_I is float in schema)."""
+    """Coerce clinical form values into DB-safe types (CycleR_I: Regular=0, Irregular=1)."""
     if value is None:
         return None
     if isinstance(value, str):
@@ -1113,17 +1144,19 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
             low = raw.lower()
             if low in {"regular", "0"}:
                 return 0
-            if low in {"irregular", "amenorrhea", "1"}:
+            if low in {"irregular", "amenorrhea", "amenorrhoea", "1"}:
                 return 1
             try:
                 return float(raw)
             except ValueError:
                 return None
         if column == "Pregnant":
-            low = raw.lower()
-            if low in {"yes", "y", "1", "true", "pregnant"}:
+            yn = _coerce_yes_no(raw)
+            if yn is not None:
+                return yn
+            if raw.lower() in {"pregnant"}:
                 return 1
-            if low in {"no", "n", "0", "false", "not pregnant"}:
+            if raw.lower() in {"not pregnant"}:
                 return 0
             try:
                 return 1 if int(float(raw)) else 0
@@ -1131,10 +1164,22 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
                 return None
         if column in {
             "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss",
-            "Pimples", "Fast_food", "Reg_Exercise", "Blood_Group",
+            "Pimples", "Fast_food", "Reg_Exercise",
+        }:
+            yn = _coerce_yes_no(raw)
+            if yn is not None:
+                return yn
+            try:
+                return int(float(raw))
+            except ValueError:
+                return None
+        if column == "ultrasound_modality":
+            return _normalize_ultrasound_modality(raw)
+        if column in {
+            "Blood_Group",
             "Age_yrs", "Pulse_rate_bpm", "RR_breath_min", "Cycle_length_days",
             "Marriage_Status_years", "No_of_abortions", "Follicle_no_L", "Follicle_no_R",
-            "BP_Systolic_mmHg", "BP_Diastolic_mmHg",
+            "BP_Systolic_mmHg", "BP_Diastolic_mmHg", "fasting_hours",
         }:
             try:
                 if "." in raw:
@@ -1146,10 +1191,10 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
             "last_menstrual_period_date", "blood_draw_date", "ultrasound_date",
             "symptom_evaluation_date",
         }:
-            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw) or re.fullmatch(
-                r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?", raw
-            ):
-                return raw
+            # Match PHP save_patient: keep YYYY-MM-DD prefix
+            m = re.match(r"^(\d{4}-\d{2}-\d{2})", raw)
+            if m:
+                return m.group(1)
             return None
         try:
             if re.fullmatch(r"-?\d+(\.\d+)?", raw):
@@ -1167,6 +1212,8 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
             return 1 if int(value) else 0
         except (TypeError, ValueError):
             return None
+    if column == "ultrasound_modality":
+        return _normalize_ultrasound_modality(value)
     return value
 
 
@@ -1862,6 +1909,28 @@ def api_get_patient():
         if k in ("parameter_id", "patient_id", "screening_id", "created_at", "created_by"):
             continue
         data[k] = _format_ultrasound(v) if k == "Ultrasound_image" else _serialize_value(v)
+
+    # Normalize form-facing binaries (parity with PHP get_patient.php)
+    for flag in (
+        "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss",
+        "Pimples", "Fast_food", "Reg_Exercise", "Pregnant",
+    ):
+        if flag not in data or data[flag] in (None, ""):
+            data[flag] = 0
+        else:
+            coerced = _coerce_user_param_value(flag, data[flag])
+            data[flag] = 0 if coerced is None else int(coerced)
+
+    if "CycleR_I" in data and data["CycleR_I"] is not None:
+        cyc = _coerce_user_param_value("CycleR_I", data["CycleR_I"])
+        if cyc is not None:
+            data["CycleR_I"] = cyc
+
+    if data.get("Ultrasound_image"):
+        data["medical_image"] = data["Ultrasound_image"]
+    else:
+        data["medical_image"] = None
+
     return _json_ok(data, message="Patient loaded")
 
 
@@ -3363,9 +3432,9 @@ def api_predict():
         if isinstance(cycle, str):
             c = cycle.strip().lower()
             if c == "regular":
-                clinical_in["Cycle_R_I"] = 1
-            elif c in ("irregular", "amenorrhea", "amenorrhoea"):
                 clinical_in["Cycle_R_I"] = 0
+            elif c in ("irregular", "amenorrhea", "amenorrhoea"):
+                clinical_in["Cycle_R_I"] = 1
         try:
             xgb = _load_xgb()
             xgb_result = xgb.convert_to_python_types(
@@ -3635,9 +3704,9 @@ def predict_xgboost():
     if isinstance(cycle, str):
         c = cycle.strip().lower()
         if c == "regular":
-            clinical["Cycle_R_I"] = 1
-        elif c in ("irregular", "amenorrhea"):
             clinical["Cycle_R_I"] = 0
+        elif c in ("irregular", "amenorrhea", "amenorrhoea"):
+            clinical["Cycle_R_I"] = 1
 
     try:
         xgb = _load_xgb()
