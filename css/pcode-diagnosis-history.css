@@ -305,6 +305,31 @@
   color: rgba(161, 161, 170, 0.9);
 }
 
+.pcode-history-detail__note {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(196, 181, 253, 0.92);
+}
+
+.pcode-history-detail__subtitle {
+  margin: 0.35rem 0 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(161, 161, 170, 0.95);
+}
+
+.pcode-history-metric--updated {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.pcode-history-metric--updated .pcode-history-metric__label {
+  color: #fde68a;
+}
+
 .pcode-history-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

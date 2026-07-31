@@ -1379,6 +1379,11 @@ def _norm_history_entry(row: dict, source: str = "patient_diagnosis_results") ->
 
     clinical = {}
     snap = row.get("clinical_inputs_snapshot")
+    if isinstance(snap, (bytes, bytearray)):
+        try:
+            snap = snap.decode("utf-8", errors="ignore")
+        except Exception:  # noqa: BLE001
+            snap = None
     if isinstance(snap, str) and snap.strip():
         try:
             import json as _json
@@ -1390,6 +1395,34 @@ def _norm_history_entry(row: dict, source: str = "patient_diagnosis_results") ->
             clinical = {}
     elif isinstance(snap, dict):
         clinical = snap
+
+    # Merge parameter_row fallback when snapshot is empty (parity with PHP history helper)
+    if (not clinical) and isinstance(row.get("parameter_row"), dict):
+        clinical = {
+            k: v
+            for k, v in row["parameter_row"].items()
+            if k
+            not in (
+                "parameter_id",
+                "patient_id",
+                "user_id",
+                "screening_id",
+                "created_by",
+                "created_at",
+                "Ultrasound_image",
+                "ultrasound_image",
+            )
+            and v is not None
+            and v != ""
+        }
+
+    # Drop empty nested noise but keep numeric zeros / boolean-like flags
+    if clinical:
+        clinical = {
+            k: v
+            for k, v in clinical.items()
+            if v is not None and v != "" and str(k) not in ("Ultrasound_image", "ultrasound_image")
+        }
 
     return {
         "diagnosis_id": int(row.get("diagnosis_id") or 0),
@@ -1552,9 +1585,43 @@ def api_get_user_history():
                         """,
                         (user_id,),
                     )
-                    for r in cur.fetchall() or []:
-                        row = dict(r)
+                    rows = [dict(r) for r in (cur.fetchall() or [])]
+                    # Prefer frozen snapshot; only fall back to parameter ledger for THIS screening_id.
+                    param_cols = _table_columns(cur, "user_diagnosis_parameters")
+                    has_screening_on_params = bool(param_cols) and "screening_id" in param_cols
+                    for row in rows:
                         row.setdefault("created_by", "Patient")
+                        snap = row.get("clinical_inputs_snapshot")
+                        snap_empty = False
+                        if snap is None or snap == "":
+                            snap_empty = True
+                        elif isinstance(snap, str):
+                            try:
+                                import json as _json
+
+                                decoded = _json.loads(snap)
+                                snap_empty = not isinstance(decoded, dict) or len(decoded) == 0
+                            except Exception:  # noqa: BLE001
+                                snap_empty = True
+                        elif isinstance(snap, dict):
+                            snap_empty = len(snap) == 0
+                        if snap_empty and has_screening_on_params and row.get("screening_id"):
+                            try:
+                                cur.execute(
+                                    """
+                                    SELECT * FROM user_diagnosis_parameters
+                                    WHERE user_id = %s AND screening_id = %s
+                                    LIMIT 1
+                                    """,
+                                    (user_id, str(row.get("screening_id"))),
+                                )
+                                param_row = cur.fetchone()
+                                if param_row:
+                                    row["parameter_row"] = dict(param_row)
+                                    if param_row.get("Ultrasound_image"):
+                                        row["ultrasound_image"] = param_row.get("Ultrasound_image")
+                            except Exception:  # noqa: BLE001
+                                pass
                         entries.append(_norm_history_entry(row, "user_diagnosis_results"))
                 except Exception:  # noqa: BLE001
                     entries = []
@@ -2454,7 +2521,14 @@ def api_save_user_diagnosis():
     xg_p = _norm_prob_percent(res.get("xgboost_probability"))
     cnn_p = _norm_prob_percent(res.get("cnn_probability"))
     ov_p = _norm_prob_percent(res.get("overall_probability"))
-    snap = _json.dumps(clinical, default=str)
+    # Persist only meaningful clinical fields so History can show recorded inputs / diffs.
+    # Keep numeric zeros and Yes/No flags; drop blank/null noise.
+    snap_obj = {
+        k: v
+        for k, v in clinical.items()
+        if v is not None and v != "" and str(k) not in ("Ultrasound_image", "ultrasound_image")
+    }
+    snap = _json.dumps(snap_obj, default=str)
 
     try:
         with get_db_connection() as conn:

@@ -278,44 +278,56 @@
     var previousSnapshot = previousEntry ? getEntrySnapshot(previousEntry) : null;
     var currentHasData = hasSnapshotData(currentSnapshot);
     var previousHasData = previousSnapshot && hasSnapshotData(previousSnapshot);
-    var items = [];
     var title = 'Inputs recorded in this screening';
 
-    // Missing snapshot must never be treated as "no changes vs prior"
     if (!currentHasData) {
       return {
         title: title,
         html:
-          '<p class="pcode-history-detail__empty">No clinical inputs were captured for this screening run.</p>'
+          '<p class="pcode-history-detail__empty">No clinical inputs were captured for this screening run. Re-save from Detect after filling clinical fields (or symptoms) so this timeline can show what changed.</p>'
       };
     }
 
+    var allItems = snapshotToItems(normalizeSnapshot(currentSnapshot));
+    var changedItems = previousHasData
+      ? buildModifiedSnapshotItems(currentSnapshot, previousSnapshot)
+      : [];
+    var changedKeys = {};
+    changedItems.forEach(function (item) {
+      changedKeys[item.label] = true;
+    });
+
+    var html = '';
     if (previousHasData) {
-      title = 'Updated inputs in this screening';
-      items = buildModifiedSnapshotItems(currentSnapshot, previousSnapshot);
-      if (items.length === 0) {
-        return {
-          title: title,
-          html:
-            '<p class="pcode-history-detail__empty">No parameter changes from the prior screening.</p>'
-        };
+      title = 'Recorded inputs for this screening';
+      if (changedItems.length === 0) {
+        html +=
+          '<p class="pcode-history-detail__note">No input values changed from the previous run — showing everything recorded below.</p>';
+      } else {
+        html +=
+          '<p class="pcode-history-detail__note"><strong>' +
+          changedItems.length +
+          '</strong> input' +
+          (changedItems.length === 1 ? '' : 's') +
+          ' updated vs the previous run (highlighted).</p>';
+        html += '<div class="pcode-history-metrics pcode-history-metrics--changed mb-3">';
+        changedItems.forEach(function (item) {
+          html +=
+            '<div class="pcode-history-metric pcode-history-metric--updated">' +
+              '<span class="pcode-history-metric__label">' + escapeHtml(item.label) + '</span>' +
+              '<span class="pcode-history-metric__value">' + formatMetricValue(item.value) + '</span>' +
+            '</div>';
+        });
+        html += '</div>';
+        html += '<p class="pcode-history-detail__subtitle">All recorded inputs</p>';
       }
-    } else {
-      items = snapshotToItems(normalizeSnapshot(currentSnapshot));
     }
 
-    if (items.length === 0) {
-      return {
-        title: title,
-        html:
-          '<p class="pcode-history-detail__empty">No clinical inputs were captured for this screening run.</p>'
-      };
-    }
-
-    var html = '<div class="pcode-history-metrics pcode-history-metrics--key">';
-    items.forEach(function (item) {
+    html += '<div class="pcode-history-metrics pcode-history-metrics--key">';
+    allItems.forEach(function (item) {
+      var updated = !!changedKeys[item.label];
       html +=
-        '<div class="pcode-history-metric">' +
+        '<div class="pcode-history-metric' + (updated ? ' pcode-history-metric--updated' : '') + '">' +
           '<span class="pcode-history-metric__label">' + escapeHtml(item.label) + '</span>' +
           '<span class="pcode-history-metric__value">' + formatMetricValue(item.value) + '</span>' +
         '</div>';
@@ -344,12 +356,13 @@
     var dateParts = String(entry.created_at_display || entry.created_at || '').split('·');
     var dateMain = (dateParts[0] || '').trim();
     var dateTime = (dateParts[1] || '').trim();
-    var isExpanded = expandedDiagnosisId === entry.diagnosis_id;
+    var entryId = Number(entry.diagnosis_id);
+    var isExpanded = Number(expandedDiagnosisId) === entryId && Number.isFinite(entryId) && entryId > 0;
     var snapshotDetail = buildSnapshotDetail(entry, previousEntry);
     var mode = currentMode();
 
     return (
-      '<article class="pcode-history-entry" data-diagnosis-id="' + escapeHtml(entry.diagnosis_id) + '">' +
+      '<article class="pcode-history-entry" data-diagnosis-id="' + escapeHtml(entryId) + '">' +
         '<div class="pcode-history-entry__rail" aria-hidden="true"><span class="pcode-history-entry__dot"></span></div>' +
         '<div class="pcode-history-entry__body">' +
           '<div class="pcode-history-entry__head">' +
@@ -366,14 +379,14 @@
             '<span class="pcode-history-entry__score-label">' + escapeHtml(mode.scoreLabel) + '</span>' +
             buildScoreBar(entry) +
           '</div>' +
-          '<button type="button" class="pcode-history-snapshot-toggle" data-history-toggle="' + escapeHtml(entry.diagnosis_id) + '" aria-expanded="' + (isExpanded ? 'true' : 'false') + '">' +
-            '<span>View recorded inputs</span>' +
+          '<button type="button" class="pcode-history-snapshot-toggle" data-history-toggle="' + escapeHtml(entryId) + '" aria-expanded="' + (isExpanded ? 'true' : 'false') + '">' +
+            '<span>' + (isExpanded ? 'Hide recorded inputs' : 'View recorded inputs') + '</span>' +
             '<svg class="pcode-history-snapshot-toggle__chevron' + (isExpanded ? ' is-open' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
               '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>' +
             '</svg>' +
           '</button>' +
           (isExpanded
-            ? '<div class="pcode-history-detail" id="history-detail-' + escapeHtml(entry.diagnosis_id) + '">' +
+            ? '<div class="pcode-history-detail" id="history-detail-' + escapeHtml(entryId) + '">' +
                 '<p class="pcode-history-detail__title">' + escapeHtml(snapshotDetail.title) + '</p>' +
                 snapshotDetail.html +
               '</div>'
@@ -420,7 +433,8 @@
     root.querySelectorAll('[data-history-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = Number(btn.getAttribute('data-history-toggle'));
-        expandedDiagnosisId = expandedDiagnosisId === id ? null : id;
+        if (!Number.isFinite(id) || id <= 0) return;
+        expandedDiagnosisId = Number(expandedDiagnosisId) === id ? null : id;
         renderHistory(cachedEntries, cachedMeta);
       });
     });
