@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="login-bento-page pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -6,10 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-signin-client_id" content="953442697406-1nisk0lf775augnlkbbftpk19g4fkgl3.apps.googleusercontent.com">
   <title>P-Code — Provider Sign in</title>
-  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
+  <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
   <link rel="stylesheet" href="fonts/fonts.css">
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
-  <link rel="stylesheet" href="css/pcode-theme.css?v=20260725-nolightglow">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+  <link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
   <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
   <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-v4fix">
   <link rel="stylesheet" href="css/pcode-oauth-login.css?v=20260723-oauth-light">
@@ -18,7 +23,7 @@
 </head>
 <body class="login-bento-page">
   <main class="oauth-login-card auth-main-card" aria-labelledby="provider-login-title">
-    <img src="resources/PCODE_LOGO.png" alt="" class="oauth-login-logo" width="72" height="72" decoding="async">
+    <img src="assets/logo.png" alt="" class="oauth-login-logo" width="72" height="72" decoding="async">
     <h1 id="provider-login-title"
         class="oauth-login-title"
         data-auth-title
@@ -36,7 +41,7 @@
       <form class="oauth-credentials-form"
             id="provider-credentials-form"
             method="post"
-            action="api/auth/login_handler.php"
+            action="#"
             data-auth-mode="signin"
             novalidate>
         <input type="hidden" name="portal" value="provider">
@@ -163,9 +168,9 @@
   </main>
 
   <script src="js/pcode-password.js?v=20260720n"></script>
-  <script src="js/pcode-auth-register.js?v=20260725-signupmin"></script>
-  <script src="js/pcode-api.js?v=20260730-apiscan"></script>
-  <script src="js/auth.js?v=20260730-apiscan"></script>
+  <script src="js/pcode-auth-register.js?v=20260730-flasklogin"></script>
+  <script src="js/pcode-api.js?v=20260731-apifix"></script>
+  <script src="js/auth.js?v=20260730-home-redirect"></script>
   <script src="js/pcode-oauth-bootstrap.js?v=20260707d"></script>
   <script src="js/pcode-login-google.js?v=20260707l"></script>
   <script>

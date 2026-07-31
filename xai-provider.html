@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -346,8 +346,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Clinical interpretation summary</h2>
-            <p class="text-sm text-gray-600 mt-1">Narrative complement to the charts—always cross-check against the case record.</p>
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Clinical summary explanation</h2>
+            <p class="text-sm text-gray-600 mt-1">Plain-language walkthrough of the SHAP charts—key drivers, interpretation, and suggested next steps.</p>
           </div>
         </div>
         <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">Select a patient and load XAI to generate a short narrative for this case.</div>
@@ -499,11 +499,11 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
   <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
   <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
-  <script src="js/pcode-xai-clinical-copy.js?v=20260710f"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260731-shapsum"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/pcode-api.js?v=20260731-ml-parity"></script>
+  <script src="js/pcode-api.js?v=20260731-apifix"></script>
   <script src="js/auth.js?v=20260731-btneq"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
@@ -907,8 +907,10 @@
         return; // Exit - don't call API for guests
       }
       
-      // **NORMAL FLOW**: Logged-in users fetch from API
-      const apiUrl = 'api/get_patients_xai.php?debug=1';
+      // **NORMAL FLOW**: Logged-in users fetch from API (Render on Firebase)
+      const apiUrl = (typeof pcodeApiUrl === 'function')
+        ? pcodeApiUrl('api/get_patients_xai.php')
+        : 'https://p-code-nqak.onrender.com/api/get_patients_xai';
       console.log('Fetching from:', apiUrl);
       
       fetch(apiUrl, {
@@ -1687,14 +1689,10 @@
       createFeatureList(features);
       createConsensusChart(clinicalScore, imagingScore, avail, overallDiagnosis, overallScore);
       
-      // Show/Hide XGBoost results card based on whether we have real SHAP data
+      // Show clinical summary whenever we have features to explain
       const xgboostCard = document.getElementById('xgboost-results-card');
       if (xgboostCard) {
-        if (hasRealSHAPData) {
-          xgboostCard.style.display = 'block';
-        } else {
-          xgboostCard.style.display = 'none';
-        }
+        xgboostCard.style.display = (features && features.length) ? 'block' : 'none';
       }
       
       // Load Grad-CAM++ visualization
@@ -1738,7 +1736,15 @@
         console.warn('Animation library error:', e);
       }
       
-      document.getElementById('shap-explanation').innerHTML = generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName, 'clinician');
+      document.getElementById('shap-explanation').innerHTML = generateSHAPExplanation(
+        overallScore,
+        overallDiagnosis,
+        features,
+        patientName,
+        'clinician',
+        clinicalScore,
+        imagingScore
+      );
       
       // Hide loading spinner
       setXaiLoading(false);
@@ -2303,117 +2309,19 @@
       }).join('');
     }
 
-    function generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName = 'Patient', viewMode = 'self') {
-      const isClinician = viewMode === 'clinician';
-
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+    function generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName = 'Patient', viewMode = 'self', clinicalScore, imagingScore) {
+      if (window.PcodeXaiClinical && typeof window.PcodeXaiClinical.buildShapClinicalSummary === 'function') {
+        return window.PcodeXaiClinical.buildShapClinicalSummary({
+          overallScore: overallScore,
+          overallDiagnosis: overallDiagnosis,
+          features: features,
+          patientName: patientName,
+          portal: viewMode === 'clinician' ? 'provider' : 'user',
+          clinicalScore: clinicalScore,
+          imagingScore: imagingScore
+        });
       }
-
-      function fmtPct(n) {
-        const v = Number(n);
-        if (!Number.isFinite(v)) return '0.00';
-        const pct = v >= 0 && v <= 1 ? v * 100 : v;
-        return pct.toFixed(2);
-      }
-
-      function friendlyFactorName(raw) {
-        if (window.PcodeXaiClinical && typeof window.PcodeXaiClinical.cleanFeatureLabel === 'function') {
-          return window.PcodeXaiClinical.cleanFeatureLabel(raw) || 'Key factor';
-        }
-        const cleaned = String(raw || 'Key factor')
-          .replace(/\s*\(y\/n\)\s*/gi, '')
-          .replace(/\s*\(yes\/no\)\s*/gi, '')
-          .replace(/\s*\(yrs?\)\s*/gi, '')
-          .replace(/_/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (!cleaned) return 'Key factor';
-        const acronyms = new Set(['BMI', 'LH', 'FSH', 'AMH', 'TSH', 'RBS', 'HCG', 'PMOS', 'Hb']);
-        return cleaned
-          .split(' ')
-          .map(function (word) {
-            const upper = word.toUpperCase();
-            if (acronyms.has(upper)) return upper;
-            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-          })
-          .join(' ');
-      }
-
-      function PMOSRiskLevel(diagnosis, score) {
-        const pct = Number(fmtPct(score));
-        if (diagnosis === 'negative') return 'Low';
-        if (diagnosis === 'borderline') return 'Moderate';
-        if (diagnosis === 'positive') {
-          if (pct >= 65) return 'High';
-          if (pct >= 35) return 'Moderate';
-          return 'Low';
-        }
-        if (pct >= 65) return 'High';
-        if (pct >= 35) return 'Moderate';
-        return 'Low';
-      }
-
-      if (!features || features.length === 0) {
-        if (isClinician) {
-          return '<p>Feature-level detail is not available for this case yet. Re-run the analysis for the selected patient, or confirm that interpretability data was generated for this visit.</p>';
-        }
-        return '<p>A plain-language summary could not be built from the available feature list. Save the screening, open <strong>Load XAI Insights</strong> again, or confirm the analysis completed without errors.</p>';
-      }
-
-      const ranked = [...features].sort(function (a, b) {
-        return Math.abs(Number(b.contribution)) - Math.abs(Number(a.contribution));
-      });
-      const topFeature = ranked[0] || {};
-      const secondFeature = ranked.length > 1 ? ranked[1] : null;
-
-      const confidencePct = fmtPct(overallScore);
-      const riskLevel = PMOSRiskLevel(overallDiagnosis, overallScore);
-      const topName = escapeHtml(friendlyFactorName(topFeature.name));
-      const secondName = secondFeature ? escapeHtml(friendlyFactorName(secondFeature.name)) : '';
-      const topImpact = fmtPct(Math.abs(Number(topFeature.contribution)));
-      const topDirection =
-        Number(topFeature.contribution) >= 0
-          ? 'driving the model\'s indicators up by <strong>' + topImpact + '%</strong>'
-          : 'moderating risk signals, pulling indicators down by <strong>' + topImpact + '%</strong>';
-
-      const introSubject = isClinician
-        ? 'Based on the patient\'s combined data'
-        : 'Based on your combined screening data';
-
-      const factorOne =
-        '<li><strong>' +
-        topName +
-        '</strong>: This parameter acted as the most significant contributor, ' +
-        topDirection +
-        '.</li>';
-
-      const factorTwo = secondName
-        ? '<li><strong>' +
-          secondName +
-          '</strong>: Followed closely as a secondary contributing factor to the overall risk evaluation profile.</li>'
-        : '';
-
-      return (
-        '<p><strong>Clinical Interpretation Insights</strong></p>' +
-        '<p>' +
-        introSubject +
-        ', the system flags a <strong>' +
-        escapeHtml(riskLevel) +
-        '</strong> probability of PMOS, with an overall evaluation confidence of <strong>' +
-        escapeHtml(confidencePct) +
-        '%</strong>.</p>' +
-        '<p><strong>Primary Influencing Factors:</strong></p>' +
-        '<ul class="list-disc pl-5 space-y-2">' +
-        factorOne +
-        factorTwo +
-        '</ul>' +
-        '<p class="text-sm text-slate-400 italic"><em>Clinical Reminder: These AI model insights describe behavior patterns and should be cross-checked alongside physical case documentation, patient history, and definitive diagnostic criteria.</em></p>'
-      );
+      return '<p>Clinical summary is loading…</p>';
     }
 
     function resolveConsensusScore(overallScore, clinicalScore, imagingScore, avail) {

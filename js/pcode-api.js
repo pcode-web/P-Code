@@ -1,12 +1,16 @@
 /**
  * P-Code API base helper — Firebase Hosting has no PHP.
  * Always prefer Render when on *.web.app / *.firebaseapp.com.
+ *
+ * Also patches window.fetch on Firebase so relative /api/*.php calls
+ * (including forgotten hardcodes) are rewritten to the Render Flask API.
  */
 (function (global) {
   "use strict";
 
   var RENDER_API = "https://p-code-nqak.onrender.com/api/";
   var RENDER_ML = "https://p-code-nqak.onrender.com";
+  var nativeFetch = typeof global.fetch === "function" ? global.fetch.bind(global) : null;
 
   function isFirebaseHost() {
     try {
@@ -44,6 +48,7 @@
     "patients/get_patients_list.php": "patients/get_patients_list",
     "get_patients.php": "get_patients",
     "get_patients_simple.php": "get_patients",
+    "get_patients_xai.php": "get_patients_xai",
     "get_patient.php": "get_patient",
     "delete_patient.php": "delete_patient",
     "save_patient.php": "save_patient",
@@ -57,9 +62,7 @@
     "export_xai_pdf.php": "export_xai_pdf",
     "get_users.php": "get_users",
     "save_user.php": "save_user",
-    "delete_user.php": "delete_user",
-    "get_patients_xai.php": "get_patients",
-    "update_profile.php": "update-profile"
+    "delete_user.php": "delete_user"
   };
 
   function toFlaskPath(path) {
@@ -89,7 +92,6 @@
       return RENDER_API;
     }
     try {
-      // config may already be cached on auth
       if (global.auth && /onrender\.com/i.test(String(global.auth.apiBaseUrl || ""))) {
         return String(global.auth.apiBaseUrl).replace(/\/?$/, "/");
       }
@@ -111,15 +113,59 @@
     return "./api/" + p;
   }
 
+  /** True when a URL targets the site's /api/ tree (relative or Firebase absolute). */
+  function isSiteApiUrl(url) {
+    if (typeof url !== "string" || !url) return false;
+    if (/^https?:\/\/p-code-nqak\.onrender\.com/i.test(url)) return false;
+    if (/^https?:\/\//i.test(url)) {
+      try {
+        var u = new URL(url);
+        if (!isFirebaseHost()) return false;
+        if (!/(web\.app|firebaseapp\.com)$/i.test(u.hostname)) return false;
+        return /\/api(\/|$)/i.test(u.pathname);
+      } catch (_) {
+        return false;
+      }
+    }
+    return /(^|\.?\/)api\//i.test(url);
+  }
+
+  function rewriteSiteApiUrl(url) {
+    if (!isSiteApiUrl(url)) return url;
+    try {
+      if (/^https?:\/\//i.test(url)) {
+        var abs = new URL(url);
+        var path = abs.pathname.replace(/^\/+/, "");
+        if (/^api\//i.test(path)) path = path.slice(4);
+        return pcodeApiUrl(path + (abs.search || ""));
+      }
+    } catch (_) {}
+    return pcodeApiUrl(url);
+  }
+
   /**
-   * fetch() wrapper that rewrites relative api/ URLs on Firebase.
+   * fetch() wrapper that rewrites relative / Firebase api/ URLs to Render.
    */
   function pcodeFetch(input, init) {
-    var url = input;
-    if (typeof input === "string" && /(^|\/)api\//i.test(input) && input.indexOf("http") !== 0) {
-      url = pcodeApiUrl(input);
+    if (!nativeFetch) {
+      throw new Error("fetch is not available");
     }
-    return global.fetch(url, init);
+    if (typeof input === "string") {
+      return nativeFetch(rewriteSiteApiUrl(input), init);
+    }
+    if (typeof Request !== "undefined" && input instanceof Request) {
+      var rewritten = rewriteSiteApiUrl(input.url);
+      if (rewritten !== input.url) {
+        return nativeFetch(new Request(rewritten, input), init);
+      }
+    }
+    return nativeFetch(input, init);
+  }
+
+  // On Firebase, patch global fetch so forgotten hardcodes still hit Render.
+  if (nativeFetch && isFirebaseHost() && !global.__pcodeFetchPatched) {
+    global.fetch = pcodeFetch;
+    global.__pcodeFetchPatched = true;
   }
 
   /**

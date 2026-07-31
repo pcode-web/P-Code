@@ -7,9 +7,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID_HERE">
           <title>P-Code - Model Performance</title>
-          <link rel="icon" href="favicon.svg" type="image/svg+xml">
-        <!-- Local CSS Files (No CDN) -->
-          <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
+<!-- Local CSS Files (No CDN) -->
+          <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
           <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-v4fix">
               <!-- Local Fonts (No CDN) -->
                 <link rel="stylesheet" href="fonts/fonts.css">
@@ -174,8 +178,8 @@
             input, select { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
         }
                     </style>
-                  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+                  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
 <link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
 <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
@@ -196,7 +200,7 @@
                             <div class="pcode-topnav__inner">
                               <div class="pcode-topnav__brand space-x-2 sm:space-x-4">
                                 <div class="flex-shrink-0">
-                                  <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
+                                  <img src="assets/logo.png" alt="P-Code Logo" class="pcode-nav-logo h-8 w-8 object-contain flex-shrink-0" width="32" height="32" decoding="async">
                                 </div>
                                 <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
                               </div>
@@ -263,7 +267,7 @@
                                   </button>
                                   <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
                                     <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
-                                      <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+                                      <img src="assets/logo.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
                                       <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
                                     </div>
                                     <div class="pcode-auth-float-hint">
@@ -299,13 +303,13 @@
                                   <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
                                     <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
                                     <div id="login-form-container" class="pcode-auth-float-signin-body">
-                                      <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+                                      <img src="assets/logo.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
                                       <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
                                       <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
                                       <div class="pcode-google-oauth-panel">
                                         <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
                                         <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
-                                        <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+                                        <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community" hidden aria-hidden="true" style="display:none"></p>
                                         <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
                                       </div>
                                     </div>
@@ -761,9 +765,9 @@
 
     <!-- Auth Module -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
-  <script src="js/auth.js?v=20260730-apiscan" defer></script>
-    <script src="js/pcode-google-auth.js?v=20260730-nqak" defer></script>
+    <script src="js/pcode-api.js?v=20260731-apifix"></script>
+  <script src="js/auth.js?v=20260730-home-redirect" defer></script>
+    <script src="js/pcode-google-auth.js?v=20260730-nodisclaimer" defer></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
     <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
     <script src="js/pcode-confusion-bento.js?v=20260724-cmcenter" defer></script>

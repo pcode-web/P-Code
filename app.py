@@ -1502,6 +1502,19 @@ def api_get_patients():
     return api_get_patients_list()
 
 
+@app.get("/api/get_patients_xai")
+@app.get("/api/get_patients_xai.php")
+@app.get("/api/get_patients_simple")
+@app.get("/api/get_patients_simple.php")
+def api_get_patients_xai():
+    """
+    XAI / Detect patient list alias.
+    PHP get_patients_xai.php is a scoped list; on Render we reuse the
+    provider-owned get_patients_list payload (same fields Detect/XAI need).
+    """
+    return api_get_patients_list()
+
+
 def _norm_history_entry(row: dict, source: str = "patient_diagnosis_results") -> dict:
     """Shape expected by js/pcode-diagnosis-history.js."""
     overall_code = row.get("Overall_diagnosis")

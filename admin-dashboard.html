@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -6,13 +6,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P-Code - Admin Dashboard</title>
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
     <!-- Local CSS Files (No CDN) -->
-    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
     <!-- Local Fonts (No CDN) -->
     <link rel="stylesheet" href="fonts/fonts.css">
     <!-- Local JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
-    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+    <script src="js/pcode-api.js?v=20260731-apifix"></script>
   <script src="js/auth.js" defer></script>
     <style>
         * { box-sizing: border-box; }
@@ -726,8 +731,8 @@
             }
         
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
 <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
@@ -740,7 +745,7 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar">
         <div class="sidebar-header">
-            <div class="admin-logo">P</div>
+            <div class="admin-logo" style="padding:0;overflow:hidden;background:transparent;"><img src="assets/logo.png" alt="P-Code" width="40" height="40" class="h-10 w-10 object-contain" decoding="async"></div>
             <h1>P-Code Admin</h1>
             <p>System Administrator</p>
         </div>
