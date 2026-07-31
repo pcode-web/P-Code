@@ -390,9 +390,294 @@
     return { label: label, value: formatNumericWithUnit(rawValue, unit) };
   }
 
+  function _escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function _fmtPct(n) {
+    const v = Number(n);
+    if (!Number.isFinite(v)) return null;
+    const pct = v >= 0 && v <= 1 ? v * 100 : v;
+    return Math.max(0, Math.min(100, pct));
+  }
+
+  function _diagnosisBand(diagnosis, scorePct) {
+    const d = String(diagnosis || '').toLowerCase();
+    if (d === 'positive' || d === '1') return 'Positive';
+    if (d === 'borderline' || d === '2') return 'Borderline';
+    if (d === 'negative' || d === '0') return 'Negative';
+    const p = Number(scorePct);
+    if (!Number.isFinite(p)) return 'Pending';
+    if (p <= 54) return 'Negative';
+    if (p <= 74) return 'Borderline';
+    return 'Positive';
+  }
+
+  function _riskPhrase(band, scorePct) {
+    if (band === 'Positive') {
+      return scorePct >= 90
+        ? 'a high likelihood signal'
+        : 'an elevated likelihood signal';
+    }
+    if (band === 'Borderline') return 'an intermediate / borderline signal';
+    if (band === 'Negative') return 'a lower likelihood signal';
+    return 'an incomplete signal';
+  }
+
+  function _bandGuidance(band, isUser) {
+    if (band === 'Positive') {
+      return isUser
+        ? 'This does <strong>not</strong> confirm a diagnosis on its own. It means your entered details look more like patterns the model often sees in PCOS/PMOS-positive cases. A clinician can review labs, symptoms, and imaging with you.'
+        : 'Treat as a screening flag for clinician review—not a standalone diagnosis. Correlate with Rotterdam/NIH criteria, labs, and imaging before care decisions.';
+    }
+    if (band === 'Borderline') {
+      return isUser
+        ? 'Results sit in a middle zone—some factors lean one way, others another. Bring this summary to a clinician if you have symptoms or questions; small data corrections can change the result.'
+        : 'Borderline outputs warrant chart review for missing labs, cycle timing, or ultrasound quality before repeating screening.';
+    }
+    if (band === 'Negative') {
+      return isUser
+        ? 'The model did not find a strong PCOS/PMOS pattern from the details provided. If symptoms continue, still speak with a clinician—screening tools can miss cases.'
+        : 'Lower-likelihood output; still reconcile with clinical presentation. Persistent symptoms may warrant further work-up regardless of model score.';
+    }
+    return isUser
+      ? 'More complete clinical or imaging analysis is needed before interpreting this summary.'
+      : 'Insufficient modality data for a confident narrative—complete clinical and/or imaging analysis.';
+  }
+
+  /**
+   * Comprehensive plain-language clinical summary placed after SHAP charts.
+   * @param {object} opts
+   * @param {number} opts.overallScore
+   * @param {string} opts.overallDiagnosis
+   * @param {Array} opts.features
+   * @param {string} [opts.patientName]
+   * @param {'user'|'provider'} [opts.portal]
+   * @param {number|null} [opts.clinicalScore]
+   * @param {number|null} [opts.imagingScore]
+   */
+  function buildShapClinicalSummary(opts) {
+    const options = opts && typeof opts === 'object' ? opts : {};
+    const isUser = String(options.portal || 'user').toLowerCase() !== 'provider';
+    const features = Array.isArray(options.features) ? options.features.slice() : [];
+    const overallPct = _fmtPct(options.overallScore);
+    const clinicalPct = _fmtPct(options.clinicalScore);
+    const imagingPct = _fmtPct(options.imagingScore);
+    const band = _diagnosisBand(options.overallDiagnosis, overallPct);
+    const riskPhrase = _riskPhrase(band, overallPct == null ? 0 : overallPct);
+    const who = isUser ? 'your' : "this patient's";
+    const you = isUser ? 'you' : 'the patient';
+
+    // Both user + provider XAI pages use the dark bento canvas.
+    // Light chips (bg-rose-50) + white text from dark-theme CSS = unreadable.
+    const titleClass = 'font-semibold text-white';
+    const bodyClass = 'text-violet-100/90';
+    const mutedClass = 'text-violet-300/80';
+    const chipRaise =
+      'pcode-xai-shap-chip pcode-xai-shap-chip--raise bg-rose-500/20 text-rose-100 border border-rose-400/30';
+    const chipLower =
+      'pcode-xai-shap-chip pcode-xai-shap-chip--lower bg-emerald-500/20 text-emerald-100 border border-emerald-400/30';
+
+    if (!features.length) {
+      return (
+        '<div class="space-y-3">' +
+        '<p class="' + bodyClass + '">' +
+        (isUser
+          ? 'A clinical summary could not be built yet. Save a screening on Detect, then reopen XAI Insights.'
+          : 'Feature-level detail is not available for this case yet. Re-run analysis or confirm interpretability data was generated.') +
+        '</p></div>'
+      );
+    }
+
+    const ranked = features
+      .map(function (f) {
+        return {
+          name: f.name,
+          value: f.value,
+          contribution: Number(f.contribution),
+          importance: Number(f.importance)
+        };
+      })
+      .filter(function (f) {
+        return Number.isFinite(f.contribution) || Number.isFinite(f.importance);
+      })
+      .sort(function (a, b) {
+        const ba = Math.abs(Number.isFinite(b.contribution) ? b.contribution : b.importance || 0);
+        const aa = Math.abs(Number.isFinite(a.contribution) ? a.contribution : a.importance || 0);
+        return ba - aa;
+      });
+
+    const raisers = ranked.filter(function (f) {
+      return Number(f.contribution) > 0;
+    }).slice(0, 4);
+    const lowerers = ranked.filter(function (f) {
+      return Number(f.contribution) < 0;
+    }).slice(0, 4);
+    const top = ranked[0];
+
+    function factorItem(f) {
+      const fmt = formatFeatureContributor(f.name, f.value);
+      const mag = Math.abs(Number.isFinite(f.contribution) ? f.contribution : 0);
+      const magText = Number.isFinite(mag) ? mag.toFixed(1) + '% relative influence' : '';
+      const valueBit =
+        fmt.value && fmt.value !== '—'
+          ? ' <span class="' + mutedClass + '">(recorded: ' + _escapeHtml(fmt.value) + ')</span>'
+          : '';
+      return (
+        '<li class="leading-relaxed">' +
+        '<strong class="' + titleClass + '">' +
+        _escapeHtml(fmt.label || 'Key factor') +
+        '</strong>' +
+        valueBit +
+        (magText ? ' — ' + magText : '') +
+        '</li>'
+      );
+    }
+
+    const scoreLine =
+      overallPct == null
+        ? 'Overall probability is still pending.'
+        : 'Overall model probability: <strong class="' +
+          titleClass +
+          '">' +
+          overallPct.toFixed(2) +
+          '%</strong> (' +
+          _escapeHtml(band) +
+          ').';
+
+    const modalityBits = [];
+    if (clinicalPct != null) {
+      modalityBits.push('clinical/lab pathway ~' + clinicalPct.toFixed(2) + '%');
+    }
+    if (imagingPct != null) {
+      modalityBits.push('ultrasound pathway ~' + imagingPct.toFixed(2) + '%');
+    }
+    const modalityLine = modalityBits.length
+      ? '<p class="' + bodyClass + '">Source mix for this case: ' + modalityBits.join('; ') + '.</p>'
+      : '';
+
+    const topName = top ? _escapeHtml(formatFeatureContributor(top.name, top.value).label) : '';
+    const topDir =
+      top && Number(top.contribution) >= 0
+        ? 'raised'
+        : 'lowered';
+    const topSentence = topName
+      ? '<p class="' +
+        bodyClass +
+        '">The single strongest local factor was <strong class="' +
+        titleClass +
+        '">' +
+        topName +
+        '</strong>, which ' +
+        topDir +
+        ' the model’s PCOS/PMOS likelihood for ' +
+        who +
+        ' case.</p>'
+      : '';
+
+    const raiseBlock = raisers.length
+      ? '<div class="rounded-xl px-4 py-3 ' +
+        chipRaise +
+        '">' +
+        '<p class="font-semibold mb-2 text-inherit">What pushed the result toward higher concern</p>' +
+        '<ul class="list-disc pl-5 space-y-1.5 text-inherit">' +
+        raisers.map(factorItem).join('') +
+        '</ul></div>'
+      : '';
+
+    const lowerBlock = lowerers.length
+      ? '<div class="rounded-xl px-4 py-3 ' +
+        chipLower +
+        '">' +
+        '<p class="font-semibold mb-2 text-inherit">What helped lower concern</p>' +
+        '<ul class="list-disc pl-5 space-y-1.5 text-inherit">' +
+        lowerers.map(factorItem).join('') +
+        '</ul></div>'
+      : '';
+
+    const nextSteps = isUser
+      ? '<ul class="list-disc pl-5 space-y-1.5 ' +
+        bodyClass +
+        '">' +
+        '<li>Compare the top factors above with what ' +
+        you +
+        ' entered on Detect—fix typos or missing labs if needed, then re-analyze.</li>' +
+        '<li>If an ultrasound was used, check that the scan is clear, well lit, and fully in frame.</li>' +
+        '<li>Share this page (or a PDF export) with a clinician; ask how these factors fit ' +
+        who +
+        ' history and exam.</li>' +
+        '<li>Do not start, stop, or change medication based only on this AI summary.</li>' +
+        '</ul>'
+      : '<ul class="list-disc pl-5 space-y-1.5 ' +
+        bodyClass +
+        '">' +
+        '<li>Verify top contributors against the chart, labs, and ultrasound quality.</li>' +
+        '<li>If Cycle / FSH–LH / follicle counts dominate, confirm timing relative to menses and assay units.</li>' +
+        '<li>Use this narrative with Grad-CAM (if present) as an audit trail for the visit note—not as diagnostic criteria.</li>' +
+        '<li>Document clinical judgment when model output and bedside assessment disagree.</li>' +
+        '</ul>';
+
+    return (
+      '<div class="space-y-5">' +
+      '<section>' +
+      '<h3 class="text-lg ' +
+      titleClass +
+      ' mb-2">At a glance</h3>' +
+      '<p class="' +
+      bodyClass +
+      '">Based on ' +
+      who +
+      ' screening inputs, the system shows ' +
+      riskPhrase +
+      ' for PCOS/PMOS. ' +
+      scoreLine +
+      '</p>' +
+      modalityLine +
+      '<p class="' +
+      bodyClass +
+      ' mt-2">' +
+      _bandGuidance(band, isUser) +
+      '</p>' +
+      '</section>' +
+      '<section>' +
+      '<h3 class="text-lg ' +
+      titleClass +
+      ' mb-2">How to read the charts above</h3>' +
+      '<p class="' +
+      bodyClass +
+      '">The force / contribution chart shows which details pushed the score <strong>up</strong> (toward higher concern) or <strong>down</strong> (toward lower concern). Longer bars mean stronger influence <em>for this case</em>. The ranking chart highlights which factors matter most in magnitude overall.</p>' +
+      topSentence +
+      '</section>' +
+      (raiseBlock || lowerBlock
+        ? '<section class="space-y-3">' +
+          '<h3 class="text-lg ' +
+          titleClass +
+          ' mb-1">Key factors in plain language</h3>' +
+          raiseBlock +
+          lowerBlock +
+          '</section>'
+        : '') +
+      '<section>' +
+      '<h3 class="text-lg ' +
+      titleClass +
+      ' mb-2">Suggested next steps</h3>' +
+      nextSteps +
+      '</section>' +
+      '<p class="text-sm ' +
+      mutedClass +
+      ' italic">Educational screening aid only—not a medical diagnosis or treatment plan. Interpretability describes model behavior, not proven cause-and-effect.</p>' +
+      '</div>'
+    );
+  }
+
   global.PcodeXaiClinical = {
     LABELS: LABELS,
     buildDiagnosticSummary: buildDiagnosticSummary,
+    buildShapClinicalSummary: buildShapClinicalSummary,
     integratedRiskBarVariant: integratedRiskBarVariant,
     wireIntegratedRiskInfo: wireIntegratedRiskInfo,
     gradcamHeatmapCaptionHtml: gradcamHeatmapCaptionHtml,

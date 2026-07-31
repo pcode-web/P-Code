@@ -184,3 +184,41 @@ html[data-pcode-theme="dark"] .pcode-integrated-risk-popover {
 .pcode-integrated-risk-popover[hidden] {
   display: none !important;
 }
+
+/* SHAP clinical summary chips — readable on dark XAI canvas */
+body.pcode-app-bento .pcode-xai-shap-chip,
+body.xai-bento-page .pcode-xai-shap-chip {
+  color: inherit;
+}
+
+body.pcode-app-bento .pcode-xai-shap-chip--raise,
+body.xai-bento-page .pcode-xai-shap-chip--raise {
+  background: rgba(244, 63, 94, 0.18) !important;
+  border-color: rgba(251, 113, 133, 0.35) !important;
+  color: #ffe4e6 !important;
+}
+
+body.pcode-app-bento .pcode-xai-shap-chip--lower,
+body.xai-bento-page .pcode-xai-shap-chip--lower {
+  background: rgba(16, 185, 129, 0.16) !important;
+  border-color: rgba(52, 211, 153, 0.35) !important;
+  color: #d1fae5 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-shap-chip--raise,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-shap-chip--raise,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-shap-chip--raise,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-shap-chip--raise {
+  background: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+  color: #9f1239 !important;
+}
+
+html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-xai-shap-chip--lower,
+html[data-pcode-theme="light"] body.pcode-app-bento .pcode-xai-shap-chip--lower,
+html.pcode-app-bento-root:not(.dark) body.xai-bento-page .pcode-xai-shap-chip--lower,
+html[data-pcode-theme="light"] body.xai-bento-page .pcode-xai-shap-chip--lower {
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}

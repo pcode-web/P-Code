@@ -292,14 +292,47 @@ def prepare_clinical_data(data_dict, model=None):
             df = pd.DataFrame([remapped_data])
         
         # Convert numeric strings to floats, treat empty/missing as NaN
+        def _coerce_scalar_numeric(raw):
+            if raw is None or (isinstance(raw, float) and np.isnan(raw)):
+                return np.nan
+            if isinstance(raw, (bytes, bytearray)):
+                try:
+                    raw = raw.decode('utf-8', errors='ignore')
+                except Exception:
+                    return np.nan
+            if isinstance(raw, (list, tuple, np.ndarray)):
+                if len(raw) == 0:
+                    return np.nan
+                raw = raw[0]
+            if isinstance(raw, str):
+                s = raw.strip()
+                if s == '' or s.lower() in {'nan', 'none', 'null', 'undefined'}:
+                    return np.nan
+                # Handle artifacts like "[7.31835E-1]" / "(0.5)"
+                if (s.startswith('[') and s.endswith(']')) or (s.startswith('(') and s.endswith(')')):
+                    s = s[1:-1].strip()
+                if ',' in s and ' ' not in s.strip():
+                    # take first token from accidental CSV/list dump
+                    s = s.split(',', 1)[0].strip()
+                try:
+                    return float(s)
+                except Exception:
+                    num = pd.to_numeric(s, errors='coerce')
+                    return float(num) if pd.notna(num) else np.nan
+            try:
+                return float(raw)
+            except Exception:
+                num = pd.to_numeric(raw, errors='coerce')
+                return float(num) if pd.notna(num) else np.nan
+
         for col in df.columns:
             try:
                 val = df[col].iloc[0]
                 if val == '' or val == 'nan' or val is None:
                     df[col] = np.nan
                 else:
-                    df[col] = pd.to_numeric(val, errors='coerce')
-            except:
+                    df[col] = _coerce_scalar_numeric(val)
+            except Exception:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
         
         # Final guard: symptom Y/N columns must be 0 (No), never NaN.
@@ -488,7 +521,10 @@ def get_shap_explanation(model, df, raw_prediction, missing_value_mask=None):
             
             # Use raw SHAP values - no clamping to preserve actual feature sensitivity
             # SHAP values represent: contribution to log-odds or probability shift
-            shap_val_raw = float(shap_val)
+            try:
+                shap_val_raw = float(np.asarray(shap_val).reshape(-1)[0])
+            except Exception:
+                continue
             abs_shap_val = abs(shap_val_raw)
             
             # Determine impact direction
@@ -504,9 +540,13 @@ def get_shap_explanation(model, df, raw_prediction, missing_value_mask=None):
             influence_score = abs_shap_val
             
             # Build contribution entry
+            try:
+                value_num = float(np.asarray(value).reshape(-1)[0]) if pd.notna(value) else None
+            except Exception:
+                value_num = None
             contrib_entry = {
                 'feature': feature,
-                'value': float(value) if pd.notna(value) else None,
+                'value': value_num,
                 'shap_value': shap_val_raw,
                 'abs_shap_value': float(abs_shap_val),
                 'impact': impact,
