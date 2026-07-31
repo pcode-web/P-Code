@@ -26,7 +26,7 @@ except ImportError as e:
     SHAP_ERROR = str(e)
 
 # Bump when SHAP/prepare coercion changes — surfaced via /api/health for deploy checks.
-XGB_RUNTIME_REVISION = "20260731-shap-bracket-float-v2"
+XGB_RUNTIME_REVISION = "20260731-shap-bracket-float-v3"
 
 
 def coerce_scalar_numeric(raw):
@@ -642,9 +642,14 @@ def get_shap_explanation(model, df, raw_prediction, missing_value_mask=None):
         
         return result
     except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        # Keep a short, actionable error for clients; include revision for deploy checks.
         return {
             'success': False,
-            'error': f'SHAP explanation failed: {type(e).__name__}: {str(e)[:200]}'
+            'error': f'SHAP explanation failed: {type(e).__name__}: {str(e)[:200]}',
+            'xgb_runtime_revision': XGB_RUNTIME_REVISION,
+            'traceback_tail': tb[-800:],
         }
 
 def calibrate_for_class_imbalance(raw_prob):
@@ -1044,6 +1049,12 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
         # Re-coerce every cell before float32 cast (covers residual string artifacts)
         for col in df.columns:
             df.loc[df.index[0], col] = coerce_scalar_numeric(df[col].iloc[0])
+
+        # Drop any remaining non-numeric object cells (last-resort safety)
+        for col in df.columns:
+            val = df[col].iloc[0]
+            if isinstance(val, (str, bytes, bytearray, list, tuple)):
+                df.loc[df.index[0], col] = coerce_scalar_numeric(val)
         
         # Debug info (stored for response, not printed)
         debug_info = {
@@ -1064,6 +1075,7 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
             'input_data_keys': list(clinical_data.keys()),
             'dataframe_columns': list(df.columns),
             'dataframe_head': {col: str(df[col].iloc[0]) for col in df.columns[:5]},
+            'dataframe_dtypes': {col: str(df[col].dtype) for col in df.columns},
             'all_feature_values': {
                 col: (
                     float(_v)
@@ -1076,7 +1088,21 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
         }
         
         # Handle missing values - XGBoost can handle NaN
-        df = df.astype(np.float32)
+        try:
+            df = df.astype(np.float32)
+        except Exception as cast_err:
+            # Identify offending column for deploy diagnostics
+            bad_cols = {}
+            for col in df.columns:
+                try:
+                    float(df[col].iloc[0]) if pd.notna(df[col].iloc[0]) else None
+                except Exception:
+                    bad_cols[col] = repr(df[col].iloc[0])[:80]
+            debug_info['float32_cast_error'] = str(cast_err)[:200]
+            debug_info['non_numeric_columns'] = bad_cols
+            for col, _ in bad_cols.items():
+                df.loc[df.index[0], col] = np.nan
+            df = df.astype(np.float32)
         
         # CREATE MASK OF MISSING VALUES (for SHAP explanation)
         missing_mask = df.isna().iloc[0].values.tolist()
@@ -1269,7 +1295,14 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
             'missing_percentage': round(missing_percentage, 1),
             'priority_factors': priority_contribution_summary,  # Clinical symptoms & ultrasound findings
             'shap_explanation': shap_explanation,  # Always include SHAP explanation (success or error)
-            'smoothing_factor': float(sf)
+            'smoothing_factor': float(sf),
+            'xgb_runtime_revision': XGB_RUNTIME_REVISION,
+            'debug': {
+                'xgb_runtime_revision': XGB_RUNTIME_REVISION,
+                'float32_cast_error': debug_info.get('float32_cast_error'),
+                'non_numeric_columns': debug_info.get('non_numeric_columns'),
+                'dataframe_head': debug_info.get('dataframe_head'),
+            },
         }
         
         return result
