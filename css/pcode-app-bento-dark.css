@@ -103,13 +103,11 @@ body.login-bento-page::after {
   background: radial-gradient(circle at 50% -10%, rgba(196, 181, 253, 0.08), transparent 70%);
 }
 
-body.pcode-app-bento > nav,
 body.pcode-app-bento > .gradient-bg,
 body.pcode-app-bento > div.max-w-7xl,
 body.pcode-app-bento > main,
 body.pcode-app-bento > footer,
 body.xai-bento-page .page-shell,
-body.xai-bento-page > nav,
 body.xai-bento-page > .gradient-bg,
 body.xai-bento-page > div.max-w-7xl,
 body.xai-bento-page > main,
@@ -118,16 +116,61 @@ body.xai-bento-page > footer {
   z-index: 1;
 }
 
-/* Overlay + drawer: fixed to viewport — never flex-grow or block-scroll the page */
-body.pcode-app-bento > nav {
+/* Sticky/fixed top nav — keep accessible while scrolling */
+body.pcode-app-bento > nav,
+body.xai-bento-page > nav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 55 !important;
   flex: 0 0 auto;
   flex-shrink: 0;
-  width: 100%;
-  max-width: 100%;
   height: auto;
   min-height: 0;
+  max-width: 100%;
+  /* Own compositing layer so frost survives scrolling content underneath */
+  isolation: isolate;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
+/*
+ * Frost scrubber behind nav chrome.
+ * Chromium often drops backdrop-filter when this strip overlaps other
+ * backdrop-filtered cards — denser fill on the nav keeps the frosted look.
+ */
+body.pcode-app-bento > nav::before,
+body.xai-bento-page > nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.02)
+  );
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+
+body.pcode-app-bento,
+body.xai-bento-page {
+  --pcode-topnav-height: 4rem;
+  padding-top: var(--pcode-topnav-height);
+}
+
+@media (max-width: 768px) {
+  body.pcode-app-bento,
+  body.xai-bento-page {
+    --pcode-topnav-height: 3.75rem;
+  }
+}
+
+/* Overlay + drawer: fixed to viewport — never flex-grow or block-scroll the page */
 @media (min-width: 769px) {
   body.pcode-app-bento > nav .flex.justify-between,
   body.pcode-app-bento > nav .flex.justify-between.items-center,
@@ -270,13 +313,19 @@ html.pcode-app-bento-root.dark body.pcode-app-bento .text-gray-500 {
 /* Nav — glass strip                                                           */
 /* -------------------------------------------------------------------------- */
 
+html.pcode-app-bento-root.dark body.pcode-app-bento > nav,
 html.pcode-app-bento-root.dark body.pcode-app-bento nav.pcode-topnav,
-html.pcode-app-bento-root.dark body.xai-bento-page nav.xai-topnav {
-  background: var(--pcb-card-glass) !important;
-  -webkit-backdrop-filter: blur(var(--pcb-blur-md));
-  backdrop-filter: blur(var(--pcb-blur-md));
-  border-bottom: 1px solid var(--pcb-card-border) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset !important;
+html.pcode-app-bento-root.dark body.xai-bento-page > nav,
+html.pcode-app-bento-root.dark body.xai-bento-page nav.xai-topnav,
+html.pcode-app-bento-root.dark body.xai-bento-page nav.pcode-topnav {
+  /* Opaque enough that frost still reads when backdrop-filter fails over cards */
+  background: rgba(3, 2, 5, 0.82) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
+  backdrop-filter: blur(18px) saturate(150%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 10px 28px rgba(0, 0, 0, 0.35) !important;
 }
 
 html.pcode-app-bento-root.dark body.pcode-app-bento nav .shadow-lg {
@@ -342,6 +391,16 @@ body.xai-bento-page nav > .max-w-7xl > .flex.justify-between > .flex.items-cente
   flex-shrink: 0;
   min-width: 0;
   padding-right: 0.5rem;
+}
+
+body.pcode-app-bento .pcode-nav-logo,
+body.xai-bento-page .pcode-nav-logo,
+body.pcode-app-bento nav .pcode-nav-logo {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 body.pcode-app-bento nav.pcode-topnav > .max-w-7xl > .flex.justify-between > .flex.items-center:first-child h1,
@@ -527,7 +586,7 @@ html.pcode-app-bento-root.dark body.pcode-app-bento .metric-card {
 
 /* Detect (user/provider): stepper footer sits inside glass card with light inherited title color —
    old bg-purple-50 + inherited text made “Previous” unreadable. */
-/* Clinical stepper footer — two-button row (Previous + morphing Next/Analyze) */
+/* Clinical stepper footer — Previous + morphing Next/Analyze (row on desktop, stack on mobile) */
 body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions {
   display: flex !important;
   flex-direction: row !important;
@@ -553,27 +612,56 @@ body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-s
   height: auto !important;
   padding-top: 0.625rem !important;
   padding-bottom: 0.625rem !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn .pcode-analyzing-label,
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn .spinner-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn .spinner-circle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
 }
 
 @media (max-width: 767px) {
   body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions {
-    gap: 0.5rem;
+    flex-direction: column !important;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.625rem;
     margin-top: 1rem;
     padding-top: 0.75rem;
   }
 
   body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn {
-    min-height: 2.35rem !important;
-    padding-top: 0.4rem !important;
-    padding-bottom: 0.4rem !important;
-    padding-left: 0.65rem !important;
-    padding-right: 0.65rem !important;
-    font-size: 0.75rem !important;
-    line-height: 1.2 !important;
+    flex: 0 0 auto;
+    width: 100% !important;
+    min-height: 2.75rem !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.25 !important;
   }
 
   body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn span {
     font-size: inherit !important;
+  }
+
+  body.pcode-app-bento .clinical-stepper-footer.pcode-clinical-actions .clinical-stepper-btn .spinner-circle svg {
+    width: 1.15rem;
+    height: 1.15rem;
   }
 }
 
@@ -1770,12 +1858,61 @@ body.pcode-app-bento textarea {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-body.pcode-app-bento input:focus,
+body.pcode-app-bento input:focus:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="range"]),
 body.pcode-app-bento select:focus,
 body.pcode-app-bento textarea:focus {
   outline: none;
   border-color: var(--pcb-focus-border) !important;
   box-shadow: 0 0 0 3px var(--pcb-focus-glow) !important;
+}
+
+/* Clinical symptom checkboxes — single control, no text-input min-height / focus ring */
+body.pcode-app-bento .pcode-clinical-checklist input[type="checkbox"],
+body.pcode-app-bento #clinical-form input[type="checkbox"],
+body.pcode-app-bento .detection-card input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
+  max-width: 1.25rem !important;
+  max-height: 1.25rem !important;
+  margin: 0;
+  padding: 0 !important;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(196, 181, 253, 0.55) !important;
+  border-radius: 0.3rem;
+  background: rgba(3, 2, 5, 0.85) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  accent-color: #a855f7;
+  vertical-align: middle;
+}
+
+body.pcode-app-bento .pcode-clinical-checklist input[type="checkbox"]:checked,
+body.pcode-app-bento #clinical-form input[type="checkbox"]:checked,
+body.pcode-app-bento .detection-card input[type="checkbox"]:checked {
+  background-color: #a855f7 !important;
+  border-color: #a855f7 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 4.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-size: 0.85rem 0.85rem !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: none !important;
+}
+
+body.pcode-app-bento .pcode-clinical-checklist input[type="checkbox"]:focus,
+body.pcode-app-bento .pcode-clinical-checklist input[type="checkbox"]:focus-visible,
+body.pcode-app-bento #clinical-form input[type="checkbox"]:focus,
+body.pcode-app-bento #clinical-form input[type="checkbox"]:focus-visible,
+body.pcode-app-bento .detection-card input[type="checkbox"]:focus,
+body.pcode-app-bento .detection-card input[type="checkbox"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: rgba(196, 181, 253, 0.85) !important;
 }
 
 body.pcode-app-bento input::placeholder,

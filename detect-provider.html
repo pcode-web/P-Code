@@ -637,7 +637,7 @@
             input[type="checkbox"] { width: 20px !important; height: 20px !important; min-height: 0 !important; padding: 0 !important; box-shadow: none !important; }
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260731-analyzbtn">
 <link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260725-svgs">
 <link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260725-svgs">
@@ -1457,9 +1457,9 @@
                 </div>
 
                 <!-- Navigation Buttons (Fixed Footer) — Previous + morphing Next/Analyze -->
-                <div class="clinical-stepper-footer pcode-action-bar pcode-clinical-actions flex flex-row items-center gap-3 w-full mt-6 pt-4 border-t border-white/[0.05] flex-shrink-0">
-                    <button type="button" id="prev-btn" onclick="goToStep(currentStep - 1)" class="btn-ghost-glass clinical-stepper-btn flex-1 min-w-0"><span class="font-semibold">Previous</span></button>
-                    <button type="button" id="next-btn" onclick="handleClinicalStepAdvance()" data-step-mode="next" aria-label="Go to next step" class="btn-purple-glass clinical-stepper-btn flex-1 min-w-0 text-purple-400 bg-purple-500/5 border-purple-500/20"><span class="font-semibold pcode-next-btn__label">Next</span><svg class="pcode-btn-icon pcode-next-btn__icon--next" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg><svg class="pcode-btn-icon pcode-next-btn__icon--analyze hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></button>
+                <div class="clinical-stepper-footer pcode-action-bar pcode-clinical-actions flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full mt-6 pt-4 border-t border-white/[0.05] flex-shrink-0">
+                    <button type="button" id="prev-btn" onclick="goToStep(currentStep - 1)" class="btn-ghost-glass clinical-stepper-btn w-full sm:flex-1 min-w-0"><span class="font-semibold">Previous</span></button>
+                    <button type="button" id="next-btn" onclick="handleClinicalStepAdvance()" data-step-mode="next" aria-label="Go to next step" class="btn-purple-glass clinical-stepper-btn w-full sm:flex-1 min-w-0 text-purple-400 bg-purple-500/5 border-purple-500/20"><span class="font-semibold pcode-next-btn__label">Next</span><svg class="pcode-btn-icon pcode-next-btn__icon--next" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg><svg class="pcode-btn-icon pcode-next-btn__icon--analyze hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></button>
                 </div>
                 </div>
             </div>
@@ -3637,7 +3637,7 @@
 
             // Show loading state
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerHTML = '<span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="24" height="24"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span> Analyzing...';
+            nextBtn.innerHTML = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing…</span></span>';
             nextBtn.disabled = true;
             nextBtn.style.display = 'inline-flex';
             nextBtn.style.alignItems = 'center';
@@ -4134,7 +4134,7 @@
             // Show loading state
             const analysisButton = document.getElementById('analyze-ultrasound-btn');
             const originalHTML = analysisButton.innerHTML;
-            analysisButton.innerHTML = '<span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="24" height="24"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span> Analyzing...';
+            analysisButton.innerHTML = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing…</span></span>';
             analysisButton.disabled = true;
             analysisButton.style.display = 'inline-flex';
             analysisButton.style.alignItems = 'center';
@@ -5271,14 +5271,9 @@
                 const clinicalInputsForDb = buildClinicalInputsForDb();
                 const ultrasoundDataUrl = await getUltrasoundDataUrlAsync();
 
-                const patientNameField = document.getElementById('patient-select');
-                const patientName = (patientNameField && patientNameField.selectedOptions && patientNameField.selectedOptions[0])
-                    ? patientNameField.selectedOptions[0].text
-                    : '';
-
                 const patientPayload = {
                     patient_id: patientId,
-                    patient_name: patientName, // optional; backend preserves personal info when empty
+                    // Do not send dropdown label as patient_name — preserves personal demographics
                     ...clinicalInputsForDb,
                     // save_patient.php expects `Ultrasound_image` — omit invalid/unreliable scans
                     ...((ultrasoundDataUrl && !imagingExcluded) ? { Ultrasound_image: ultrasoundDataUrl } : {})

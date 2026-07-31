@@ -481,6 +481,13 @@ def _normalize_diagnosis_payload(payload: dict) -> dict[str, Any]:
             continue
         if column == "Ultrasound_image":
             value = _coerce_ultrasound_blob(value)
+            if value is None:
+                continue
+        else:
+            value = _coerce_user_param_value(column, value)
+            # Skip failed coercions so we don't wipe existing values with NULL
+            if value is None:
+                continue
         normalized[column] = value
     return normalized
 
@@ -1112,6 +1119,16 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
                 return float(raw)
             except ValueError:
                 return None
+        if column == "Pregnant":
+            low = raw.lower()
+            if low in {"yes", "y", "1", "true", "pregnant"}:
+                return 1
+            if low in {"no", "n", "0", "false", "not pregnant"}:
+                return 0
+            try:
+                return 1 if int(float(raw)) else 0
+            except ValueError:
+                return None
         if column in {
             "Weight_gain", "Hair_growth", "Skin_darkening", "Hair_loss",
             "Pimples", "Fast_food", "Reg_Exercise", "Blood_Group",
@@ -1124,7 +1141,16 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
                     return float(raw)
                 return int(raw)
             except ValueError:
-                return raw if column == "Pregnant" else None
+                return None
+        if column in {
+            "last_menstrual_period_date", "blood_draw_date", "ultrasound_date",
+            "symptom_evaluation_date",
+        }:
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw) or re.fullmatch(
+                r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?", raw
+            ):
+                return raw
+            return None
         try:
             if re.fullmatch(r"-?\d+(\.\d+)?", raw):
                 return float(raw) if "." in raw else int(raw)
@@ -1136,9 +1162,12 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
             return float(value)
         except (TypeError, ValueError):
             return None
+    if column == "Pregnant":
+        try:
+            return 1 if int(value) else 0
+        except (TypeError, ValueError):
+            return None
     return value
-
-
 
 
 def _looks_like_base64_text(text: str) -> bool:
@@ -2997,11 +3026,21 @@ def api_save_patient():
         patient_id = 0
 
     name = str(data.get("patient_name") or data.get("name") or "").strip()
+    # Detect save often sends the <select> option label (e.g. "PMOS-039 — Alice") as patient_name.
+    # That is not a personal-info edit — ignore it so clinical-only saves don't rewrite demographics.
+    if re.search(r"(?:PMOS|PCOS)-\d+", name, flags=re.I):
+        name = ""
     age = data.get("Age_yrs")
     try:
         age = int(age) if age not in (None, "") else None
     except (TypeError, ValueError):
         age = None
+    # Prefer explicit personal age fields over clinical Age_yrs when both present
+    if "age" in data and data.get("age") not in (None, ""):
+        try:
+            age = int(data.get("age"))
+        except (TypeError, ValueError):
+            pass
     dob = data.get("DOB") or data.get("date_of_birth") or None
     contact = data.get("contact_no")
     address = data.get("address") or ""
@@ -3014,18 +3053,26 @@ def api_save_patient():
         str(data.get("clinical_recommendations") or "").strip() if has_recs else ""
     )
 
-    has_personal = bool(
-        name
-        or age is not None
-        or dob
-        or contact
-        or str(address).strip()
-        or str(civil_status).strip()
-        or str(occupation).strip()
-        or str(religion).strip()
-        or str(referred_by).strip()
-        or has_recs
-    )
+    # Clinical-only Detect saves should not rewrite personal info from Age_yrs alone
+    explicit_personal = any(
+        k in data and data.get(k) not in (None, "")
+        for k in (
+            "patient_name",
+            "name",
+            "DOB",
+            "date_of_birth",
+            "contact_no",
+            "address",
+            "civil_status",
+            "occupation",
+            "religion",
+            "referred_by",
+            "clinical_recommendations",
+        )
+    ) and bool(name or dob or contact or str(address).strip() or str(civil_status).strip()
+               or str(occupation).strip() or str(religion).strip() or str(referred_by).strip() or has_recs)
+
+    has_personal = explicit_personal
 
     try:
         with get_db_connection() as conn:
@@ -3098,6 +3145,7 @@ def api_save_patient():
                 if clinical:
                     clinical["patient_id"] = patient_id
                     clinical.setdefault("created_by", "Physician")
+                    param_cols = _table_columns(cur, "patient_diagnosis_parameters")
                     cur.execute(
                         """
                         SELECT parameter_id FROM patient_diagnosis_parameters
@@ -3108,26 +3156,63 @@ def api_save_patient():
                         (patient_id,),
                     )
                     draft = cur.fetchone()
-                    if draft:
-                        cols = [c for c in DIAGNOSIS_INSERT_COLUMNS if c in clinical and c != "patient_id"]
-                        if cols:
+
+                    def _run_param_write(include_ultrasound: bool = True) -> None:
+                        payload_cols = dict(clinical)
+                        if not include_ultrasound:
+                            payload_cols.pop("Ultrasound_image", None)
+                        if draft:
+                            cols = [
+                                c
+                                for c in DIAGNOSIS_INSERT_COLUMNS
+                                if c in payload_cols
+                                and c != "patient_id"
+                                and (not param_cols or c in param_cols)
+                            ]
+                            if not cols:
+                                return
                             sets = ", ".join(f"`{c}`=%s" for c in cols)
-                            vals = [clinical[c] for c in cols] + [int(draft["parameter_id"])]
+                            vals = [payload_cols[c] for c in cols] + [int(draft["parameter_id"])]
                             cur.execute(
                                 f"UPDATE patient_diagnosis_parameters SET {sets} WHERE parameter_id=%s",
                                 vals,
                             )
-                    else:
-                        cols = [c for c in DIAGNOSIS_INSERT_COLUMNS if c in clinical]
-                        if "patient_id" not in cols:
-                            cols = ["patient_id"] + cols
-                            clinical["patient_id"] = patient_id
-                        placeholders = ", ".join(["%s"] * len(cols))
-                        column_sql = ", ".join(f"`{c}`" for c in cols)
-                        cur.execute(
-                            f"INSERT INTO patient_diagnosis_parameters ({column_sql}) VALUES ({placeholders})",
-                            [clinical[c] for c in cols],
-                        )
+                        else:
+                            cols = [
+                                c
+                                for c in DIAGNOSIS_INSERT_COLUMNS
+                                if c in payload_cols and (not param_cols or c in param_cols)
+                            ]
+                            if "patient_id" not in cols:
+                                cols = ["patient_id"] + cols
+                                payload_cols["patient_id"] = patient_id
+                            if not cols:
+                                return
+                            placeholders = ", ".join(["%s"] * len(cols))
+                            column_sql = ", ".join(f"`{c}`" for c in cols)
+                            cur.execute(
+                                f"INSERT INTO patient_diagnosis_parameters ({column_sql}) VALUES ({placeholders})",
+                                [payload_cols[c] for c in cols],
+                            )
+
+                    try:
+                        _run_param_write(include_ultrasound=True)
+                    except Exception as us_exc:  # noqa: BLE001
+                        # Oversized ultrasound blobs / packet limits — retry clinical fields only
+                        msg = str(us_exc).lower()
+                        if "Ultrasound_image" in clinical and (
+                            "packet" in msg
+                            or "max_allowed_packet" in msg
+                            or "data too long" in msg
+                            or "gone away" in msg
+                        ):
+                            logger.warning(
+                                "Save patient ultrasound failed (%s); retrying without image",
+                                us_exc,
+                            )
+                            _run_param_write(include_ultrasound=False)
+                        else:
+                            raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Save patient failed")
         return _json_error("Failed to save patient", 500, detail=str(exc))
