@@ -951,7 +951,7 @@
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
     <script src="js/pcode-clinical-validity.js?v=20260730-clinonly-v2"></script>
     <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
-    <script src="js/pcode-image-crop.js?v=20260731-cropfix"></script>
+    <script src="js/pcode-image-crop.js?v=20260731-capture-tip"></script>
     <script src="js/pcode-pdf-export-helpers.js?v=20260730-nqak"></script>
     <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
     <!-- Sidebar Overlay -->
@@ -1495,6 +1495,9 @@
                     <!-- Ultrasound Image Upload Area -->
                     <div id="ultrasound-upload-section" class="space-y-4">
                         <p class="clinical-upload-instruction">Upload Transvaginal Ultrasound scan image (or alternate pelvic scan image)</p>
+                        <div id="clinical-note-ultrasound-capture-tip" class="clinical-note-badge clinical-note-badge--warn" role="note">
+                            <strong>Capture tip:</strong> Fit the full ultrasound scan inside the frame and use good, even lighting (avoid glare, shadows, and blur) for more accurate imaging results.
+                        </div>
                         <div id="upload-area-ultrasound" class="upload-area pcode-dropzone rounded-lg text-center">
                             <div id="upload-area-ultrasound-empty">
                                 <svg class="pcode-dropzone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1776,8 +1779,8 @@
         let imagingAnalysisInProgress = false;
         let clinicalResultsPending = false;
         let imagingResultsPending = false;
-        // Keep "Analyzing…" visible briefly even when warm TFLite returns in ~1–2s
-        const PCODE_IMAGING_MIN_ANALYZE_MS = 3000;
+        // Keep "Analyzing…" visible longer — warm TFLite often returns in ~1–2s
+        const PCODE_IMAGING_MIN_ANALYZE_MS = 6000;
         let __pcodeImagingAnalyzeStartedAt = 0;
 
         function beginImagingAnalyzeTiming() {
@@ -2511,54 +2514,71 @@
             el.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
+        function normalizeUltrasoundDataUrl(img) {
+            if (!img || typeof img !== 'string') return null;
+            img = img.trim();
+            if (!img || img === 'null' || img === 'undefined') return null;
+
+            // Binary masquerading as a string (latin-1) can't be used as an <img src>
+            const head = img.slice(0, 8);
+            if (head.charCodeAt(0) === 0xff || head.indexOf('\u0089PNG') === 0 || /[^\x09\x0A\x0D\x20-\x7E]/.test(head)) {
+                try {
+                    let binary = '';
+                    for (let i = 0; i < img.length; i++) binary += String.fromCharCode(img.charCodeAt(i) & 0xff);
+                    return 'data:image/jpeg;base64,' + btoa(binary);
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            if (!img.startsWith('data:')) {
+                img = 'data:image/jpeg;base64,' + img;
+            }
+
+            if (img.startsWith('data:')) {
+                const commaIdx = img.indexOf(',');
+                if (commaIdx > -1) {
+                    const header = img.slice(0, commaIdx + 1);
+                    let payload = img.slice(commaIdx + 1).replace(/\s+/g, '');
+                    while (payload.startsWith('data:') && payload.indexOf(',') > -1) {
+                        payload = payload.slice(payload.indexOf(',') + 1).replace(/\s+/g, '');
+                    }
+                    if (!payload) return null;
+                    img = header + payload;
+                }
+            }
+            return img;
+        }
+
+        function applyUltrasoundPreview(img) {
+            const normalized = normalizeUltrasoundDataUrl(img);
+            if (!normalized) return false;
+            uploadedImages = uploadedImages || { ultrasound: null };
+            uploadedImages.ultrasound = normalized;
+            const previewImg = document.getElementById('preview-img-ultrasound');
+            const footer = document.getElementById('ultrasound-button-footer');
+            if (previewImg) {
+                previewImg.onload = () => console.log('[PREFILL] Ultrasound image loaded');
+                previewImg.onerror = () => {
+                    console.warn('[PREFILL] Ultrasound image failed to load (invalid src?)');
+                    previewImg.removeAttribute('src');
+                };
+                previewImg.src = normalized;
+            }
+            if (typeof setUltrasoundDropzonePreview === 'function') {
+                setUltrasoundDropzonePreview(true);
+            }
+            if (footer) footer.classList.remove('hidden');
+            return true;
+        }
+
         function applyLatestScreeningToForm(row) {
             try {
                 const clinical = row?.clinical_inputs_json || {};
                 Object.keys(clinical).forEach((k) => setInputValueByNameOrId(k, clinical[k]));
 
-                let img = row?.ultrasound_image || row?.Ultrasound_image || null;
-                if (img && typeof img === 'string') {
-                    // Normalize whitespace first (leading whitespace can break <img src="...">)
-                    img = img.trim();
-
-                    // If DB stored raw base64 (no data URI), add a safe default prefix
-                    if (img && !img.startsWith('data:')) {
-                        img = 'data:image/jpeg;base64,' + img;
-                    }
-
-                    // If it is a data URL, aggressively sanitize the base64 payload
-                    if (img.startsWith('data:')) {
-                        const commaIdx = img.indexOf(',');
-                        if (commaIdx > -1) {
-                            const header = img.slice(0, commaIdx + 1); // include comma
-                            let payload = img.slice(commaIdx + 1);
-                            // Remove whitespace/newlines inside base64 (common cause of ERR_INVALID_URL)
-                            payload = payload.replace(/\s+/g, '');
-                            // Guard against accidental double-prefixing stored in DB
-                            if (payload.startsWith('data:')) {
-                                const innerComma = payload.indexOf(',');
-                                if (innerComma > -1) {
-                                    payload = payload.slice(innerComma + 1).replace(/\s+/g, '');
-                                }
-                            }
-                            img = header + payload;
-                        }
-                    }
-                }
-
-                if (img) {
-                    uploadedImages = uploadedImages || { ultrasound: null };
-                    uploadedImages.ultrasound = img;
-                    const previewImg = document.getElementById('preview-img-ultrasound');
-                    const footer = document.getElementById('ultrasound-button-footer');
-                    if (previewImg) {
-                        previewImg.onload = () => console.log('[PREFILL] Ultrasound image loaded');
-                        previewImg.onerror = () => console.warn('[PREFILL] Ultrasound image failed to load (invalid src?)');
-                        previewImg.src = img;
-                    }
-                    setUltrasoundDropzonePreview(true);
-                    if (footer) footer.classList.remove('hidden');
-                } else {
+                const img = row?.ultrasound_image || row?.Ultrasound_image || null;
+                if (!applyUltrasoundPreview(img)) {
                     console.log('[PREFILL] No saved ultrasound image found for this user yet.');
                 }
             } catch (e) {
@@ -3107,22 +3127,8 @@
                 
                 if (!isDetected && clinicalData.Ultrasound_image) {
                     console.log('?? LOADING ULTRASOUND IMAGE for guest added patient');
-                    const previewImg = document.getElementById('preview-img-ultrasound');
-                    
-                    console.log('   previewImg exists:', !!previewImg);
-                    
-                    if (previewImg) {
-                        // Set the image source
-                        previewImg.src = clinicalData.Ultrasound_image;
-                        previewImg.onload = () => console.log('? Image loaded successfully');
-                        previewImg.onerror = () => console.error('? Image failed to load');
-                        
-                        setUltrasoundDropzonePreview(true);
+                    if (applyUltrasoundPreview(clinicalData.Ultrasound_image)) {
                         console.log('? Ultrasound image displayed for guest patient');
-                        
-                        // Store the image so it's available for prediction
-                        uploadedImages.ultrasound = clinicalData.Ultrasound_image;
-                        
                         if (!isAutoLoadFromPatientsPage) {
                             console.log('?? Attempting to jump to Step 6 (Ultrasound)');
                             try {
@@ -3132,7 +3138,7 @@
                             }
                         }
                     } else {
-                        console.error('? Required image elements not found!');
+                        console.error('? Required image elements not found or invalid image!');
                     }
                 } else if (!isDetected) {
                     console.log('?? Guest added patient has no ultrasound image property');
@@ -3322,13 +3328,10 @@
                         
                         
                         // Display ultrasound image if available
-                        if (data.Ultrasound_image) {
-                            document.getElementById('preview-img-ultrasound').src = data.Ultrasound_image;
-                            setUltrasoundDropzonePreview(true);
-                            // Show the analyze button
-                            document.getElementById('ultrasound-button-footer').classList.remove('hidden');
-                            // Store the image as a data URL string (already converted from database)
-                            uploadedImages.ultrasound = data.Ultrasound_image;
+                        if (data.Ultrasound_image || data.ultrasound_image || data.medical_image) {
+                            applyUltrasoundPreview(
+                                data.Ultrasound_image || data.ultrasound_image || data.medical_image
+                            );
                         }
                         
                         // **ENHANCED CHECKBOX LOADING WITH MULTIPLE APPROACHES**
@@ -4027,6 +4030,7 @@
             const cnnUrlParallel = (typeof pcodeMlUrl === 'function')
                 ? pcodeMlUrl('cnn')
                 : 'https://p-code-nqak.onrender.com/predict-cnn';
+            beginImagingAnalyzeTiming();
             fetch(cnnUrlParallel, {
                 method: 'POST',
                 headers: {
@@ -4044,6 +4048,7 @@
                 });
             })
             .then(({ status, ok, text }) => {
+                afterMinImagingAnalyze(function () {
                 let result;
                 try {
                     result = JSON.parse(text);
@@ -4073,10 +4078,13 @@
                 }
                 
                 if (onComplete) onComplete();
+                });
             })
             .catch(error => {
                 console.error('CNN Fetch error:', error);
-                if (onComplete) onComplete();
+                afterMinImagingAnalyze(function () {
+                    if (onComplete) onComplete();
+                });
             });
         }
 
@@ -4491,7 +4499,8 @@
         function syncSaveButtonForImagingReliability() {
             const saveBtn = document.getElementById('save-record-btn');
             if (!saveBtn) return;
-            // Allow saving clinical results even when ultrasound is pending or unreliable.
+            // Allow saving clinical and/or confirmed imaging. Only hard-block when the
+            // only available result is unreliable imaging.
             const blocked = !!(
                 imagingIsUnreliableForSave(imagingData) &&
                 !clinicalData
@@ -4499,9 +4508,11 @@
             saveBtn.disabled = blocked;
             saveBtn.setAttribute('aria-disabled', blocked ? 'true' : 'false');
             if (blocked) {
-                saveBtn.title = 'Imaging-only save blocked — ultrasound is unreliable. Complete clinical analysis to save clinical metrics only.';
+                saveBtn.title = 'Imaging-only save blocked — ultrasound is unreliable. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.';
             } else if (clinicalData && imagingIsUnreliableForSave(imagingData)) {
                 saveBtn.title = 'Ultrasound invalid/unreliable — Save will store clinical metrics only (imaging excluded).';
+            } else if (!clinicalData && imagingData && !imagingIsUnreliableForSave(imagingData)) {
+                saveBtn.title = 'Clinical analysis not run — Save will store ultrasound imaging results only.';
             } else if (clinicalData && !imagingData) {
                 saveBtn.title = 'Ultrasound not analyzed yet — Save will store clinical analysis only.';
             } else {
@@ -5063,7 +5074,7 @@
             }
 
             if (!clinicalData && !imagingForSave) {
-                if (!quiet) alert('Nothing to save yet. Complete clinical analysis first.');
+                if (!quiet) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
                 return Promise.resolve(false);
             }
 

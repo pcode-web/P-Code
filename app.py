@@ -1141,15 +1141,114 @@ def _coerce_user_param_value(column: str, value: Any) -> Any:
 
 
 
+def _looks_like_base64_text(text: str) -> bool:
+    """True when text is printable base64 (optionally a data-URI payload)."""
+    if not text:
+        return False
+    sample = re.sub(r"\s+", "", text.strip())
+    if sample.startswith("data:") and "," in sample:
+        sample = sample.split(",", 1)[1]
+    if len(sample) < 32:
+        return False
+    # Allow standard and URL-safe base64
+    return bool(re.fullmatch(r"[A-Za-z0-9+/_\-]+=*", sample))
+
+
+def _ultrasound_mime_from_magic(raw: bytes) -> str:
+    if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if raw.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if raw.startswith((b"GIF87a", b"GIF89a")):
+        return "image/gif"
+    if len(raw) >= 12 and raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
+        return "image/webp"
+    return "image/jpeg"
+
+
 def _format_ultrasound(value: Any) -> Any:
+    """
+    Normalize DB ultrasound blobs to a browser-safe data URI.
+
+    Storage is mixed across eras of the app:
+      - raw JPEG/PNG bytes in LONGBLOB
+      - ASCII base64 text in BLOB/TEXT
+      - full data:image/...;base64,... strings
+      - latin-1 "binary strings" from some drivers
+    Never base64-encode text that is already base64, and never prepend a data-
+    URI header onto raw binary without encoding first.
+    """
     if value is None or value == "":
         return None
-    if isinstance(value, str) and value.startswith("data:image"):
-        return value
-    if isinstance(value, (bytes, bytearray, memoryview)):
-        return "data:image/jpeg;base64," + base64.b64encode(bytes(value)).decode("ascii")
+
+    if isinstance(value, memoryview):
+        value = value.tobytes()
+
+    if isinstance(value, (bytes, bytearray)):
+        raw = bytes(value)
+        if not raw:
+            return None
+        # Data-URI / base64 text stored inside a BLOB
+        if raw.startswith(b"data:image") or raw.startswith(b"data:application"):
+            try:
+                return _format_ultrasound(raw.decode("ascii"))
+            except UnicodeDecodeError:
+                pass
+        try:
+            as_ascii = raw.decode("ascii")
+        except UnicodeDecodeError:
+            as_ascii = None
+        if as_ascii is not None and _looks_like_base64_text(as_ascii):
+            return _format_ultrasound(as_ascii)
+        mime = _ultrasound_mime_from_magic(raw)
+        return f"data:{mime};base64," + base64.b64encode(raw).decode("ascii")
+
     if isinstance(value, str):
-        return value if value.startswith("data:") else "data:image/jpeg;base64," + value
+        text = value.strip()
+        if not text:
+            return None
+        # Binary masquerading as a Python str (latin-1 / cp1252 from drivers)
+        head = text[:16]
+        if (
+            text.startswith("\xff\xd8\xff")
+            or text.startswith("\x89PNG\r\n\x1a\n")
+            or any(ord(ch) > 127 for ch in head)
+        ):
+            raw = text.encode("latin-1", errors="ignore")
+            mime = _ultrasound_mime_from_magic(raw)
+            return f"data:{mime};base64," + base64.b64encode(raw).decode("ascii")
+
+        if text.startswith("data:"):
+            comma = text.find(",")
+            if comma < 0:
+                return None
+            header = text[: comma + 1]
+            payload = re.sub(r"\s+", "", text[comma + 1 :])
+            # Unwrap accidental nested data URIs
+            while payload.startswith("data:") and "," in payload:
+                payload = re.sub(r"\s+", "", payload.split(",", 1)[1])
+            if not payload:
+                return None
+            return header + payload
+
+        # Raw base64 text (no data-URI header)
+        payload = re.sub(r"\s+", "", text)
+        if not _looks_like_base64_text(payload):
+            # Last resort: treat as latin-1 binary
+            raw = text.encode("latin-1", errors="ignore")
+            if not raw:
+                return None
+            mime = _ultrasound_mime_from_magic(raw)
+            return f"data:{mime};base64," + base64.b64encode(raw).decode("ascii")
+        # Sniff decoded magic when cheap
+        mime = "image/jpeg"
+        try:
+            decoded = base64.b64decode(payload[:64] + "==", validate=False)
+            mime = _ultrasound_mime_from_magic(decoded)
+        except Exception:  # noqa: BLE001
+            pass
+        return f"data:{mime};base64," + payload
+
     return None
 
 
@@ -1691,6 +1790,27 @@ def api_get_patient():
                     (patient_id,),
                 )
                 params = cur.fetchone() or {}
+                # Draft rows may omit the image; fall back to the newest params row that has one
+                if not (params.get("Ultrasound_image") if isinstance(params, dict) else None):
+                    try:
+                        cur.execute(
+                            """
+                            SELECT Ultrasound_image
+                            FROM patient_diagnosis_parameters
+                            WHERE patient_id = %s
+                              AND Ultrasound_image IS NOT NULL
+                              AND OCTET_LENGTH(Ultrasound_image) > 32
+                            ORDER BY parameter_id DESC
+                            LIMIT 1
+                            """,
+                            (patient_id,),
+                        )
+                        us_row = cur.fetchone()
+                        if us_row and us_row.get("Ultrasound_image"):
+                            params = dict(params) if params else {}
+                            params["Ultrasound_image"] = us_row["Ultrasound_image"]
+                    except Exception:  # noqa: BLE001
+                        pass
     except Exception as exc:  # noqa: BLE001
         logger.exception("Get patient failed")
         return _json_error("Failed to load patient", 500, detail=str(exc))

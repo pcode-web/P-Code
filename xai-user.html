@@ -512,10 +512,29 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 relative z-10 h-auto">
-    <!-- Provider-only patient picker lives on xai-provider.html. Keep a inert stub so legacy script refs to #patient-selector do not throw. -->
-    <div id="xai-patient-selection-card" class="!hidden" hidden aria-hidden="true" style="display:none!important">
+    <div id="xai-patient-selection-card" class="pcode-card-static mobile-card bento-card p-6 sm:p-8 mb-8">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">Choose a Screening History</h2>
+      <p class="text-sm text-gray-600 mb-4">Select which diagnosis run and recorded inputs to explain with XAI.</p>
+      <div class="flex flex-col gap-4">
+        <div class="xai-selection-row">
+          <div class="xai-selection-field flex-1 min-w-0">
+            <label for="screening-selector" class="xai-selection-label">Diagnosis screening</label>
+            <select id="screening-selector" class="xai-selection-control" disabled aria-label="Select diagnosis screening">
+              <option value="">Loading screening history…</option>
+            </select>
+          </div>
+          <div class="xai-selection-action">
+            <span class="xai-selection-label xai-selection-label--action" aria-hidden="true">&nbsp;</span>
+            <button type="button" id="xai-load-screening-btn" onclick="loadXAIAnalysis()" class="btn-purple-glass xai-selection-btn" disabled>
+              View Xai Insights
+            </button>
+          </div>
+        </div>
+        <p id="xai-screening-hint" class="text-sm text-gray-500 hidden" aria-live="polite"></p>
+      </div>
+      <!-- Legacy stub: some older helpers still query #patient-selector -->
       <select id="patient-selector" class="!hidden" hidden aria-hidden="true" tabindex="-1">
-        <option value=""></option>
+        <option value="user_self">My screening</option>
       </select>
     </div>
 
@@ -542,7 +561,8 @@
     <div id="xai-content" class="hidden">
 
       <div class="pcode-card-static mobile-card bento-card p-8 sm:p-10 mb-10">
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-6">Your screening summary</h2>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Your screening summary</h2>
+        <p id="xai-screening-context" class="text-sm text-gray-600 mb-4 hidden" aria-live="polite"></p>
         <div class="bento-inner p-5 sm:p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pcode-xai-summary-grid">
           <div class="text-center">
@@ -622,8 +642,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">What this means, in simple terms</h2>
-            <p class="text-sm text-gray-600 mt-1">A short, everyday explanation—separate from the charts above.</p>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Clinical summary explanation</h2>
+            <p class="text-sm text-gray-600 mt-1">A plain-language walkthrough of the SHAP charts—what stood out, why it matters, and what to do next.</p>
           </div>
         </div>
         <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">When your insights load, a brief summary of the main takeaway will appear here.</div>
@@ -775,7 +795,7 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
   <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
   <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
-  <script src="js/pcode-xai-clinical-copy.js?v=20260710f"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260731-shapsum"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
@@ -790,7 +810,358 @@
   <script>
     let currentPatient = null;
     let allPatients = [];
+    let userHistoryEntries = [];
+    // Track which model outputs are actually available for the current view
+    let currentXaiAvailability = { clinical: true, imaging: true, overall: true };
 
+    function updateUserScreeningHint(message, isError) {
+      const hint = document.getElementById('xai-screening-hint');
+      if (!hint) return;
+      if (!message) {
+        hint.classList.add('hidden');
+        hint.textContent = '';
+        return;
+      }
+      hint.classList.remove('hidden');
+      hint.textContent = message;
+      hint.classList.toggle('text-red-500', !!isError);
+      hint.classList.toggle('text-gray-500', !isError);
+    }
+
+    function updateUserScreeningContext(entry) {
+      const el = document.getElementById('xai-screening-context');
+      if (!el) return;
+      if (!entry) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+      }
+      const dateLabel = entry.created_at_display || entry.created_at || 'Unknown date';
+      const status = entry.status_label || 'Unknown';
+      const confidence = entry.confidence_percent != null ? `${Number(entry.confidence_percent).toFixed(1)}%` : 'N/A';
+      el.classList.remove('hidden');
+      el.textContent = `Showing insights for: ${dateLabel} — ${status} (${confidence})`;
+    }
+
+    function formatUserScreeningOptionLabel(entry, index) {
+      const dateLabel = entry.created_at_display || entry.created_at || 'Unknown date';
+      const status = entry.status_label || 'Unknown';
+      const confidence = entry.confidence_percent != null ? `${Number(entry.confidence_percent).toFixed(1)}%` : 'N/A';
+      const latestTag = index === 0 ? ' · Latest' : '';
+      return `${dateLabel} — ${status} (${confidence})${latestTag}`;
+    }
+
+    function populateUserScreeningSelector(entries) {
+      const screeningSelector = document.getElementById('screening-selector');
+      const loadBtn = document.getElementById('xai-load-screening-btn');
+      if (!screeningSelector) return;
+
+      userHistoryEntries = Array.isArray(entries) ? entries : [];
+      screeningSelector.innerHTML = '';
+
+      if (userHistoryEntries.length === 0) {
+        screeningSelector.innerHTML = '<option value="">No saved screenings yet</option>';
+        screeningSelector.disabled = true;
+        if (loadBtn) loadBtn.disabled = true;
+        updateUserScreeningHint('No saved screening found yet. Go to Detect, run an analysis, then Save.', true);
+        updateUserScreeningContext(null);
+        return;
+      }
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select diagnosis screening…';
+      screeningSelector.appendChild(placeholder);
+
+      userHistoryEntries.forEach((entry, index) => {
+        const option = document.createElement('option');
+        option.value = String(entry.diagnosis_id || index);
+        option.textContent = formatUserScreeningOptionLabel(entry, index);
+        screeningSelector.appendChild(option);
+      });
+
+      screeningSelector.disabled = false;
+      if (loadBtn) loadBtn.disabled = false;
+      // Pre-select latest (same as OBGYN) but do not auto-load insights
+      if (userHistoryEntries[0]?.diagnosis_id != null) {
+        screeningSelector.value = String(userHistoryEntries[0].diagnosis_id);
+      } else {
+        screeningSelector.selectedIndex = 1;
+      }
+      updateUserScreeningHint(
+        userHistoryEntries.length === 1
+          ? '1 screening available. Click View Xai Insights to explain this run.'
+          : `${userHistoryEntries.length} screenings available — pick any past run, then click View Xai Insights.`
+      );
+
+      if (!screeningSelector._pcodeBound) {
+        screeningSelector.addEventListener('change', function () {
+          // Keep selection only; insights load when the user clicks the button
+          try {
+            document.getElementById('xai-content')?.classList.add('hidden');
+            updateUserScreeningContext(null);
+          } catch (_) {}
+        });
+        screeningSelector._pcodeBound = true;
+      }
+    }
+
+    function getSelectedUserHistoryEntry() {
+      const screeningSelector = document.getElementById('screening-selector');
+      if (!screeningSelector || screeningSelector.disabled) return null;
+      const selectedId = screeningSelector.value;
+      if (!selectedId) return null;
+      return userHistoryEntries.find((entry) => String(entry.diagnosis_id) === String(selectedId)) || null;
+    }
+
+    function buildPatientPayloadFromUserHistory(entry) {
+      const clinical = extractClinicalForXAI({
+        ...(entry.clinical_inputs || {}),
+        ...(entry.frozen_parameters || {}),
+        clinical_inputs_snapshot: entry.clinical_inputs || entry.frozen_parameters || null
+      });
+      const diagnosisMap = { 0: 'negative', 1: 'positive', 2: 'borderline' };
+      const overallDiagnosis = entry.status_code || diagnosisMap[entry.overall_diagnosis] || 'pending';
+      const ultrasoundImage = entry.ultrasound_image || clinical.Ultrasound_image || clinical.ultrasound_image || null;
+      const label = formatUserScreeningOptionLabel(entry, userHistoryEntries.indexOf(entry));
+
+      return {
+        patient_id: 'user_' + String(entry.diagnosis_id || 'screening'),
+        id: 'user_' + String(entry.diagnosis_id || 'screening'),
+        patient_name: label,
+        name: label,
+        ...clinical,
+        clinical_score_percentage: entry.xgboost_probability_percent ?? 0,
+        imaging_score_percentage: entry.cnn_probability_percent ?? 0,
+        overall_diagnosis_percentage: entry.confidence_percent ?? 0,
+        overall_diagnosis: overallDiagnosis,
+        xgboost_diagnosis: entry.xgboost_diagnosis,
+        cnn_diagnosis: entry.cnn_diagnosis,
+        ultrasound_image: ultrasoundImage,
+        Ultrasound_image: ultrasoundImage,
+        diagnosis_id: entry.diagnosis_id,
+        screening_id: entry.screening_id,
+        history_created_at: entry.created_at_display || entry.created_at,
+        history_origin_label: entry.origin_label,
+        _history_entry: entry
+      };
+    }
+
+    async function loadMyScreeningHistoryForXAI() {
+      try {
+        const token = sessionStorage.getItem('PMOS_auth_token') || '';
+        if (!token) return;
+
+        updateUserScreeningHint('Loading your screening history…', false);
+        const historyUrl = (typeof pcodeApiUrl === 'function')
+          ? pcodeApiUrl('./api/diagnostics/get_user_history.php')
+          : 'https://p-code-nqak.onrender.com/api/diagnostics/get_user_history';
+
+        const resp = await fetch(historyUrl, {
+          method: 'GET',
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }
+        });
+        const payload = await resp.json().catch(() => null);
+        if (!resp.ok || !payload?.success) {
+          const loadBtn = document.getElementById('xai-load-screening-btn');
+          const screeningSelector = document.getElementById('screening-selector');
+          if (screeningSelector) {
+            screeningSelector.innerHTML = '<option value="">Could not load history</option>';
+            screeningSelector.disabled = true;
+          }
+          if (loadBtn) loadBtn.disabled = true;
+          updateUserScreeningHint(
+            (payload && payload.message) || 'Could not load screening history.',
+            true
+          );
+          return;
+        }
+
+        const history = Array.isArray(payload.history) ? payload.history : [];
+        // Ultrasound is stored on the live parameters row (not per-history snapshot).
+        // Enrich the latest entry so Grad-CAM can run for the most recent screening.
+        if (history.length > 0 && !history[0].ultrasound_image) {
+          try {
+            const latestResp = await fetch(
+              (typeof pcodeApiUrl === 'function')
+                ? pcodeApiUrl('./api/get_user_diagnosis.php')
+                : './api/get_user_diagnosis.php',
+              { method: 'GET', headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } }
+            );
+            const latestPayload = await latestResp.json().catch(() => null);
+            const latestData = latestPayload?.data || null;
+            const us =
+              latestData?.Ultrasound_image ||
+              latestData?.ultrasound_image ||
+              null;
+            if (us && String(latestData?.screening_id || '') === String(history[0].screening_id || '')) {
+              history[0].ultrasound_image = us;
+            } else if (us && !history[0].screening_id) {
+              history[0].ultrasound_image = us;
+            }
+          } catch (_) { /* non-fatal */ }
+        }
+        populateUserScreeningSelector(history);
+      } catch (e) {
+        console.error('[XAI] User screening history failed:', e);
+        const loadBtn = document.getElementById('xai-load-screening-btn');
+        const screeningSelector = document.getElementById('screening-selector');
+        if (screeningSelector) {
+          screeningSelector.innerHTML = '<option value="">Could not load history</option>';
+          screeningSelector.disabled = true;
+        }
+        if (loadBtn) loadBtn.disabled = true;
+        updateUserScreeningHint('Failed to load screening history. Please refresh and try again.', true);
+      }
+    }
+
+    async function loadSelectedUserScreeningXAI() {
+      const entry = getSelectedUserHistoryEntry();
+      if (!entry) {
+        alert('Please select a screening from your history.');
+        return;
+      }
+      try {
+        setXaiLoading(true);
+        updateUserScreeningContext(entry);
+
+        const mapDiag = (code) => {
+          if (code === null || code === undefined || code === '') return null;
+          const n = Number(code);
+          if (!Number.isFinite(n)) return String(code);
+          if (n === 1) return 'positive';
+          if (n === 0) return 'negative';
+          if (n === 2) return 'borderline';
+          return null;
+        };
+
+        const patientData = buildPatientPayloadFromUserHistory(entry);
+        const clinicalScore = Number(entry.xgboost_probability_percent);
+        const imagingScore = Number(entry.cnn_probability_percent);
+        const overallScore = Number(entry.confidence_percent);
+
+        const hasClinical = Number.isFinite(clinicalScore) && entry.xgboost_diagnosis !== null && entry.xgboost_diagnosis !== undefined;
+        const hasImaging = Number.isFinite(imagingScore) && entry.cnn_diagnosis !== null && entry.cnn_diagnosis !== undefined;
+        const hasOverall = Number.isFinite(overallScore);
+
+        currentXaiAvailability = {
+          clinical: hasClinical,
+          imaging: hasImaging,
+          overall: hasOverall || hasClinical || hasImaging
+        };
+
+        const diagnosis =
+          entry.status_code ||
+          mapDiag(entry.overall_diagnosis) ||
+          (hasOverall ? (overallScore >= 75 ? 'positive' : overallScore <= 54 ? 'negative' : 'borderline') : 'pending');
+
+        currentPatient = patientData;
+        fetchXGBoostSHAPExplanation(
+          patientData,
+          hasClinical ? clinicalScore : 0,
+          hasImaging ? imagingScore : 0,
+          hasOverall ? overallScore : ((hasClinical ? clinicalScore : 0) + (hasImaging ? imagingScore : 0)) / ((hasClinical ? 1 : 0) + (hasImaging ? 1 : 0) || 1),
+          diagnosis
+        );
+        if (patientData.ultrasound_image) {
+          loadGradCAMVisualization(patientData, hasImaging ? imagingScore : 0);
+        } else {
+          const gradcamCard = document.getElementById('gradcam-results-card');
+          if (gradcamCard) gradcamCard.style.display = 'none';
+        }
+      } catch (e) {
+        console.error('[XAI] Selected screening load failed:', e);
+        setXaiLoading(false);
+        alert('Failed to load XAI insights for that screening. Please try again.');
+      }
+    }
+
+    async function loadMyLatestXAIInsights() {
+      try {
+        const token = sessionStorage.getItem('PMOS_auth_token') || '';
+        if (!token) return;
+
+        // Show loading spinner
+        setXaiLoading(true);
+
+        const resp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/get_user_diagnosis.php'):'./api/get_user_diagnosis.php'), {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const payload = await resp.json().catch(() => null);
+        if (!resp.ok || !payload?.success || !payload?.data) {
+          setXaiLoading(false);
+          alert('No saved screening found yet. Please go to Detect, run an analysis, then click “Save My Record”.');
+          return;
+        }
+
+        const row = payload.data;
+
+        // Convert numeric codes to labels
+        const mapDiag = (code) => {
+          if (code === null || code === undefined || code === '') return null;
+          const n = Number(code);
+          if (!Number.isFinite(n)) return String(code);
+          if (n === 1) return 'positive';
+          if (n === 0) return 'negative';
+          if (n === 2) return 'borderline';
+          return null;
+        };
+
+        const clinicalInputs = extractClinicalForXAI(row || {});
+        const xg = { probability: Number(row.XGBoost_diagnosis_probability_percentage), diagnosis: mapDiag(row.XGBoost_diagnosis) };
+        const cnn = { probability: Number(row.CNN_diagnosis_probability_percentage), diagnosis: mapDiag(row.CNN_diagnosis) };
+        const overall = { probability: Number(row.Overall_diagnosis_probability_percentage), diagnosis: mapDiag(row.Overall_diagnosis) };
+
+        const hasClinical = Number.isFinite(xg.probability) && xg.diagnosis !== null;
+        const hasImaging = Number.isFinite(cnn.probability) && cnn.diagnosis !== null;
+        const hasOverall = Number.isFinite(overall.probability) && overall.diagnosis !== null;
+
+        const clinicalScore = hasClinical ? xg.probability : 0;
+        const imagingScore = hasImaging ? cnn.probability : 0;
+        const overallScore = hasOverall
+          ? overall.probability
+          : (hasClinical || hasImaging ? (clinicalScore * 0.5 + imagingScore * 0.5) : 0);
+
+        currentXaiAvailability = {
+          clinical: hasClinical,
+          imaging: hasImaging,
+          overall: hasOverall || hasClinical || hasImaging
+        };
+
+        const diagnosis = (overall.diagnosis || (currentXaiAvailability.overall ? (overallScore >= 75 ? 'positive' : 'negative') : 'pending'));
+
+        // Construct a "patient-like" object compatible with existing XAI logic
+        const patientData = {
+          patient_id: 'user_latest',
+          id: 'user_latest',
+          patient_name: 'My Latest Screening',
+          name: 'My Latest Screening',
+          ...clinicalInputs,
+          ultrasound_image: row.Ultrasound_image || null,
+          Ultrasound_image: row.Ultrasound_image || null
+        };
+
+        // Ensure downstream Grad-CAM uses the same object
+        currentPatient = patientData;
+        updateUserScreeningContext({
+          created_at_display: 'Latest saved screening',
+          status_label: diagnosis,
+          confidence_percent: overallScore
+        });
+
+        // Use existing pipeline: fetch real SHAP + Grad-CAM
+        fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, diagnosis);
+        if (patientData.ultrasound_image) {
+          loadGradCAMVisualization(patientData, imagingScore);
+        }
+      } catch (e) {
+        console.error('Regular user auto XAI failed:', e);
+        setXaiLoading(false);
+        alert('Failed to auto-load XAI insights. Please try again.');
+      }
+    }
     // Chart label/axis colors come from PcodeEchartNeon.chartTheme() (light = black ink).
 
     // Helper function to convert numeric blood group codes to letters
@@ -843,7 +1214,12 @@
         : /regular\s*user/i.test(String(auth?.currentUser?.role || '')));
 
       const patientSelectionCard = document.getElementById('xai-patient-selection-card');
-      if (patientSelectionCard) {
+      if (patientSelectionCard && isRegularUser) {
+        patientSelectionCard.classList.remove('!hidden', 'hidden');
+        patientSelectionCard.removeAttribute('hidden');
+        patientSelectionCard.setAttribute('aria-hidden', 'false');
+        patientSelectionCard.style.removeProperty('display');
+      } else if (patientSelectionCard) {
         patientSelectionCard.classList.add('!hidden', 'hidden');
         patientSelectionCard.setAttribute('hidden', '');
         patientSelectionCard.setAttribute('aria-hidden', 'true');
@@ -869,9 +1245,8 @@
         console.warn('Animation library error:', e);
       }
 
-      // Regular User flow: auto-run XAI insights using their latest saved screening
+      // Regular User flow: load screening history picker only (insights on button click)
       if (isRegularUser) {
-        // Start hidden until we actually have a saved screening/prediction
         try {
           document.getElementById('xai-content')?.classList.add('hidden');
           const gradcamCard = document.getElementById('gradcam-results-card');
@@ -879,7 +1254,8 @@
           if (gradcamCard) gradcamCard.style.display = 'none';
           if (xgCard) xgCard.style.display = 'none';
         } catch (_) {}
-        setTimeout(loadMyLatestXAIInsights, 150);
+        updateUserScreeningHint('Loading screening history…');
+        setTimeout(loadMyScreeningHistoryForXAI, 150);
         return;
       }
 
@@ -888,6 +1264,8 @@
       return;
     });
 
+    window.loadSelectedUserScreeningXAI = loadSelectedUserScreeningXAI;
+    window.loadMyScreeningHistoryForXAI = loadMyScreeningHistoryForXAI;
     function parseClinicalObject(value) {
       if (!value) return null;
       if (typeof value === 'object' && !Array.isArray(value)) return value;
@@ -984,91 +1362,6 @@
       const fromSnap = transformClinicalInputsForXAI(snap);
       // Snapshot (saved form) wins over sparse/default DB columns like FSH_LH=0
       return Object.assign({}, fromRow, fromSnap);
-    }
-
-    // Track which model outputs are actually available for the current view
-    let currentXaiAvailability = { clinical: true, imaging: true, overall: true };
-
-    async function loadMyLatestXAIInsights() {
-      try {
-        const token = sessionStorage.getItem('PMOS_auth_token') || '';
-        if (!token) return;
-
-        // Show loading spinner
-        setXaiLoading(true);
-
-        const resp = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/get_user_diagnosis.php'):'./api/get_user_diagnosis.php'), {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const payload = await resp.json().catch(() => null);
-        if (!resp.ok || !payload?.success || !payload?.data) {
-          setXaiLoading(false);
-          alert('No saved screening found yet. Please go to Detect, run an analysis, then click “Save My Record”.');
-          return;
-        }
-
-        const row = payload.data;
-
-        // Convert numeric codes to labels
-        const mapDiag = (code) => {
-          if (code === null || code === undefined || code === '') return null;
-          const n = Number(code);
-          if (!Number.isFinite(n)) return String(code);
-          if (n === 1) return 'positive';
-          if (n === 0) return 'negative';
-          if (n === 2) return 'borderline';
-          return null;
-        };
-
-        const clinicalInputs = extractClinicalForXAI(row || {});
-        const xg = { probability: Number(row.XGBoost_diagnosis_probability_percentage), diagnosis: mapDiag(row.XGBoost_diagnosis) };
-        const cnn = { probability: Number(row.CNN_diagnosis_probability_percentage), diagnosis: mapDiag(row.CNN_diagnosis) };
-        const overall = { probability: Number(row.Overall_diagnosis_probability_percentage), diagnosis: mapDiag(row.Overall_diagnosis) };
-
-        const hasClinical = Number.isFinite(xg.probability) && xg.diagnosis !== null;
-        const hasImaging = Number.isFinite(cnn.probability) && cnn.diagnosis !== null;
-        const hasOverall = Number.isFinite(overall.probability) && overall.diagnosis !== null;
-
-        const clinicalScore = hasClinical ? xg.probability : 0;
-        const imagingScore = hasImaging ? cnn.probability : 0;
-        const overallScore = hasOverall
-          ? overall.probability
-          : (hasClinical || hasImaging ? (clinicalScore * 0.5 + imagingScore * 0.5) : 0);
-
-        currentXaiAvailability = {
-          clinical: hasClinical,
-          imaging: hasImaging,
-          overall: hasOverall || hasClinical || hasImaging
-        };
-
-        const diagnosis = (overall.diagnosis || (currentXaiAvailability.overall ? (overallScore >= 75 ? 'positive' : 'negative') : 'pending'));
-
-        // Construct a "patient-like" object compatible with existing XAI logic
-        const patientData = {
-          patient_id: 'user_latest',
-          id: 'user_latest',
-          patient_name: 'My Latest Screening',
-          name: 'My Latest Screening',
-          ...clinicalInputs,
-          ultrasound_image: row.Ultrasound_image || null,
-          Ultrasound_image: row.Ultrasound_image || null
-        };
-
-        // Ensure downstream Grad-CAM uses the same object
-        currentPatient = patientData;
-
-        // Use existing pipeline: fetch real SHAP + Grad-CAM
-        fetchXGBoostSHAPExplanation(patientData, clinicalScore, imagingScore, overallScore, diagnosis);
-        if (patientData.ultrasound_image) {
-          loadGradCAMVisualization(patientData, imagingScore);
-        }
-      } catch (e) {
-        console.error('Regular user auto XAI failed:', e);
-        setXaiLoading(false);
-        alert('Failed to auto-load XAI insights. Please try again.');
-      }
     }
 
     function loadPatientList() {
@@ -1252,13 +1545,13 @@
         return;
       }
 
-      // Regular Users do not select patients; they use their own latest screening
+      // Regular Users pick from their own screening history
       const isGuest = auth.currentUser && auth.currentUser.isGuest;
       const isRegularUser = !isGuest && (typeof auth.roleStringIsAppRegularUser === 'function'
         ? auth.roleStringIsAppRegularUser(auth.currentUser?.role)
         : /regular\s*user/i.test(String(auth?.currentUser?.role || '')));
       if (isRegularUser) {
-        loadMyLatestXAIInsights();
+        loadSelectedUserScreeningXAI();
         return;
       }
       
@@ -1907,14 +2200,10 @@
       createFeatureList(features);
       createConsensusChart(clinicalScore, imagingScore, avail, overallDiagnosis, overallScore);
       
-      // Show/Hide XGBoost results card based on whether we have real SHAP data
+      // Show clinical summary whenever we have features to explain (SHAP or synthetic)
       const xgboostCard = document.getElementById('xgboost-results-card');
       if (xgboostCard) {
-        if (hasRealSHAPData) {
-          xgboostCard.style.display = 'block';
-        } else {
-          xgboostCard.style.display = 'none';
-        }
+        xgboostCard.style.display = (features && features.length) ? 'block' : 'none';
       }
       
       // Load Grad-CAM++ visualization
@@ -1958,7 +2247,15 @@
         console.warn('Animation library error:', e);
       }
       
-      document.getElementById('shap-explanation').innerHTML = generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName, 'self');
+      document.getElementById('shap-explanation').innerHTML = generateSHAPExplanation(
+        overallScore,
+        overallDiagnosis,
+        features,
+        patientName,
+        'self',
+        clinicalScore,
+        imagingScore
+      );
       
       // Hide loading spinner
       setXaiLoading(false);
@@ -2527,117 +2824,19 @@
       }).join('');
     }
 
-    function generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName = 'Patient', viewMode = 'self') {
-      const isClinician = viewMode === 'clinician';
-
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+    function generateSHAPExplanation(overallScore, overallDiagnosis, features, patientName = 'Patient', viewMode = 'self', clinicalScore, imagingScore) {
+      if (window.PcodeXaiClinical && typeof window.PcodeXaiClinical.buildShapClinicalSummary === 'function') {
+        return window.PcodeXaiClinical.buildShapClinicalSummary({
+          overallScore: overallScore,
+          overallDiagnosis: overallDiagnosis,
+          features: features,
+          patientName: patientName,
+          portal: viewMode === 'clinician' ? 'provider' : 'user',
+          clinicalScore: clinicalScore,
+          imagingScore: imagingScore
+        });
       }
-
-      function fmtPct(n) {
-        const v = Number(n);
-        if (!Number.isFinite(v)) return '0.00';
-        const pct = v >= 0 && v <= 1 ? v * 100 : v;
-        return pct.toFixed(2);
-      }
-
-      function friendlyFactorName(raw) {
-        if (window.PcodeXaiClinical && typeof window.PcodeXaiClinical.cleanFeatureLabel === 'function') {
-          return window.PcodeXaiClinical.cleanFeatureLabel(raw) || 'Key factor';
-        }
-        const cleaned = String(raw || 'Key factor')
-          .replace(/\s*\(y\/n\)\s*/gi, '')
-          .replace(/\s*\(yes\/no\)\s*/gi, '')
-          .replace(/\s*\(yrs?\)\s*/gi, '')
-          .replace(/_/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (!cleaned) return 'Key factor';
-        const acronyms = new Set(['BMI', 'LH', 'FSH', 'AMH', 'TSH', 'RBS', 'HCG', 'PMOS', 'Hb']);
-        return cleaned
-          .split(' ')
-          .map(function (word) {
-            const upper = word.toUpperCase();
-            if (acronyms.has(upper)) return upper;
-            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-          })
-          .join(' ');
-      }
-
-      function PMOSRiskLevel(diagnosis, score) {
-        const pct = Number(fmtPct(score));
-        if (diagnosis === 'negative') return 'Low';
-        if (diagnosis === 'borderline') return 'Moderate';
-        if (diagnosis === 'positive') {
-          if (pct >= 65) return 'High';
-          if (pct >= 35) return 'Moderate';
-          return 'Low';
-        }
-        if (pct >= 65) return 'High';
-        if (pct >= 35) return 'Moderate';
-        return 'Low';
-      }
-
-      if (!features || features.length === 0) {
-        if (isClinician) {
-          return '<p>Feature-level detail is not available for this case yet. Re-run the analysis for the selected patient, or confirm that interpretability data was generated for this visit.</p>';
-        }
-        return '<p>A plain-language summary could not be built from the available feature list. Save your screening on Detect, then reopen <strong>XAI Insights</strong>, or confirm the analysis completed without errors.</p>';
-      }
-
-      const ranked = [...features].sort(function (a, b) {
-        return Math.abs(Number(b.contribution)) - Math.abs(Number(a.contribution));
-      });
-      const topFeature = ranked[0] || {};
-      const secondFeature = ranked.length > 1 ? ranked[1] : null;
-
-      const confidencePct = fmtPct(overallScore);
-      const riskLevel = PMOSRiskLevel(overallDiagnosis, overallScore);
-      const topName = escapeHtml(friendlyFactorName(topFeature.name));
-      const secondName = secondFeature ? escapeHtml(friendlyFactorName(secondFeature.name)) : '';
-      const topImpact = fmtPct(Math.abs(Number(topFeature.contribution)));
-      const topDirection =
-        Number(topFeature.contribution) >= 0
-          ? 'driving the model\'s indicators up by <strong>' + topImpact + '%</strong>'
-          : 'moderating risk signals, pulling indicators down by <strong>' + topImpact + '%</strong>';
-
-      const introSubject = isClinician
-        ? 'Based on the patient\'s combined data'
-        : 'Based on your combined screening data';
-
-      const factorOne =
-        '<li><strong>' +
-        topName +
-        '</strong>: This parameter acted as the most significant contributor, ' +
-        topDirection +
-        '.</li>';
-
-      const factorTwo = secondName
-        ? '<li><strong>' +
-          secondName +
-          '</strong>: Followed closely as a secondary contributing factor to the overall risk evaluation profile.</li>'
-        : '';
-
-      return (
-        '<p><strong>Clinical Interpretation Insights</strong></p>' +
-        '<p>' +
-        introSubject +
-        ', the system flags a <strong>' +
-        escapeHtml(riskLevel) +
-        '</strong> probability of PMOS, with an overall evaluation confidence of <strong>' +
-        escapeHtml(confidencePct) +
-        '%</strong>.</p>' +
-        '<p><strong>Primary Influencing Factors:</strong></p>' +
-        '<ul class="list-disc pl-5 space-y-2">' +
-        factorOne +
-        factorTwo +
-        '</ul>' +
-        '<p class="text-sm text-slate-400 italic"><em>Clinical Reminder: These AI model insights describe behavior patterns and should be cross-checked alongside physical case documentation, patient history, and definitive diagnostic criteria.</em></p>'
-      );
+      return '<p>Clinical summary is loading…</p>';
     }
 
     function resolveConsensusScore(overallScore, clinicalScore, imagingScore, avail) {

@@ -1532,6 +1532,9 @@
                 <div class="pcode-detect-scroll space-y-4">
                     <div id="ultrasound-upload-section" class="space-y-4">
                         <p class="clinical-upload-instruction">Upload Transvaginal Ultrasound scan image (or alternate pelvic scan image)</p>
+                        <div id="clinical-note-ultrasound-capture-tip" class="clinical-note-badge clinical-note-badge--warn" role="note">
+                            <strong>Capture tip:</strong> Fit the full ultrasound scan inside the frame and use good, even lighting (avoid glare, shadows, and blur) for more accurate imaging results.
+                        </div>
                         <div id="upload-area-ultrasound" class="upload-area pcode-dropzone rounded-lg text-center">
                             <div id="upload-area-ultrasound-empty">
                                 <svg class="pcode-dropzone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1818,8 +1821,8 @@
         let imagingAnalysisInProgress = false;
         let clinicalResultsPending = false;
         let imagingResultsPending = false;
-        // Keep "Analyzing…" visible briefly even when warm TFLite returns in ~1–2s
-        const PCODE_IMAGING_MIN_ANALYZE_MS = 3000;
+        // Keep "Analyzing…" visible longer — warm TFLite often returns in ~1–2s
+        const PCODE_IMAGING_MIN_ANALYZE_MS = 6000;
         let __pcodeImagingAnalyzeStartedAt = 0;
 
         function beginImagingAnalyzeTiming() {
@@ -2677,6 +2680,41 @@
             }
         });
 
+        function normalizeUltrasoundDataUrl(img) {
+            if (!img || typeof img !== 'string') return null;
+            img = img.trim();
+            if (!img || img === 'null' || img === 'undefined') return null;
+
+            const head = img.slice(0, 8);
+            if (head.charCodeAt(0) === 0xff || head.indexOf('\u0089PNG') === 0 || /[^\x09\x0A\x0D\x20-\x7E]/.test(head)) {
+                try {
+                    let binary = '';
+                    for (let i = 0; i < img.length; i++) binary += String.fromCharCode(img.charCodeAt(i) & 0xff);
+                    return 'data:image/jpeg;base64,' + btoa(binary);
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            if (!img.startsWith('data:')) {
+                img = 'data:image/jpeg;base64,' + img;
+            }
+
+            if (img.startsWith('data:')) {
+                const commaIdx = img.indexOf(',');
+                if (commaIdx > -1) {
+                    const header = img.slice(0, commaIdx + 1);
+                    let payload = img.slice(commaIdx + 1).replace(/\s+/g, '');
+                    while (payload.startsWith('data:') && payload.indexOf(',') > -1) {
+                        payload = payload.slice(payload.indexOf(',') + 1).replace(/\s+/g, '');
+                    }
+                    if (!payload) return null;
+                    img = header + payload;
+                }
+            }
+            return img;
+        }
+
         function setInputValueByNameOrId(key, value) {
             const el = document.querySelector(`[name="${CSS.escape(key)}"]`) || document.getElementById(key);
             if (!el) return;
@@ -2737,29 +2775,20 @@
                 });
 
                 let img = row?.ultrasound_image || row?.Ultrasound_image || null;
-                if (img && typeof img === 'string') {
-                    // Normalize whitespace first (leading whitespace can break <img src="...">)
+                if (typeof normalizeUltrasoundDataUrl === 'function') {
+                    img = normalizeUltrasoundDataUrl(img);
+                } else if (img && typeof img === 'string') {
                     img = img.trim();
-
-                    // If DB stored raw base64 (no data URI), add a safe default prefix
                     if (img && !img.startsWith('data:')) {
                         img = 'data:image/jpeg;base64,' + img;
                     }
-
-                    // If it is a data URL, aggressively sanitize the base64 payload
                     if (img.startsWith('data:')) {
                         const commaIdx = img.indexOf(',');
                         if (commaIdx > -1) {
-                            const header = img.slice(0, commaIdx + 1); // include comma
-                            let payload = img.slice(commaIdx + 1);
-                            // Remove whitespace/newlines inside base64 (common cause of ERR_INVALID_URL)
-                            payload = payload.replace(/\s+/g, '');
-                            // Guard against accidental double-prefixing stored in DB
-                            if (payload.startsWith('data:')) {
-                                const innerComma = payload.indexOf(',');
-                                if (innerComma > -1) {
-                                    payload = payload.slice(innerComma + 1).replace(/\s+/g, '');
-                                }
+                            const header = img.slice(0, commaIdx + 1);
+                            let payload = img.slice(commaIdx + 1).replace(/\s+/g, '');
+                            while (payload.startsWith('data:') && payload.indexOf(',') > -1) {
+                                payload = payload.slice(payload.indexOf(',') + 1).replace(/\s+/g, '');
                             }
                             img = header + payload;
                         }
@@ -2775,7 +2804,10 @@
                     const removeBtn = document.getElementById('remove-ultrasound-btn');
                     if (previewImg) {
                         previewImg.onload = () => console.log('[PREFILL] Ultrasound image loaded');
-                        previewImg.onerror = () => console.warn('[PREFILL] Ultrasound image failed to load (invalid src?)');
+                        previewImg.onerror = () => {
+                            console.warn('[PREFILL] Ultrasound image failed to load (invalid src?)');
+                            previewImg.removeAttribute('src');
+                        };
                         previewImg.src = img;
                     }
                     setUltrasoundDropzonePreview(true);
@@ -3581,13 +3613,19 @@
                         
                         
                         // Display ultrasound image if available
-                        if (data.Ultrasound_image) {
-                            document.getElementById('preview-img-ultrasound').src = data.Ultrasound_image;
-                            setUltrasoundDropzonePreview(true);
-                            // Show the analyze button
-                            document.getElementById('ultrasound-button-footer').classList.remove('hidden');
-                            // Store the image as a data URL string (already converted from database)
-                            uploadedImages.ultrasound = data.Ultrasound_image;
+                        const usImg = data.Ultrasound_image || data.ultrasound_image || data.medical_image;
+                        if (usImg) {
+                            const normalized = (typeof normalizeUltrasoundDataUrl === 'function')
+                                ? normalizeUltrasoundDataUrl(usImg)
+                                : usImg;
+                            if (normalized) {
+                                document.getElementById('preview-img-ultrasound').src = normalized;
+                                setUltrasoundDropzonePreview(true);
+                                document.getElementById('ultrasound-button-footer').classList.remove('hidden');
+                                uploadedImages.ultrasound = normalized;
+                                const removeBtn = document.getElementById('remove-ultrasound-btn');
+                                if (removeBtn) removeBtn.classList.remove('hidden');
+                            }
                         }
                         
                         // **ENHANCED CHECKBOX LOADING WITH MULTIPLE APPROACHES**
@@ -4756,8 +4794,8 @@
         function syncSaveButtonForImagingReliability() {
             const saveBtn = document.getElementById('save-record-btn');
             if (!saveBtn) return;
-            // Allow saving clinical results even when ultrasound is pending or unreliable.
-            // Only hard-block when the only available result is unreliable imaging.
+            // Allow saving clinical and/or confirmed imaging. Only hard-block when the
+            // only available result is unreliable imaging.
             const blocked = !!(
                 imagingIsUnreliableForSave(imagingData) &&
                 !clinicalData
@@ -4765,9 +4803,11 @@
             saveBtn.disabled = blocked;
             saveBtn.setAttribute('aria-disabled', blocked ? 'true' : 'false');
             if (blocked) {
-                saveBtn.title = 'Imaging-only save blocked — ultrasound is unreliable. Complete clinical analysis to save clinical metrics only.';
+                saveBtn.title = 'Imaging-only save blocked — ultrasound is unreliable. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.';
             } else if (clinicalData && imagingIsUnreliableForSave(imagingData)) {
                 saveBtn.title = 'Ultrasound invalid/unreliable — Save will store clinical metrics only (imaging excluded).';
+            } else if (!clinicalData && imagingData && !imagingIsUnreliableForSave(imagingData)) {
+                saveBtn.title = 'Clinical analysis not run — Save will store ultrasound imaging results only.';
             } else if (clinicalData && !imagingData) {
                 saveBtn.title = 'Ultrasound not analyzed yet — Save will store clinical analysis only.';
             } else {
@@ -5347,17 +5387,18 @@
                             allowClinicalOnly: false
                         });
                     } else if (!quiet) {
-                        alert('Cannot save imaging-only results — unreliable ultrasound. Complete clinical analysis to save clinical metrics only.');
+                        alert('Cannot save imaging-only results — unreliable ultrasound. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.');
                     }
                     return Promise.resolve(false);
                 }
 
-                if (!clinicalData) {
-                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis first.');
+                // Allow clinical-only, imaging-only, or both
+                if (!clinicalData && !imagingForSave) {
+                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
                     return Promise.resolve(false);
                 }
 
-                if (!quiet && imagingExcluded) {
+                if (!quiet && imagingExcluded && clinicalData) {
                     const proceed = window.confirm(
                         'Ultrasound image could not be confirmed as a valid pelvic scan.\n\n' +
                         'Save clinical metrics only? (Imaging AI results will be excluded.)'
@@ -5492,7 +5533,7 @@
                 }
 
                 if (combinedProbability === null || !Number.isFinite(combinedProbability)) {
-                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis first.');
+                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
                     return Promise.resolve(false);
                 }
 
@@ -5519,6 +5560,8 @@
                         // Explicitly send null so backend clears Ultrasound_image
                         ultrasoundDataUrl = null;
                     }
+                    const imagingOnly = !clinicalData && !!imagingForSave;
+                    const clinicalOnly = imagingExcluded || (!!clinicalData && !imagingForSave);
                     const payload = {
                         clinical_inputs: clinicalInputs,
                         ultrasound_image: imagingExcluded ? null : ultrasoundDataUrl,
@@ -5534,7 +5577,8 @@
                             overall_diagnosis: overallDiagnosis,
                             overall_probability: parseFloat(combinedProbability.toFixed(2)),
                             imaging_pending: !imagingForSave,
-                            clinical_only: imagingExcluded || !imagingForSave
+                            clinical_only: clinicalOnly,
+                            imaging_only: imagingOnly
                         }
                     };
 
@@ -5588,16 +5632,20 @@
                             if (!quiet) {
                                 if (typeof window.pcodeShowCenterAlert === 'function') {
                                     window.pcodeShowCenterAlert(
-                                        imagingExcluded || !imagingForSave
+                                        imagingExcluded || (!imagingForSave && clinicalData)
                                             ? 'Screening saved (clinical metrics only).'
-                                            : 'Screening saved successfully.',
+                                            : imagingOnly
+                                                ? 'Ultrasound screening saved successfully.'
+                                                : 'Screening saved successfully.',
                                         'success'
                                     );
                                 } else {
                                     alert(
-                                        imagingExcluded || !imagingForSave
+                                        imagingExcluded || (!imagingForSave && clinicalData)
                                             ? 'Screening saved (clinical metrics only). Invalid/unreliable ultrasound was excluded. You can upload a valid scan later and save again.'
-                                            : 'Screening saved. Next time you open Detect, your last record will load automatically.'
+                                            : imagingOnly
+                                                ? 'Ultrasound screening saved. You can add clinical analysis later and save again.'
+                                                : 'Screening saved. Next time you open Detect, your last record will load automatically.'
                                     );
                                 }
                             }
@@ -5834,7 +5882,7 @@
   <script src="js/auth.js?v=20260730-saveload"></script>
     <script src="js/pcode-google-auth.js?v=20260730-nodisclaimer"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
-    <script src="js/pcode-image-crop.js?v=20260731-cropfix"></script>
+    <script src="js/pcode-image-crop.js?v=20260731-capture-tip"></script>
     <script src="js/pcode-user-care.js?v=20260730-nodraftbar"></script>
     <script src="js/pcode-form-guard.js?v=20260710a"></script>
     <script src="js/pcode-diagnosis-guard.js?v=20260710a"></script>
