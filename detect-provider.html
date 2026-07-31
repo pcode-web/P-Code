@@ -10,8 +10,13 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>P-Code - Detection & Prediction</title>
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
     <!-- Local CSS Files (No CDN) -->
-    <link rel="stylesheet" href="css/tailwind.css?v=20260724-cardlock">
+    <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
     <!-- Local Fonts (No CDN) -->
     <link rel="stylesheet" href="fonts/fonts.css">
     <!-- Local JavaScript Libraries -->
@@ -290,7 +295,7 @@
             vertical-align: middle;
         }
 
-        /* Gauge roots — fluid sizing from css/pcode-app-bento-dark.css?v=20260724-cardglow */
+        /* Gauge roots — fluid sizing from css/pcode-app-bento-dark.css?v=20260730-checkfix */
         .gauge-container {
             display: block !important;
             margin: 0 auto;
@@ -613,7 +618,8 @@
             h2 { font-size: 1.125rem !important; }
             p { font-size: 0.9375rem !important; }
             button { min-height: 44px !important; }
-            input, select, textarea { min-height: 44px !important; font-size: 1rem; }
+            input:not([type="checkbox"]):not([type="radio"]), select, textarea { min-height: 44px !important; font-size: 1rem; }
+            input[type="checkbox"], input[type="radio"] { min-height: 0 !important; padding: 0 !important; }
             .detection-grid { grid-template-columns: 1fr !important; }
             .detection-card.pcode-diagnostic-bento { padding: 0.875rem !important; }
             .detection-card .pcode-diagnostic-scroll,
@@ -627,12 +633,12 @@
             h2 { font-size: 1rem !important; }
             p { font-size: 0.875rem !important; }
             button { padding: 0.5rem 1rem !important; font-size: 0.875rem !important; min-height: 48px !important; }
-            input, select, textarea { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
-            input[type="checkbox"] { width: 20px !important; height: 20px !important; }
+            input:not([type="checkbox"]):not([type="radio"]), select, textarea { padding: 0.625rem !important; min-height: 48px !important; font-size: 1rem; }
+            input[type="checkbox"] { width: 20px !important; height: 20px !important; min-height: 0 !important; padding: 0 !important; box-shadow: none !important; }
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260725-svgs">
 <link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260725-svgs">
 <link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
@@ -651,6 +657,7 @@
   <link rel="stylesheet" href="css/pcode-final-diagnosis.css?v=20260724-cardlock">
   <link rel="stylesheet" href="css/pcode-result-meter.css?v=20260724-cardlock">
   <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
+  <link rel="stylesheet" href="css/pcode-image-crop.css?v=20260731-cropfix">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
   <style id="pcode-detect-light-readability">
     html.pcode-app-bento-root:not(.dark) .pcode-hero-title,
@@ -934,16 +941,17 @@
 </head>
 <body class="pcode-app-bento pcode-detect-provider-page min-h-screen h-auto flex flex-col text-zinc-50 antialiased" data-pcode-auth-portal="provider">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/pcode-api.js?v=20260730-apiscan"></script>
-  <script src="js/auth.js?v=20260730-apiscan"></script>
-    <script src="js/pcode-google-auth.js?v=20260730-nqak"></script>
+    <script src="js/pcode-api.js?v=20260731-ml-parity"></script>
+  <script src="js/auth.js?v=20260730-saveload"></script>
+    <script src="js/pcode-google-auth.js?v=20260730-nodisclaimer"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
     <script src="js/pcode-form-guard.js?v=20260710a"></script>
     <script src="js/pcode-diagnosis-guard.js?v=20260710a"></script>
     <script src="js/pcode-diagnostic-severity.js"></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
-    <script src="js/pcode-clinical-validity.js?v=20260723-stepgap2"></script>
+    <script src="js/pcode-clinical-validity.js?v=20260730-clinonly-v2"></script>
     <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
+    <script src="js/pcode-image-crop.js?v=20260731-cropfix"></script>
     <script src="js/pcode-pdf-export-helpers.js?v=20260730-nqak"></script>
     <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
     <!-- Sidebar Overlay -->
@@ -954,13 +962,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Left: Logo -->
-                <div class="flex items-center space-x-2 sm:space-x-6">
-                    <div class="flex-shrink-0">
-                        <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
-                    </div>
-                    <div class="block">
-                        <h1 class="text-xl sm:text-2xl font-bold text-purple-800">P-Code</h1>
-                    </div>
+                <div class="pcode-topnav__brand flex items-center gap-3">
+                    <img src="assets/logo.png" alt="P-Code Logo" class="pcode-nav-logo h-8 w-8 object-contain flex-shrink-0" width="32" height="32" decoding="async">
+                    <h1 class="text-xl sm:text-2xl font-bold text-purple-800">P-Code</h1>
                 </div>
 
                 <!-- Center: Navigation Links (Desktop) -->
@@ -1035,7 +1039,7 @@
             </button>
             <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
                 <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
-                    <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+                    <img src="assets/logo.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
                     <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
                 </div>
                 <div class="pcode-auth-float-hint">
@@ -1071,13 +1075,13 @@
             <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
                 <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
                 <div id="login-form-container" class="pcode-auth-float-signin-body">
-                    <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+                    <img src="assets/logo.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
                     <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
                     <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
                     <div class="pcode-google-oauth-panel">
                         <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
                         <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
-                        <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="provider">Access restricted to authorized institutional email accounts linked with Google Authentication.</p>
+                        <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="provider" hidden aria-hidden="true" style="display:none"></p>
                         <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
                     </div>
                 </div>
@@ -1498,7 +1502,7 @@
                                 </svg>
                                 <p class="text-gray-700 mb-2 font-medium">Upload Transvaginal Ultrasound scan image (or alternate pelvic scan image)</p>
                                 <p class="text-sm text-gray-600">Supports JPG, PNG formats. Maximum file size 10MB.</p>
-                                <input type="file" id="image-upload-ultrasound" accept="image/*" capture="environment" class="hidden">
+                                <input type="file" id="image-upload-ultrasound" accept="image/*" class="hidden">
                                 <div class="pcode-dropzone-actions">
                                     <button type="button" onclick="document.getElementById('image-upload-ultrasound').click()" class="pcode-btn-density btn-blue-glass">
                                         Choose File
@@ -1513,6 +1517,9 @@
                                 <div class="relative w-full max-w-full mx-auto">
                                     <img id="preview-img-ultrasound" src="" alt="Ultrasound Preview" class="w-full max-w-full rounded-lg shadow-lg">
                                 </div>
+                                <button type="button" id="edit-ultrasound-btn" onclick="editUltrasoundImage()" class="pcode-ultrasound-edit-btn pcode-btn-density btn-ghost-glass w-full sm:w-auto">
+                                    Edit / crop image
+                                </button>
                             </div>
                         </div>
                         <div id="clinical-note-ultrasound-modality-upload" class="clinical-note-badge clinical-note-badge--primary-modality" role="note">Primary Modality: Transvaginal Ultrasound (TVUS) scans are highly preferred for optimal follicle boundary detection and classification by our imaging AI model. Transabdominal/Pelvic scan inputs are permitted but may result in diminished feature extraction resolution.</div>
@@ -1689,13 +1696,78 @@
         let uploadedImages = {
             ultrasound: null
         };
+        let __ultrasoundCameraIntent = false;
 
         function openCamera(inputId) {
             const input = document.getElementById(inputId);
             if (!input) return;
+            __ultrasoundCameraIntent = true;
             input.setAttribute('accept', 'image/*');
             input.setAttribute('capture', 'environment');
+            const clearCapture = () => {
+                try { input.removeAttribute('capture'); } catch (_) {}
+            };
+            input.addEventListener('change', clearCapture, { once: true });
+            setTimeout(clearCapture, 3000);
             input.click();
+        }
+
+        function applyUltrasoundImageResult(file, dataUrl) {
+            uploadedImages = uploadedImages || { ultrasound: null };
+            uploadedImages.ultrasound = file || dataUrl;
+            window.__pendingClearUltrasound = false;
+            const previewImg = document.getElementById('preview-img-ultrasound');
+            if (previewImg) previewImg.src = dataUrl;
+            if (typeof setUltrasoundDropzonePreview === 'function') {
+                setUltrasoundDropzonePreview(true);
+            } else {
+                const empty = document.getElementById('upload-area-ultrasound-empty');
+                const preview = document.getElementById('image-preview-ultrasound');
+                if (empty) empty.classList.add('hidden');
+                if (preview) preview.classList.remove('hidden');
+            }
+            if (typeof updateAnalyzeButtonVisibility === 'function') updateAnalyzeButtonVisibility();
+        }
+
+        function openUltrasoundCropEditor(fileOrSrc) {
+            const api = window.PcodeImageCrop;
+            const input = document.getElementById('image-upload-ultrasound');
+            if (!api) {
+                if (fileOrSrc instanceof Blob) handleFileUploadDirect(fileOrSrc, 'ultrasound');
+                return Promise.resolve();
+            }
+            const openP = fileOrSrc instanceof Blob
+                ? api.openFromFile(fileOrSrc)
+                : api.open({ imageSrc: fileOrSrc });
+            return openP.then(function (result) {
+                applyUltrasoundImageResult(result.file || null, result.dataUrl);
+                if (input) input.value = '';
+            }).catch(function () {
+                if (input) input.value = '';
+            });
+        }
+
+        function editUltrasoundImage() {
+            const current = uploadedImages && uploadedImages.ultrasound;
+            const previewImg = document.getElementById('preview-img-ultrasound');
+            const src = previewImg && previewImg.src;
+            if (current instanceof Blob) {
+                openUltrasoundCropEditor(current);
+            } else if (typeof current === 'string' && current) {
+                openUltrasoundCropEditor(current);
+            } else if (src) {
+                openUltrasoundCropEditor(src);
+            }
+        }
+
+        function handleFileUploadDirect(file, side) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (side === 'ultrasound') {
+                    applyUltrasoundImageResult(file, e.target.result);
+                }
+            };
+            reader.readAsDataURL(file);
         }
         let allPatients = []; // Store all patients for lookup
         
@@ -1704,6 +1776,25 @@
         let imagingAnalysisInProgress = false;
         let clinicalResultsPending = false;
         let imagingResultsPending = false;
+        // Keep "Analyzing…" visible briefly even when warm TFLite returns in ~1–2s
+        const PCODE_IMAGING_MIN_ANALYZE_MS = 3000;
+        let __pcodeImagingAnalyzeStartedAt = 0;
+
+        function beginImagingAnalyzeTiming() {
+            __pcodeImagingAnalyzeStartedAt = Date.now();
+        }
+
+        function afterMinImagingAnalyze(fn) {
+            const started = __pcodeImagingAnalyzeStartedAt || Date.now();
+            const remain = Math.max(0, PCODE_IMAGING_MIN_ANALYZE_MS - (Date.now() - started));
+            if (remain <= 0) {
+                try { fn(); } catch (err) { console.error(err); }
+                return;
+            }
+            setTimeout(function () {
+                try { fn(); } catch (err) { console.error(err); }
+            }, remain);
+        }
         let analysisResultsRevealed = false;
 
         function revealAnalysisResultsPanel() {
@@ -1939,7 +2030,11 @@
             }
             
             // **NORMAL FLOW**: Fetch from API for logged-in providers
-            const apiPath = 'api/get_patients.php';
+            const apiPath = (typeof pcodeApiUrl === 'function')
+                ? pcodeApiUrl('api/get_patients.php')
+                : ((typeof auth !== 'undefined' && auth && typeof auth.resolveApiUrl === 'function')
+                    ? auth.resolveApiUrl('get_patients.php')
+                    : 'https://p-code-nqak.onrender.com/api/get_patients');
             console.log('Fetching patients from:', apiPath);
             
             fetch(apiPath, {
@@ -1955,7 +2050,13 @@
                     console.log('Response headers:', response.headers.get('content-type'));
                     if (!response.ok) {
                         return response.text().then(text => {
-                            throw new Error('HTTP error ' + response.status + ': ' + text);
+                            const ct = (response.headers.get('content-type') || '').toLowerCase();
+                            const isHtml = ct.includes('text/html') || /^\s*<!doctype|^\s*<html/i.test(text || '');
+                            throw new Error(
+                                isHtml
+                                    ? ('HTTP ' + response.status + ' — patient API unreachable (check Render)')
+                                    : ('HTTP error ' + response.status + ': ' + String(text || '').slice(0, 120))
+                            );
                         });
                     }
                     return response.json().catch(err => {
@@ -2541,26 +2642,16 @@
 
         function handleFileUpload(file, side) {
             console.log(`handleFileUpload() called for side: ${side}`, file);
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    console.log(`FileReader loaded for ${side}, setting uploadedImages.${side}`);
-                    uploadedImages[side] = file;
-                    console.log('uploadedImages state:', uploadedImages);
-                    
-                    if (side === 'ultrasound') {
-                        document.getElementById('preview-img-ultrasound').src = e.target.result;
-                        setUltrasoundDropzonePreview(true);
-                        // Provider page: no remove (X) button
-                    }
-                    
-                    console.log('About to call updateAnalyzeButtonVisibility()');
-                    updateAnalyzeButtonVisibility();
-                };
-                reader.readAsDataURL(file);
-            } else {
+            if (!file || !file.type || !file.type.startsWith('image/')) {
                 alert('Please upload a valid image file.');
+                return;
             }
+            if (side === 'ultrasound' && __ultrasoundCameraIntent) {
+                __ultrasoundCameraIntent = false;
+                openUltrasoundCropEditor(file);
+                return;
+            }
+            handleFileUploadDirect(file, side);
         }
 
         function updateAnalyzeButtonVisibility() {
@@ -3573,20 +3664,24 @@
                 }
             }
 
-            // Send to XGBoost prediction API
+            // Match local hosting calibration (Keras defaults): CNN 0.90, XGB 1.0
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
-            // Regular Users: stronger smoothing (less extreme probabilities)
-            const xgbSmoothingFactor = isRegularUser ? 0.70 : null;
-            fetch('https://p-code-nqak.onrender.com/predict-xgboost', {
+            const xgbSmoothingFactor = (typeof pcodeXgbSmoothingFactor === 'function')
+                ? pcodeXgbSmoothingFactor()
+                : 1.0;
+            const xgbUrl = (typeof pcodeMlUrl === 'function')
+                ? pcodeMlUrl('xgboost')
+                : 'https://p-code-nqak.onrender.com/predict-xgboost';
+            fetch(xgbUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     ...clinicalDataForModel,
-                    ...(xgbSmoothingFactor ? { smoothing_factor: xgbSmoothingFactor } : {})
+                    smoothing_factor: xgbSmoothingFactor
                 })
             })
             .then(response => response.json())
@@ -3919,16 +4014,20 @@
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
-            // Regular Users: stronger smoothing for more conservative, less extreme probabilities
-            const smoothingFactor = isRegularUser ? 0.80 : null;
+            // Match local Keras cnn_predict default smoothing (0.90)
+            const smoothingFactor = (typeof pcodeCnnSmoothingFactor === 'function')
+                ? pcodeCnnSmoothingFactor()
+                : 0.90;
             const cnnPayload = {
                 image: imageBase64,
-                generate_gradcam: false
+                generate_gradcam: false,
+                apply_smoothing: true,
+                smoothing_factor: smoothingFactor
             };
-            if (smoothingFactor) {
-                cnnPayload.smoothing_factor = smoothingFactor;
-            }
-            fetch('https://p-code-nqak.onrender.com/predict-cnn', {
+            const cnnUrlParallel = (typeof pcodeMlUrl === 'function')
+                ? pcodeMlUrl('cnn')
+                : 'https://p-code-nqak.onrender.com/predict-cnn';
+            fetch(cnnUrlParallel, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4037,6 +4136,7 @@
             // Mark imaging analysis as in progress
             imagingAnalysisInProgress = true;
             imagingResultsPending = true;
+            beginImagingAnalyzeTiming();
             updateGaugeCardVisibility();
             refreshAnalysisLoadingStates();
 
@@ -4066,20 +4166,23 @@
         }
 
         function sendImageToAnalysis(imageBase64, button, originalHTML) {
-            // Send to CNN prediction API (Render Flask)
+            // CNN prediction — same calibration as local Keras path (TFLite on Render)
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
-            // Regular Users: stronger smoothing for more conservative, less extreme probabilities
-            const smoothingFactor = isRegularUser ? 0.80 : null;
+            const smoothingFactor = (typeof pcodeCnnSmoothingFactor === 'function')
+                ? pcodeCnnSmoothingFactor()
+                : 0.90;
             const cnnPayload = {
                 image: imageBase64,
-                generate_gradcam: false
+                generate_gradcam: false,
+                apply_smoothing: true,
+                smoothing_factor: smoothingFactor
             };
-            if (smoothingFactor) {
-                cnnPayload.smoothing_factor = smoothingFactor;
-            }
-            fetch('https://p-code-nqak.onrender.com/predict-cnn', {
+            const cnnUrl = (typeof pcodeMlUrl === 'function')
+                ? pcodeMlUrl('cnn')
+                : 'https://p-code-nqak.onrender.com/predict-cnn';
+            fetch(cnnUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4097,6 +4200,7 @@
                 });
             })
             .then(({ status, ok, text }) => {
+                afterMinImagingAnalyze(function () {
                 // Try to parse as JSON
                 let result;
                 try {
@@ -4192,8 +4296,10 @@
                     refreshAnalysisLoadingStates();
                     if (clinicalData) checkCombinedResults();
                 }
+                });
             })
             .catch(error => {
+                afterMinImagingAnalyze(function () {
                 imagingAnalysisInProgress = false;
                 imagingResultsPending = false;
                 updateGaugeCardVisibility();
@@ -4207,6 +4313,7 @@
                 alert('Error analyzing image: ' + error.message + '\n\nCheck browser console for details.');
                 console.error('Fetch error:', error);
                 if (clinicalData) checkCombinedResults();
+                });
             });
         }
 
@@ -4363,19 +4470,40 @@
         }
         
 
+        function imagingIsUnreliableForSave(data) {
+            if (!data) return false;
+            if (window.PcodeClinicalValidity && window.PcodeClinicalValidity.imagingIsUnreliable) {
+                return !!window.PcodeClinicalValidity.imagingIsUnreliable(data);
+            }
+            return data.reliable === false;
+        }
+
+        /** Prefer eligible imaging for save; if ultrasound is pending/unreliable, keep clinical-only. */
+        function resolveImagingDataForSave() {
+            if (!imagingData) return null;
+            if (imagingIsUnreliableForSave(imagingData)) return null;
+            if (typeof imagingEligibleForFinalDiagnosis === 'function' && !imagingEligibleForFinalDiagnosis(imagingData)) {
+                return null;
+            }
+            return imagingData;
+        }
+
         function syncSaveButtonForImagingReliability() {
             const saveBtn = document.getElementById('save-record-btn');
             if (!saveBtn) return;
+            // Allow saving clinical results even when ultrasound is pending or unreliable.
             const blocked = !!(
-                imagingData &&
-                window.PcodeClinicalValidity &&
-                window.PcodeClinicalValidity.imagingIsUnreliable &&
-                window.PcodeClinicalValidity.imagingIsUnreliable(imagingData)
+                imagingIsUnreliableForSave(imagingData) &&
+                !clinicalData
             );
             saveBtn.disabled = blocked;
             saveBtn.setAttribute('aria-disabled', blocked ? 'true' : 'false');
             if (blocked) {
-                saveBtn.title = 'Cannot save while the ultrasound image is unreliable. Upload a valid pelvic ultrasound and re-analyze.';
+                saveBtn.title = 'Imaging-only save blocked — ultrasound is unreliable. Complete clinical analysis to save clinical metrics only.';
+            } else if (clinicalData && imagingIsUnreliableForSave(imagingData)) {
+                saveBtn.title = 'Ultrasound invalid/unreliable — Save will store clinical metrics only (imaging excluded).';
+            } else if (clinicalData && !imagingData) {
+                saveBtn.title = 'Ultrasound not analyzed yet — Save will store clinical analysis only.';
             } else {
                 saveBtn.removeAttribute('title');
             }
@@ -4815,8 +4943,58 @@
             }
         }
 
+        function setSaveRecordLoading(isLoading, options = {}) {
+            const quiet = !!options.quiet;
+            const btn = document.getElementById('save-record-btn');
+            const label = options.label || 'Saving results…';
+            if (btn) {
+                if (isLoading) {
+                    if (!btn.dataset.saveLabelHtml) {
+                        btn.dataset.saveLabelHtml = btn.innerHTML;
+                    }
+                    btn.disabled = true;
+                    btn.setAttribute('aria-busy', 'true');
+                    btn.classList.add('is-saving');
+                    const spinner =
+                        (typeof window.pcodeDualRingSpinnerMarkup === 'function')
+                            ? window.pcodeDualRingSpinnerMarkup(20)
+                            : '';
+                    btn.innerHTML =
+                        '<span class="inline-flex items-center justify-center gap-2">' +
+                        '<span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true">' +
+                        (spinner || '<img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" />') +
+                        '</span>' +
+                        '<span class="font-semibold">' + label + '</span></span>';
+                } else {
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                    btn.classList.remove('is-saving');
+                    if (btn.dataset.saveLabelHtml) {
+                        btn.innerHTML = btn.dataset.saveLabelHtml;
+                    }
+                    if (typeof syncSaveButtonForImagingReliability === 'function') {
+                        syncSaveButtonForImagingReliability();
+                    }
+                }
+            }
+            if (quiet) return;
+            if (isLoading) {
+                if (typeof window.pcodeShowCenterAlert === 'function') {
+                    window.pcodeShowCenterAlert(label, 'loading', {
+                        persist: true,
+                        subtitle: 'Please wait while your results are saved.'
+                    });
+                }
+            } else if (typeof window.pcodeDismissCenterAlert === 'function') {
+                window.pcodeDismissCenterAlert();
+            }
+        }
+
         function saveToPatientRecord(options = {}) {
             const quiet = !!options.quiet;
+            if (window.__pcodeSaveInFlight) {
+                return Promise.resolve(false);
+            }
             // Check if we have at least one analysis (clinical or imaging)
             if (!clinicalData && !imagingData) {
                 if (!quiet) alert('Please complete at least one analysis (clinical or imaging data) before saving.');
@@ -4867,15 +5045,34 @@
                 return Promise.resolve(false);
             }
 
-            if (imagingData && window.PcodeClinicalValidity && window.PcodeClinicalValidity.assertImagingReliableForSave) {
-                if (!window.PcodeClinicalValidity.assertImagingReliableForSave(imagingData, { quiet: quiet })) {
-                    return Promise.resolve(false);
-                }
-            } else if (imagingData && imagingData.reliable === false) {
-                if (!quiet) {
-                    alert('Save blocked — unreliable ultrasound image. Please upload a valid pelvic ultrasound and re-run imaging analysis.');
+            const imagingForSave = resolveImagingDataForSave();
+            const imagingExcluded = !!imagingData && !imagingForSave;
+
+            // Only hard-block when imaging is unreliable AND there is no clinical result to save.
+            if (!clinicalData && imagingData && imagingIsUnreliableForSave(imagingData)) {
+                if (window.PcodeClinicalValidity && window.PcodeClinicalValidity.assertImagingReliableForSave) {
+                    window.PcodeClinicalValidity.assertImagingReliableForSave(imagingData, {
+                        quiet: quiet,
+                        hasClinical: false,
+                        allowClinicalOnly: false
+                    });
+                } else if (!quiet) {
+                    alert('Cannot save imaging-only results — unreliable ultrasound. Complete clinical analysis to save clinical metrics only.');
                 }
                 return Promise.resolve(false);
+            }
+
+            if (!clinicalData && !imagingForSave) {
+                if (!quiet) alert('Nothing to save yet. Complete clinical analysis first.');
+                return Promise.resolve(false);
+            }
+
+            if (!quiet && imagingExcluded && clinicalData) {
+                const proceed = window.confirm(
+                    'Ultrasound image could not be confirmed as a valid pelvic scan.\n\n' +
+                    'Save clinical metrics only for this patient? (Imaging AI results will be excluded.)'
+                );
+                if (!proceed) return Promise.resolve(false);
             }
 
             const patientSelectValue = patientSelect.value;
@@ -4891,23 +5088,20 @@
                 return 1;
             };
             const clinicalDiagnosis = clinicalData ? probToCode(clinicalData.probability) : null;
-            const imagingDiagnosis = imagingData ? probToCode(imagingData.probability) : null;
+            const imagingDiagnosis = imagingForSave ? probToCode(imagingForSave.probability) : null;
             
-            // Combined probability - handle cases where only one is available
+            // Combined probability - clinical-only when ultrasound is pending/unreliable
             let combinedProbability, overallDiagnosis;
-            if (clinicalData && imagingData) {
-                // Both available - use weighted combination
+            if (clinicalData && imagingForSave) {
                 const clinicalWeight = 0.5;
                 const imagingWeight = 0.5;
-                combinedProbability = (clinicalData.probability * clinicalWeight + imagingData.probability * imagingWeight);
+                combinedProbability = (clinicalData.probability * clinicalWeight + imagingForSave.probability * imagingWeight);
                 overallDiagnosis = probToCode(combinedProbability);
             } else if (clinicalData) {
-                // Only clinical data available
                 combinedProbability = clinicalData.probability;
                 overallDiagnosis = clinicalDiagnosis;
             } else {
-                // Only imaging data available
-                combinedProbability = imagingData.probability;
+                combinedProbability = imagingForSave.probability;
                 overallDiagnosis = imagingDiagnosis;
             }
 
@@ -5034,10 +5228,10 @@
                 saveData.xgboost_probability = parseFloat(clinicalData.probability.toFixed(2));
             }
             
-            // Add imaging diagnosis if available
-            if (imagingData) {
+            // Add imaging diagnosis if available (skip pending/unreliable ultrasound)
+            if (imagingForSave) {
                 saveData.cnn_diagnosis = imagingDiagnosis;
-                saveData.cnn_probability = parseFloat(imagingData.probability.toFixed(2));
+                saveData.cnn_probability = parseFloat(imagingForSave.probability.toFixed(2));
             }
             
             // Add overall diagnosis and probability if available
@@ -5048,10 +5242,10 @@
             
             // If only one algorithm is being saved, clear the old data from the other algorithm
             // This ensures that when a new analysis is done with partial data, the old data doesn't persist
-            if (clinicalData && !imagingData) {
+            if (clinicalData && !imagingForSave) {
                 saveData.clear_old_cnn = true;
                 console.log('[SAVE] Only clinical data - will clear old imaging data');
-            } else if (imagingData && !clinicalData) {
+            } else if (imagingForSave && !clinicalData) {
                 saveData.clear_old_xgboost = true;
                 console.log('[SAVE] Only imaging data - will clear old clinical data');
             }
@@ -5060,6 +5254,8 @@
 
             // 1) Update patient clinical parameters record (patient_diagnosis_parameters)
             // 2) Save diagnosis results record (patient_diagnosis_results)
+            window.__pcodeSaveInFlight = true;
+            setSaveRecordLoading(true, { quiet: quiet, label: 'Saving results…' });
             return (async () => {
                 const clinicalInputsForDb = buildClinicalInputsForDb();
                 const ultrasoundDataUrl = await getUltrasoundDataUrlAsync();
@@ -5073,8 +5269,8 @@
                     patient_id: patientId,
                     patient_name: patientName, // optional; backend preserves personal info when empty
                     ...clinicalInputsForDb,
-                    // save_patient.php expects `Ultrasound_image`
-                    ...(ultrasoundDataUrl ? { Ultrasound_image: ultrasoundDataUrl } : {})
+                    // save_patient.php expects `Ultrasound_image` — omit invalid/unreliable scans
+                    ...((ultrasoundDataUrl && !imagingExcluded) ? { Ultrasound_image: ultrasoundDataUrl } : {})
                 };
 
                 try {
@@ -5093,7 +5289,9 @@
                     }
                 } catch (e) {
                     console.error('[SAVE] Failed to update patient parameters:', e);
-                    alert(`? Failed to save patient parameters:\n${e.message}`);
+                    window.__pcodeSaveInFlight = false;
+                    setSaveRecordLoading(false, { quiet: quiet });
+                    alert(`Failed to save patient parameters:\n${e.message}`);
                     return false;
                 }
 
@@ -5127,22 +5325,41 @@
                     console.log('[SAVE] Response data:', data);
 
                     if (data && data.success) {
-                        console.log('[SAVE] ? SUCCESS - Diagnosis ID:', data.diagnosis_id);
+                        console.log('[SAVE] SUCCESS - Diagnosis ID:', data.diagnosis_id);
                         if (window.clinicalFormAutosave) window.clinicalFormAutosave.clearDraft();
                         if (window.clinicalFormGuard) window.clinicalFormGuard.notifySaved('Results saved to database');
+                        window.__pcodeSaveInFlight = false;
+                        setSaveRecordLoading(false, { quiet: quiet });
                         if (!quiet) {
-                            alert(`? Analysis results saved successfully!\n\nDiagnosis ID: ${data.diagnosis_id}\n\nUse “View XAI Insights” when you want the explainable AI breakdown.`);
+                            if (typeof window.pcodeShowCenterAlert === 'function') {
+                                window.pcodeShowCenterAlert(
+                                    imagingExcluded
+                                        ? `Analysis saved (clinical metrics only). Diagnosis ID: ${data.diagnosis_id}`
+                                        : `Analysis results saved successfully. Diagnosis ID: ${data.diagnosis_id}`,
+                                    'success'
+                                );
+                            } else {
+                                alert(
+                                    imagingExcluded
+                                        ? `Analysis saved (clinical metrics only).\n\nDiagnosis ID: ${data.diagnosis_id}\n\nInvalid/unreliable ultrasound was excluded from this save.`
+                                        : `Analysis results saved successfully!\n\nDiagnosis ID: ${data.diagnosis_id}\n\nUse “View XAI Insights” when you want the explainable AI breakdown.`
+                                );
+                            }
                         }
                         return true;
                     }
 
-                    console.error('[SAVE] ? FAILED - Server response:', data);
-                    alert(`? Failed to save: ${data?.error || data?.message || 'Unknown error'}`);
+                    console.error('[SAVE] FAILED - Server response:', data);
+                    window.__pcodeSaveInFlight = false;
+                    setSaveRecordLoading(false, { quiet: quiet });
+                    alert(`Failed to save: ${data?.error || data?.message || 'Unknown error'}`);
                     return false;
                 } catch (error) {
-                    console.error('[SAVE] ? EXCEPTION - Error saving results:', error);
+                    console.error('[SAVE] EXCEPTION - Error saving results:', error);
                     console.error('[SAVE] Error message:', error.message);
-                    alert(`? Error saving results:\n${error.message}\n\nPlease check the console (F12) for more details.`);
+                    window.__pcodeSaveInFlight = false;
+                    setSaveRecordLoading(false, { quiet: quiet });
+                    alert(`Error saving results:\n${error.message}\n\nPlease check the console (F12) for more details.`);
                     return false;
                 }
             })();

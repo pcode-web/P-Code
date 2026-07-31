@@ -779,7 +779,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/pcode-api.js?v=20260730-apiscan"></script>
+  <script src="js/pcode-api.js?v=20260731-ml-parity"></script>
   <script src="js/auth.js?v=20260730-home-redirect"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
@@ -1594,10 +1594,17 @@
         patient_id: patientData.patient_id
       };
       
+      const xgbUrl = (typeof pcodeMlUrl === 'function')
+        ? pcodeMlUrl('xgboost')
+        : 'https://p-code-nqak.onrender.com/predict-xgboost';
+      // Raw model contributions for XAI (same as local default smoothing_factor=1.0)
+      predictionData.smoothing_factor = (typeof pcodeXgbSmoothingFactor === 'function')
+        ? pcodeXgbSmoothingFactor()
+        : 1.0;
       console.log('Fetching XGBoost SHAP explanation with data:', predictionData);
 
       // Call XGBoost prediction API for SHAP explanations
-      fetch('https://p-code-nqak.onrender.com/predict-xgboost', {
+      fetch(xgbUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(predictionData)

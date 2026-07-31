@@ -471,15 +471,16 @@ def _to_percentage(
 
 
 def _classify(percentage: float) -> dict:
+    """Match cnn_predict.classify_result bands (Negative ≤54, Borderline ≤74, Positive ≥75)."""
     p = float(percentage)
-    if p <= 49:
+    if p <= 54.0:
         return {
             "classification": "Negative",
             "description": "PCOS not detected in image",
             "reliable": True,
             "threshold_pct": 75.0,
         }
-    if p <= 74:
+    if p <= 74.0:
         return {
             "classification": "Borderline",
             "description": "Intermediate PCOS imaging signal",
@@ -542,6 +543,13 @@ def build_api_result(
         "smoothing_factor": float(smoothing_factor) if apply_smoothing else None,
         "model": model_name,
         "backend": "tflite",
+        "parity": {
+            "classification_bands": "keras_cnn_predict",
+            "negative_max_pct": 54.0,
+            "borderline_max_pct": 74.0,
+            "positive_min_pct": 75.0,
+            "default_smoothing_factor": 0.90,
+        },
         "raw_output": raw_output or [],
         "classification_threshold_pct": 75.0,
     }

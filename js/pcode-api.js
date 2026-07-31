@@ -6,11 +6,21 @@
   "use strict";
 
   var RENDER_API = "https://p-code-nqak.onrender.com/api/";
+  var RENDER_ML = "https://p-code-nqak.onrender.com";
 
   function isFirebaseHost() {
     try {
       var host = String(global.location && global.location.hostname || "");
       return /\.web\.app$/i.test(host) || /\.firebaseapp\.com$/i.test(host);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isLocalHost() {
+    try {
+      var host = String(global.location && global.location.hostname || "");
+      return host === "localhost" || host === "127.0.0.1" || host === "";
     } catch (_) {
       return false;
     }
@@ -112,7 +122,38 @@
     return global.fetch(url, init);
   }
 
+  /**
+   * ML inference endpoints (CNN / XGBoost).
+   * - Local XAMPP: PHP wrappers (Keras CNN + XGBoost)
+   * - Firebase / production: Render Flask (TFLite CNN + XGBoost)
+   */
+  function pcodeMlUrl(kind) {
+    var k = String(kind || "").toLowerCase();
+    if (isFirebaseHost() || (!isLocalHost() && /onrender\.com/i.test(String(resolveBase())))) {
+      if (k === "cnn" || k === "predict-cnn") return RENDER_ML + "/predict-cnn";
+      if (k === "xgboost" || k === "xgb" || k === "predict-xgboost") return RENDER_ML + "/predict-xgboost";
+      if (k === "gradcam" || k === "predict-cnn-gradcam") return RENDER_ML + "/predict-cnn-gradcam";
+    }
+    if (k === "cnn" || k === "predict-cnn") return "./api/predict_cnn.php";
+    if (k === "xgboost" || k === "xgb" || k === "predict-xgboost") return "./api/predict_xgboost.php";
+    if (k === "gradcam" || k === "predict-cnn-gradcam") return "./api/predict_cnn_gradcam.php";
+    return RENDER_ML + "/predict-cnn";
+  }
+
+  /** Match local Keras cnn_predict defaults (no extra community compression). */
+  function pcodeCnnSmoothingFactor() {
+    return 0.90;
+  }
+
+  /** Match local XGBoost default (no threshold-aware community pull). */
+  function pcodeXgbSmoothingFactor() {
+    return 1.0;
+  }
+
   global.PCODE_API_BASE = RENDER_API;
   global.pcodeApiUrl = pcodeApiUrl;
   global.pcodeFetch = pcodeFetch;
+  global.pcodeMlUrl = pcodeMlUrl;
+  global.pcodeCnnSmoothingFactor = pcodeCnnSmoothingFactor;
+  global.pcodeXgbSmoothingFactor = pcodeXgbSmoothingFactor;
 })(typeof window !== "undefined" ? window : this);

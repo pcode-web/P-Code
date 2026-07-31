@@ -3256,7 +3256,7 @@ def _run_cnn_inference(
     smoothing_factor: float = 0.90,
     user_mode: str = "",
 ) -> dict[str, Any]:
-    """Hosted CNN path: always use pcos_detection_modelv4.tflite (low RAM)."""
+    """Hosted CNN path: TFLite inference with Keras-parity postprocess (bands + smoothing)."""
     if not CNN_TFLITE_PATH.is_file():
         return {
             "success": False,
@@ -3271,11 +3271,18 @@ def _run_cnn_inference(
         logger.exception("CNN TFLite module failed to load")
         return {"success": False, "error": f"CNN TFLite runtime unavailable: {exc}"}
 
+    # Default smoothing matches local cnn_predict (0.90)
+    try:
+        sf = float(smoothing_factor)
+    except (TypeError, ValueError):
+        sf = 0.90
+    sf = max(0.50, min(0.95, sf))
+
     return tfl.predict_pcos_bytes(
         image_bytes,
         tflite_path=str(CNN_TFLITE_PATH),
         apply_smoothing=apply_smoothing,
-        smoothing_factor=smoothing_factor,
+        smoothing_factor=sf,
         generate_gradcam=generate_gradcam,
         user_mode=user_mode,
     )
