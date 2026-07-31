@@ -519,6 +519,11 @@ def health_alias():
 @app.get("/api/health")
 def api_health():
     """Verify Flask process + Clever Cloud MySQL connectivity."""
+    xgb_rev = None
+    try:
+        xgb_rev = getattr(_load_xgb(), "XGB_RUNTIME_REVISION", None)
+    except Exception:  # noqa: BLE001
+        xgb_rev = None
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
@@ -526,7 +531,14 @@ def api_health():
                 row = cur.fetchone()
         if not row or int(row.get("ok", 0)) != 1:
             return _json_error("Database ping failed", 500, status="degraded", database="error")
-        return jsonify({"status": "online", "database": "connected", "success": True}), 200
+        return jsonify(
+            {
+                "status": "online",
+                "database": "connected",
+                "success": True,
+                "xgb_runtime_revision": xgb_rev,
+            }
+        ), 200
     except Exception as exc:  # noqa: BLE001
         logger.exception("Health check DB failure")
         return (
@@ -536,6 +548,7 @@ def api_health():
                     "status": "degraded",
                     "database": "disconnected",
                     "error": str(exc),
+                    "xgb_runtime_revision": xgb_rev,
                 }
             ),
             500,
@@ -1481,6 +1494,9 @@ def api_get_patients_list():
                         val = params.get(field)
                         if field == "Ultrasound_image":
                             formatted[field] = _format_ultrasound(val)
+                            # Frontend XAI checks both casings
+                            formatted["ultrasound_image"] = formatted[field]
+                            formatted["medical_image"] = formatted[field]
                         else:
                             formatted[field] = _serialize_value(val)
 
@@ -3726,6 +3742,23 @@ def predict_xgboost():
     except Exception as exc:  # noqa: BLE001
         logger.exception("XGBoost module failed to load")
         return _json_error(f"XGBoost model runtime unavailable: {exc}", 503)
+
+    # Pre-sanitize string numerics (e.g. "[7.31835E-1]") before model prepare
+    coerce_fn = getattr(xgb, "coerce_scalar_numeric", None)
+    if callable(coerce_fn):
+        for key, val in list(clinical.items()):
+            if isinstance(val, str) and key not in ("Blood_Group", "blood_group", "name", "patient_name"):
+                coerced = coerce_fn(val)
+                try:
+                    import math
+
+                    is_nan = isinstance(coerced, float) and math.isnan(coerced)
+                except Exception:  # noqa: BLE001
+                    is_nan = False
+                if coerced is not None and not is_nan:
+                    clinical[key] = coerced
+                elif is_nan and val.strip().lower() in ("", "nan", "null", "none"):
+                    clinical[key] = None
 
     result = xgb.predict(
         clinical,

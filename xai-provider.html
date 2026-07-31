@@ -362,8 +362,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-3xl font-bold text-gray-800">AI Heatmap Image Interpretation</h2>
-            <p class="text-lg text-gray-600">Regions contributing most to the AI model output</p>
+            <h2 class="text-3xl font-bold text-gray-800">EigenCAM Image Interpretation</h2>
+            <p class="text-lg text-gray-600">Ultrasound regions contributing most to the imaging model (EigenCAM)</p>
           </div>
         </div>
 
@@ -539,7 +539,15 @@
       const clinical = transformClinicalInputsForXAI(entry.clinical_inputs || entry.frozen_parameters || {});
       const diagnosisMap = { 0: 'negative', 1: 'positive', 2: 'borderline' };
       const overallDiagnosis = entry.status_code || diagnosisMap[entry.overall_diagnosis] || 'pending';
-      const ultrasoundImage = entry.ultrasound_image || clinical.Ultrasound_image || clinical.ultrasound_image || patient.ultrasound_image || null;
+      const ultrasoundImage =
+        entry.ultrasound_image ||
+        entry.Ultrasound_image ||
+        clinical.Ultrasound_image ||
+        clinical.ultrasound_image ||
+        patient.ultrasound_image ||
+        patient.Ultrasound_image ||
+        patient.medical_image ||
+        null;
 
       return {
         ...patient,
@@ -555,6 +563,7 @@
         cnn_diagnosis: entry.cnn_diagnosis,
         ultrasound_image: ultrasoundImage,
         Ultrasound_image: ultrasoundImage,
+        medical_image: ultrasoundImage || patient.medical_image || null,
         diagnosis_id: entry.diagnosis_id,
         screening_id: entry.screening_id,
         history_created_at: entry.created_at_display || entry.created_at,
@@ -562,6 +571,53 @@
         history_source: entry.source,
         _history_entry: entry
       };
+    }
+
+    async function ensurePatientUltrasound(patient) {
+      if (!patient || typeof patient !== 'object') return patient;
+      const existing =
+        patient.ultrasound_image ||
+        patient.Ultrasound_image ||
+        patient.medical_image ||
+        null;
+      if (existing) {
+        patient.ultrasound_image = existing;
+        patient.Ultrasound_image = existing;
+        return patient;
+      }
+      const numericId = resolveNumericPatientId(patient);
+      if (!numericId) return patient;
+      const token = getAuthToken();
+      try {
+        const url = (typeof pcodeApiUrl === 'function')
+          ? pcodeApiUrl(`api/get_patient.php?id=${numericId}`)
+          : `https://p-code-nqak.onrender.com/api/get_patient.php?id=${numericId}`;
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            Authorization: token ? ('Bearer ' + token) : ''
+          }
+        });
+        const payload = await resp.json().catch(() => null);
+        const data = payload?.data || payload || {};
+        const us =
+          data.Ultrasound_image ||
+          data.ultrasound_image ||
+          data.medical_image ||
+          null;
+        if (us) {
+          patient.ultrasound_image = us;
+          patient.Ultrasound_image = us;
+          patient.medical_image = us;
+          console.log('[XAI] Enriched ultrasound from get_patient for EigenCAM');
+        } else {
+          console.warn('[XAI] get_patient returned no ultrasound image');
+        }
+      } catch (e) {
+        console.warn('[XAI] Ultrasound enrich failed:', e);
+      }
+      return patient;
     }
 
     function updateScreeningHint(message, isError) {
@@ -1053,6 +1109,7 @@
       }
       
       const selectedPatientForXai = buildPatientPayloadFromHistory(selectedPatient, historyEntry);
+      await ensurePatientUltrasound(selectedPatientForXai);
       const screeningContext = document.getElementById('xai-screening-context');
       if (screeningContext) {
         const origin = selectedPatientForXai.history_origin_label || 'Screening';
@@ -1547,7 +1604,7 @@
       const hasUltrasoundImage = (() => {
         try {
           const p = currentPatient;
-          return !!(p && (p.ultrasound_image || p.Ultrasound_image));
+          return !!(p && (p.ultrasound_image || p.Ultrasound_image || p.medical_image));
         } catch (_) {
           return false;
         }
@@ -1695,12 +1752,15 @@
         xgboostCard.style.display = (features && features.length) ? 'block' : 'none';
       }
       
-      // Load Grad-CAM++ visualization
+      // Load Grad-CAM / EigenCAM visualization whenever an ultrasound is available
       try {
         const p = currentPatient;
-        const hasImg = !!(p && (p.ultrasound_image || p.Ultrasound_image));
-        if (hasImg) {
+        const hasImg = !!(p && (p.ultrasound_image || p.Ultrasound_image || p.medical_image));
+        console.log('[XAI] EigenCAM trigger — imagingScore:', imagingScore, 'hasImage:', hasImg, 'avail.imaging:', avail.imaging);
+        if (hasImg && (avail.imaging || imagingScore > 0)) {
           loadGradCAMVisualization(p, imagingScore);
+        } else if (avail.imaging || imagingScore > 0) {
+          console.warn('[XAI] Imaging score present but no ultrasound image on currentPatient — EigenCAM skipped');
         }
       } catch (e) {
         console.warn('[XAI] Grad-CAM trigger failed:', e);
@@ -2616,9 +2676,9 @@
       const originalContainer = document.getElementById('gradcam-original-container');
       const originalSpinner = document.getElementById('original-loading-spinner');
       
-      if (patientData.ultrasound_image) {
+      if (patientData.ultrasound_image || patientData.Ultrasound_image) {
         const img = new Image();
-        img.src = patientData.ultrasound_image;
+        img.src = patientData.ultrasound_image || patientData.Ultrasound_image;
         img.alt = 'Ultrasound Image';
         img.style.cssText = 'width: auto; height: auto; max-width: 100%; object-fit: contain; border-radius: 0 0 8px 8px;';
         

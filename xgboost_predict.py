@@ -25,6 +25,57 @@ except ImportError as e:
     SHAP_AVAILABLE = False
     SHAP_ERROR = str(e)
 
+# Bump when SHAP/prepare coercion changes — surfaced via /api/health for deploy checks.
+XGB_RUNTIME_REVISION = "20260731-shap-bracket-float-v2"
+
+
+def coerce_scalar_numeric(raw):
+    """
+    Coerce clinical scalars to float, tolerating DB/export artifacts like
+    "[7.31835E-1]", "(0.5)", nested single-element lists, and blank strings.
+    """
+    if raw is None:
+        return np.nan
+    if isinstance(raw, (float, np.floating)):
+        return float(raw) if np.isfinite(raw) else np.nan
+    if isinstance(raw, (int, np.integer)) and not isinstance(raw, bool):
+        return float(raw)
+    if isinstance(raw, (bytes, bytearray)):
+        try:
+            raw = raw.decode("utf-8", errors="ignore")
+        except Exception:
+            return np.nan
+    if isinstance(raw, (list, tuple, np.ndarray)):
+        if len(raw) == 0:
+            return np.nan
+        return coerce_scalar_numeric(raw[0])
+    if isinstance(raw, str):
+        s = raw.strip()
+        if s == "" or s.lower() in {"nan", "none", "null", "undefined"}:
+            return np.nan
+        # Strip wrapping brackets/parens (Excel/list dumps)
+        while len(s) >= 2 and (
+            (s.startswith("[") and s.endswith("]"))
+            or (s.startswith("(") and s.endswith(")"))
+            or (s.startswith("{") and s.endswith("}"))
+            or (s.startswith("'") and s.endswith("'"))
+            or (s.startswith('"') and s.endswith('"'))
+        ):
+            s = s[1:-1].strip()
+        if "," in s and " " not in s:
+            s = s.split(",", 1)[0].strip()
+        try:
+            return float(s)
+        except Exception:
+            num = pd.to_numeric(s, errors="coerce")
+            return float(num) if pd.notna(num) else np.nan
+    try:
+        return float(raw)
+    except Exception:
+        num = pd.to_numeric(raw, errors="coerce")
+        return float(num) if pd.notna(num) else np.nan
+
+
 def convert_to_python_types(obj):
     """
     Recursively convert numpy/pandas types to Python native types for JSON serialization.
@@ -292,49 +343,19 @@ def prepare_clinical_data(data_dict, model=None):
             df = pd.DataFrame([remapped_data])
         
         # Convert numeric strings to floats, treat empty/missing as NaN
-        def _coerce_scalar_numeric(raw):
-            if raw is None or (isinstance(raw, float) and np.isnan(raw)):
-                return np.nan
-            if isinstance(raw, (bytes, bytearray)):
-                try:
-                    raw = raw.decode('utf-8', errors='ignore')
-                except Exception:
-                    return np.nan
-            if isinstance(raw, (list, tuple, np.ndarray)):
-                if len(raw) == 0:
-                    return np.nan
-                raw = raw[0]
-            if isinstance(raw, str):
-                s = raw.strip()
-                if s == '' or s.lower() in {'nan', 'none', 'null', 'undefined'}:
-                    return np.nan
-                # Handle artifacts like "[7.31835E-1]" / "(0.5)"
-                if (s.startswith('[') and s.endswith(']')) or (s.startswith('(') and s.endswith(')')):
-                    s = s[1:-1].strip()
-                if ',' in s and ' ' not in s.strip():
-                    # take first token from accidental CSV/list dump
-                    s = s.split(',', 1)[0].strip()
-                try:
-                    return float(s)
-                except Exception:
-                    num = pd.to_numeric(s, errors='coerce')
-                    return float(num) if pd.notna(num) else np.nan
-            try:
-                return float(raw)
-            except Exception:
-                num = pd.to_numeric(raw, errors='coerce')
-                return float(num) if pd.notna(num) else np.nan
-
         for col in df.columns:
             try:
                 val = df[col].iloc[0]
                 if val == '' or val == 'nan' or val is None:
-                    df[col] = np.nan
+                    df.loc[df.index[0], col] = np.nan
                 else:
-                    df[col] = _coerce_scalar_numeric(val)
+                    df.loc[df.index[0], col] = coerce_scalar_numeric(val)
             except Exception:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-        
+                try:
+                    df.loc[df.index[0], col] = coerce_scalar_numeric(df[col].iloc[0])
+                except Exception:
+                    df.loc[df.index[0], col] = np.nan
+
         # Final guard: symptom Y/N columns must be 0 (No), never NaN.
         for col in SYMPTOM_YN_DEFAULT_ZERO:
             if col not in df.columns:
@@ -348,8 +369,8 @@ def prepare_clinical_data(data_dict, model=None):
                 df.loc[df.index[0], col] = 0.0
                 continue
             try:
-                num = float(val)
-                if np.isnan(num):
+                num = coerce_scalar_numeric(val)
+                if pd.isna(num):
                     df.loc[df.index[0], col] = 0.0
                 else:
                     df.loc[df.index[0], col] = 1.0 if num >= 0.5 else 0.0
@@ -474,6 +495,14 @@ def get_shap_explanation(model, df, raw_prediction, missing_value_mask=None):
     try:
         # Extract feature importances from model
         feature_importances = get_feature_importances_dict(model)
+
+        # Guarantee numeric frame for SHAP (never pass object/string cells)
+        try:
+            for col in df.columns:
+                df.loc[df.index[0], col] = coerce_scalar_numeric(df[col].iloc[0])
+            df = df.astype(np.float32)
+        except Exception:
+            df = df.apply(lambda s: s.map(coerce_scalar_numeric)).astype(np.float32)
         
         # Create SHAP explainer for XGBoost model
         explainer = shap.TreeExplainer(model)
@@ -1005,12 +1034,16 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
         
         for col in df.columns:
             if col in ultrasound_fields:
-                val = df[col].iloc[0]
+                val = coerce_scalar_numeric(df[col].iloc[0])
                 ultrasound_values[col] = float(val) if pd.notna(val) else None
                 if pd.notna(val):
                     ultrasound_present_count += 1
                 else:
                     ultrasound_missing_fields.append(col)
+
+        # Re-coerce every cell before float32 cast (covers residual string artifacts)
+        for col in df.columns:
+            df.loc[df.index[0], col] = coerce_scalar_numeric(df[col].iloc[0])
         
         # Debug info (stored for response, not printed)
         debug_info = {
@@ -1031,7 +1064,15 @@ def predict(clinical_data, model_path, smoothing_factor=1.0):
             'input_data_keys': list(clinical_data.keys()),
             'dataframe_columns': list(df.columns),
             'dataframe_head': {col: str(df[col].iloc[0]) for col in df.columns[:5]},
-            'all_feature_values': {col: (float(df[col].iloc[0]) if pd.notna(df[col].iloc[0]) else None) for col in df.columns},
+            'all_feature_values': {
+                col: (
+                    float(_v)
+                    if pd.notna((_v := coerce_scalar_numeric(df[col].iloc[0])))
+                    else None
+                )
+                for col in df.columns
+            },
+            'xgb_runtime_revision': XGB_RUNTIME_REVISION,
         }
         
         # Handle missing values - XGBoost can handle NaN
