@@ -799,7 +799,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/pcode-api.js?v=20260731-apifix"></script>
+  <script src="js/pcode-api.js?v=20260731-apifix2"></script>
   <script src="js/auth.js?v=20260731-btneq"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
@@ -1425,7 +1425,7 @@
       // **NORMAL FLOW**: Logged-in users fetch from API (Render on Firebase)
       const apiUrl = (typeof pcodeApiUrl === 'function')
         ? pcodeApiUrl('api/get_patients_xai.php')
-        : 'https://p-code-nqak.onrender.com/api/get_patients_xai';
+        : 'https://p-code-nqak.onrender.com/api/get_patients';
       console.log('Fetching from:', apiUrl);
       
       fetch(apiUrl, {
