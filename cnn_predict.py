@@ -158,6 +158,8 @@ def _ultrasound_likeness_check(image_bytes):
     Real pelvic US frames are usually dark, low-color, grainy grayscale.
     Scanned forms / photos of paper are often also grayscale, so color alone is not enough —
     we also reject overly bright / document-like images.
+    Clinical machines often burn in small colored labels (yellow text, ROI markers);
+    those overlays must not fail an otherwise grayscale dark-field scan.
     """
     try:
         img = Image.open(BytesIO(image_bytes))
@@ -172,6 +174,8 @@ def _ultrasound_likeness_check(image_bytes):
         arr = np.asarray(img_small, dtype=np.float32) / 255.0
         r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
         channel_spread = float(np.mean(np.abs(r - g) + np.abs(r - b) + np.abs(g - b)) / 3.0)
+        channel_diff = (np.abs(r - g) + np.abs(r - b) + np.abs(g - b)) / 3.0
+        grayscale_frac = float(np.mean(channel_diff < 0.045))
 
         # Luminance metrics — ultrasound is dark; paper documents are bright
         luminance = 0.299 * r + 0.587 * g + 0.114 * b
@@ -188,12 +192,23 @@ def _ultrasound_likeness_check(image_bytes):
         # High edge density with bright background is typical of printed text
         sharp_edge_frac = float((np.mean(gx > 0.18) + np.mean(gy > 0.18)) / 2.0)
 
+        # Mostly grayscale US with annotation overlays: relax color thresholds
+        if grayscale_frac >= 0.88:
+            color_limit = 55.0
+            spread_limit = 0.22
+        elif grayscale_frac >= 0.75:
+            color_limit = 32.0
+            spread_limit = 0.14
+        else:
+            color_limit = 18.0
+            spread_limit = 0.08
+
         ok = True
         reasons = []
-        if colorfulness > 18.0:
+        if colorfulness > color_limit:
             ok = False
             reasons.append("too_colorful")
-        if channel_spread > 0.08:
+        if channel_spread > spread_limit:
             ok = False
             reasons.append("high_channel_spread")
         # Document / photo-of-paper rejection (common false positive when only grayscale is checked)
@@ -218,6 +233,7 @@ def _ultrasound_likeness_check(image_bytes):
             "ok": bool(ok),
             "colorfulness": float(colorfulness),
             "channel_spread": float(channel_spread),
+            "grayscale_fraction": grayscale_frac,
             "mean_luminance": mean_luma,
             "bright_fraction": bright_frac,
             "very_bright_fraction": very_bright_frac,

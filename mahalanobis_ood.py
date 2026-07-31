@@ -153,7 +153,7 @@ def score_features(
         x = np.asarray(features, dtype=np.float64).reshape(-1)
         expected_dim = int(np.asarray(mu).reshape(-1).shape[0])
         if x.shape[0] != expected_dim:
-            return {
+            mismatch = {
                 "distance": None,
                 "feature_dim": expected_dim,
                 "threshold": None,
@@ -168,6 +168,12 @@ def score_features(
                     "expected_dim": expected_dim,
                 },
             }
+            if soft_calibration_mismatch:
+                mismatch["available"] = False
+                mismatch["calibration_mismatch"] = True
+                mismatch["anomaly_detected"] = False
+                mismatch["gating"] = "disabled_tflite_feature_domain_mismatch"
+            return mismatch
 
         dist = mahalanobis_distance(x, mu, inv_cov)
         reliable, _lo, upper, p_value = mahalanobis_reliability(
@@ -184,16 +190,15 @@ def score_features(
             "meta": meta,
         }
 
-        # TFLite quantized GAP activations are often far from the Keras feature
-        # space used to fit mahalanobis_mu / mahalanobis_inv_cov. Distances then
-        # land many× above the chi-square cutoff for *all* images (including real US).
-        if (
-            soft_calibration_mismatch
-            and not reliable
-            and upper is not None
-            and float(upper) > 0
-            and float(dist) > float(upper) * float(domain_shift_ratio)
-        ):
+        # TFLite quantized GAP activations are not in the Keras feature space used to
+        # fit mahalanobis_mu / mahalanobis_inv_cov. Any hard fail on that path is a
+        # domain mismatch — never reject a real ultrasound solely on these pickles.
+        if soft_calibration_mismatch and not reliable:
+            extreme = (
+                upper is not None
+                and float(upper) > 0
+                and float(dist) > float(upper) * float(domain_shift_ratio)
+            )
             result["available"] = False
             result["calibration_mismatch"] = True
             result["anomaly_detected"] = False
@@ -204,6 +209,7 @@ def score_features(
                 "distance": dist,
                 "threshold": upper,
                 "domain_shift_ratio": float(domain_shift_ratio),
+                "extreme_shift": bool(extreme),
                 "note": (
                     "Mahalanobis pickles were fit on Keras features; hosted TFLite "
                     "GAP features are out of that space. Hard gating falls back to "
@@ -235,7 +241,11 @@ def _image_colorfulness_rgb(img_rgb) -> float:
 
 
 def ultrasound_likeness_check(image_bytes: bytes) -> dict:
-    """Same heuristic gate used by cnn_predict (Pillow + numpy only)."""
+    """Same heuristic gate used by cnn_predict (Pillow + numpy only).
+
+    Clinical US frames often include small colored machine labels (yellow text,
+    ROI markers). Those overlays must not fail an otherwise grayscale dark-field scan.
+    """
     try:
         from PIL import Image
 
@@ -247,6 +257,8 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         arr = np.asarray(img_small, dtype=np.float32) / 255.0
         r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
         channel_spread = float(np.mean(np.abs(r - g) + np.abs(r - b) + np.abs(g - b)) / 3.0)
+        channel_diff = (np.abs(r - g) + np.abs(r - b) + np.abs(g - b)) / 3.0
+        grayscale_frac = float(np.mean(channel_diff < 0.045))
         luminance = 0.299 * r + 0.587 * g + 0.114 * b
         mean_luma = float(np.mean(luminance))
         bright_frac = float(np.mean(luminance > 0.78))
@@ -257,12 +269,23 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         edge_mean = float((np.mean(gx) + np.mean(gy)) / 2.0)
         sharp_edge_frac = float((np.mean(gx > 0.18) + np.mean(gy > 0.18)) / 2.0)
 
+        # Mostly grayscale US with annotation overlays: relax color thresholds
+        if grayscale_frac >= 0.88:
+            color_limit = 55.0
+            spread_limit = 0.22
+        elif grayscale_frac >= 0.75:
+            color_limit = 32.0
+            spread_limit = 0.14
+        else:
+            color_limit = 18.0
+            spread_limit = 0.08
+
         ok = True
         reasons = []
-        if colorfulness > 18.0:
+        if colorfulness > color_limit:
             ok = False
             reasons.append("too_colorful")
-        if channel_spread > 0.08:
+        if channel_spread > spread_limit:
             ok = False
             reasons.append("high_channel_spread")
         if mean_luma > 0.58:
@@ -274,6 +297,7 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         if very_bright_frac > 0.22 and dark_frac < 0.20:
             ok = False
             reasons.append("document_like_background")
+        # Require enough dark field so bright paper + text still fails
         if mean_luma > 0.45 and sharp_edge_frac > 0.08 and dark_frac < 0.25:
             ok = False
             reasons.append("document_like_edges")
@@ -285,6 +309,7 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
             "ok": bool(ok),
             "colorfulness": float(colorfulness),
             "channel_spread": float(channel_spread),
+            "grayscale_fraction": grayscale_frac,
             "mean_luminance": mean_luma,
             "bright_fraction": bright_frac,
             "very_bright_fraction": very_bright_frac,
