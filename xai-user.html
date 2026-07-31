@@ -6,7 +6,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P-Code - XAI Insights</title>
-  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/png">
+
+  <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
   <link rel="stylesheet" href="fonts/fonts.css">
   <style>
     * { box-sizing: border-box; }
@@ -336,10 +341,10 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260724-cardglow">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
   <link rel="stylesheet" href="css/pcode-xai-clinical-ui.css?v=20260723-fonts">
   <link rel="stylesheet" href="css/pcode-diagnostic-severity.css">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
 <link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
 <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
@@ -348,7 +353,7 @@
   <link rel="stylesheet" href="css/pcode-xai-mobile.css?v=20260710d">
   <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
   <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260726-nolift">
-  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260724-nouserprovider">
+  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260730-navfrost">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
   <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-v4fix">
 </head>
@@ -358,14 +363,10 @@
   <nav class="pcode-topnav xai-topnav sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
-        <div class="flex items-center space-x-2 sm:space-x-6">
-          <div class="flex-shrink-0">
-            <img src="resources/PCODE_LOGO.png" alt="P-Code Logo" class="h-12 sm:h-14 w-auto">
-          </div>
-          <div class="block">
-            <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
-          </div>
-        </div>
+        <div class="pcode-topnav__brand flex items-center gap-3">
+                    <img src="assets/logo.png" alt="P-Code Logo" class="pcode-nav-logo h-8 w-8 object-contain flex-shrink-0" width="32" height="32" decoding="async">
+                    <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+                </div>
         <div class="nav-desktop">
           <a href="index.html" class="pcode-nav-link">Dashboard</a>
           <a href="detect-user.html" class="pcode-nav-link">Detect</a>
@@ -395,7 +396,7 @@
       </button>
       <div id="auth-entry-chooser" class="pcode-auth-float-chooser">
         <div class="pcode-auth-float-brand" aria-label="P-Code, PMOS Detection System">
-          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
+          <img src="assets/logo.png" alt="" class="pcode-auth-float-logo" width="72" height="72" decoding="async">
           <p class="pcode-auth-float-tagline">P-Code: PMOS Detection System</p>
         </div>
         <div class="pcode-auth-float-hint">
@@ -431,13 +432,13 @@
       <div id="auth-tabs-section" class="hidden pcode-auth-float-signin">
         <button type="button" id="auth-back-to-entry" class="pcode-auth-float-back">&larr; Change access type</button>
         <div id="login-form-container" class="pcode-auth-float-signin-body">
-          <img src="resources/PCODE_LOGO.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
+          <img src="assets/logo.png" alt="" class="pcode-auth-float-logo pcode-auth-float-logo--sm" width="48" height="48" decoding="async">
           <h3 class="pcode-auth-float-signin-title">Sign in with Google</h3>
           <p class="pcode-auth-float-signin-sub">Secure access for patients and OB-GYN specialists.</p>
           <div class="pcode-google-oauth-panel">
             <div id="google-signin-mount" class="pcode-google-signin-mount" aria-label="Sign in with Google"></div>
             <button type="button" id="google-login-btn" class="social-btn social-btn-google pcode-google-btn-fallback hidden w-full" aria-label="Log in with Google">Log in with Google</button>
-            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community">Registration is instant and handled securely via your Google account. No separate password required.</p>
+            <p id="pcode-oauth-disclaimer" class="pcode-oauth-disclaimer" data-portal="community" hidden aria-hidden="true" style="display:none"></p>
             <p id="login-general-error" class="hidden text-sm text-red-600 text-center mt-2"></p>
           </div>
         </div>
@@ -779,7 +780,7 @@
 
   <!-- Load auth module -->
   <script src="js/pcode-api.js?v=20260730-apiscan"></script>
-  <script src="js/auth.js?v=20260730-apiscan"></script>
+  <script src="js/auth.js?v=20260730-home-redirect"></script>
   <script src="js/pcode-user-care.js?v=20260730-deadtrim"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
@@ -887,9 +888,23 @@
       return;
     });
 
+    function parseClinicalObject(value) {
+      if (!value) return null;
+      if (typeof value === 'object' && !Array.isArray(value)) return value;
+      if (typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+
     function transformClinicalInputsForXAI(clinicalInputs) {
       const src = clinicalInputs || {};
-      const out = { ...src };
+      const out = {};
 
       // Map Detect-form keys -> model/API expected keys used in XAI page
       const map = {
@@ -915,21 +930,60 @@
         Progesterone_level: 'PRG_ng_mL',
         RBS: 'RBS_mg_dl',
         Avg_F_size_L: 'Avg_F_size_L_mm',
-        Avg_F_size_R: 'Avg_F_size_R_mm'
+        Avg_F_size_R: 'Avg_F_size_R_mm',
+        LH_FSH_Ratio: 'FSH_LH'
       };
 
-      Object.keys(map).forEach((k) => {
-        if (src[k] !== undefined && src[k] !== null && src[k] !== '') {
-          out[map[k]] = src[k];
-        }
+      const canonicalKeys = [
+        'Age_yrs', 'Weight_kg', 'Height_cm', 'BMI', 'Blood_Group',
+        'Pulse_rate_bpm', 'RR_breath_min', 'BP_Systolic_mmHg', 'BP_Diastolic_mmHg', 'Hb_g_dl',
+        'CycleR_I', 'Cycle_length_days', 'Marriage_Status_years', 'Pregnant', 'No_of_abortions',
+        'I_beta_HCG_mIU_mL', 'II_beta_HCG_mIU_mL', 'FSH_mIU_mL', 'LH_mIU_mL', 'FSH_LH',
+        'AMH_ng_mL', 'PRL_ng_mL', 'TSH_mIU_L', 'Vit_D3_ng_mL', 'PRG_ng_mL', 'RBS_mg_dl',
+        'Hip_inch', 'Waist_inch', 'Waist_hip_ratio',
+        'Weight_gain', 'Hair_growth', 'Skin_darkening', 'Hair_loss', 'Pimples', 'Fast_food', 'Reg_Exercise',
+        'Follicle_no_L', 'Follicle_no_R', 'Avg_F_size_L_mm', 'Avg_F_size_R_mm', 'Endometrium_mm'
+      ];
+
+      const isPresentNumber = (v) => v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && Number.isNaN(v));
+
+      canonicalKeys.forEach((k) => {
+        if (!isPresentNumber(src[k])) return;
+        // Placeholder zeros for LH/FSH ratio are not real measurements
+        if (k === 'FSH_LH' && Number(src[k]) <= 0) return;
+        out[k] = src[k];
       });
 
-      // Normalize LH/FSH ratio key (Detect uses LH_FSH_Ratio)
-      if (src.LH_FSH_Ratio !== undefined) {
-        out.LH_FSH_Ratio = src.LH_FSH_Ratio;
+      Object.keys(map).forEach((k) => {
+        if (!isPresentNumber(src[k])) return;
+        const dest = map[k];
+        if (dest === 'FSH_LH' && Number(src[k]) <= 0) return;
+        out[dest] = src[k];
+      });
+
+      // Explicit 0/1 symptom checkboxes (0 is valid)
+      ['Weight_gain', 'Hair_growth', 'Skin_darkening', 'Hair_loss', 'Pimples', 'Fast_food', 'Reg_Exercise'].forEach((k) => {
+        if (src[k] === 0 || src[k] === '0') out[k] = 0;
+        if (src[k] === 1 || src[k] === '1' || src[k] === true) out[k] = 1;
+      });
+
+      if (out.FSH_LH != null && Number(out.FSH_LH) > 0) {
+        out.LH_FSH_Ratio = Number(out.FSH_LH);
       }
 
       return out;
+    }
+
+    function extractClinicalForXAI(row) {
+      const snap =
+        parseClinicalObject(row && row.clinical_inputs_snapshot) ||
+        parseClinicalObject(row && row.clinical_inputs) ||
+        parseClinicalObject(row && row.clinical_inputs_json) ||
+        {};
+      const fromRow = transformClinicalInputsForXAI(row || {});
+      const fromSnap = transformClinicalInputsForXAI(snap);
+      // Snapshot (saved form) wins over sparse/default DB columns like FSH_LH=0
+      return Object.assign({}, fromRow, fromSnap);
     }
 
     // Track which model outputs are actually available for the current view
@@ -968,7 +1022,7 @@
           return null;
         };
 
-        const clinicalInputs = transformClinicalInputsForXAI(row || {});
+        const clinicalInputs = extractClinicalForXAI(row || {});
         const xg = { probability: Number(row.XGBoost_diagnosis_probability_percentage), diagnosis: mapDiag(row.XGBoost_diagnosis) };
         const cnn = { probability: Number(row.CNN_diagnosis_probability_percentage), diagnosis: mapDiag(row.CNN_diagnosis) };
         const overall = { probability: Number(row.Overall_diagnosis_probability_percentage), diagnosis: mapDiag(row.Overall_diagnosis) };
@@ -1493,6 +1547,15 @@
         II_beta_HCG_mIU_mL: patientData.II_beta_HCG_mIU_mL || null,
         FSH_mIU_mL: patientData.FSH_mIU_mL || null,
         LH_mIU_mL: patientData.LH_mIU_mL || null,
+        FSH_LH: (() => {
+            if (patientData.FSH_LH && Number(patientData.FSH_LH) > 0) {
+                return parseFloat(patientData.FSH_LH);
+            }
+            if (patientData.LH_FSH_Ratio && Number(patientData.LH_FSH_Ratio) > 0) {
+                return parseFloat(patientData.LH_FSH_Ratio);
+            }
+            return null;
+        })(),
         LH_FSH_Ratio: (() => {
             // FSH_LH column stores LH/FSH directly
             if (patientData.FSH_LH && patientData.FSH_LH > 0) {
@@ -1653,8 +1716,18 @@
           });
           
           // Don't add synthetic features - use only API features if available
-          // The API already provides the best SHAP explanations
-          const combinedFeatures = apiFeatures.sort((a, b) => b.importance - a.importance);
+          // Drop placeholder FSH/LH=0 which otherwise becomes a fake 100% bar
+          const combinedFeatures = apiFeatures
+            .filter(function (f) {
+              const n = String(f.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+              const isRatio = n.includes('fshlh') || n.includes('lhfsh') || n === 'fshlh';
+              if (!isRatio) return true;
+              const v = f.value;
+              if (v === null || v === undefined || v === '' || v === 'N/A') return false;
+              const num = Number(v);
+              return !(Number.isFinite(num) && num <= 0);
+            })
+            .sort((a, b) => b.importance - a.importance);
           
           updateXAIDisplay(combinedFeatures, clinicalScore, imagingScore, overallScore, overallDiagnosis, patientData.name);
         } else if (result.success && result.shap_explanation) {
@@ -2069,15 +2142,6 @@
         });
       }
       
-      if (patientData.FSH_LH !== null && patientData.FSH_LH !== undefined) {
-        features.push({
-          name: 'FSH/LH Ratio',
-          value: patientData.FSH_LH.toFixed(2),
-          contribution: Math.abs(patientData.FSH_LH - 1) * 3,
-          importance: 0.75
-        });
-      }
-      
       // Beta HCG Levels
       if (patientData.I_beta_HCG_mIU_mL !== null && patientData.I_beta_HCG_mIU_mL !== undefined && patientData.I_beta_HCG_mIU_mL > 0) {
         features.push({
@@ -2218,24 +2282,27 @@
         });
       }
       
-      // Lifestyle Factors
-      if (patientData.Fast_food === 1) {
+      // Lifestyle / symptom factors (0 = No is still informative for explainability)
+      const symptomFlags = [
+        { key: 'Weight_gain', name: 'Weight Gain', yes: 2.5, no: -0.5 },
+        { key: 'Hair_growth', name: 'Hair Growth', yes: 3, no: -0.5 },
+        { key: 'Skin_darkening', name: 'Skin Darkening', yes: 2.5, no: -0.4 },
+        { key: 'Hair_loss', name: 'Hair Loss', yes: 2.2, no: -0.4 },
+        { key: 'Pimples', name: 'Pimples / Acne', yes: 1.8, no: -0.3 },
+        { key: 'Fast_food', name: 'Fast Food Consumption', yes: 2, no: -0.3 },
+        { key: 'Reg_Exercise', name: 'Regular Exercise', yes: -3, no: 1.2 }
+      ];
+      symptomFlags.forEach((item) => {
+        const raw = patientData[item.key];
+        if (raw === null || raw === undefined || raw === '') return;
+        const on = raw === 1 || raw === '1' || raw === true || raw === 'Yes' || raw === 'yes';
         features.push({
-          name: 'Fast Food Consumption',
-          value: 'Yes',
-          contribution: 2,
-          importance: 0.58
+          name: item.name,
+          value: on ? 'Yes' : 'No',
+          contribution: on ? item.yes : item.no,
+          importance: on ? 0.7 : 0.55
         });
-      }
-      
-      if (patientData.Reg_Exercise === 1) {
-        features.push({
-          name: 'Regular Exercise',
-          value: 'Yes',
-          contribution: -3,
-          importance: 0.60
-        });
-      }
+      });
       
       return features.sort((a, b) => b.importance - a.importance);
     }

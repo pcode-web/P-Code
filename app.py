@@ -2329,6 +2329,7 @@ def api_get_user_diagnosis():
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 try:
+                    _ensure_user_diagnosis_schema(cur)
                     cur.execute(
                         """
                         SELECT p.*,
@@ -2339,6 +2340,7 @@ def api_get_user_diagnosis():
                                r.CNN_diagnosis_probability_percentage,
                                r.Overall_diagnosis,
                                r.Overall_diagnosis_probability_percentage,
+                               r.clinical_inputs_snapshot,
                                r.screening_id,
                                r.created_at AS screening_created_at
                         FROM user_diagnosis_parameters p
@@ -2369,6 +2371,19 @@ def api_get_user_diagnosis():
     data = {k: _serialize_value(v) for k, v in dict(row).items()}
     if data.get("Ultrasound_image"):
         data["Ultrasound_image"] = _format_ultrasound(row.get("Ultrasound_image"))
+    # Prefer structured clinical snapshot for XAI when present
+    snap = data.get("clinical_inputs_snapshot")
+    if isinstance(snap, str) and snap.strip():
+        try:
+            import json as _json
+
+            parsed = _json.loads(snap)
+            if isinstance(parsed, dict):
+                data["clinical_inputs"] = parsed
+        except Exception:  # noqa: BLE001
+            pass
+    elif isinstance(snap, dict):
+        data["clinical_inputs"] = snap
     return jsonify({"success": True, "data": data, "message": "OK"}), 200
 
 
