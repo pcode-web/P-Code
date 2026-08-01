@@ -1350,11 +1350,52 @@ class AuthManager {
         }
       }
 
-      const updatedUser = data.user || null;
-      if (updatedUser) {
-        this.currentUser = { ...this.currentUser, ...updatedUser };
+      const updatedUser =
+        (data && data.user) ||
+        (data && data.data && data.data.user) ||
+        null;
+
+      // Always apply the submitted name immediately so the navbar/drawer
+      // update without requiring logout — even if the API omits `user`.
+      const nextName = String(
+        (updatedUser && (updatedUser.name || updatedUser.user_name)) || name
+      ).trim();
+      const nextInstitution =
+        updatedUser && updatedUser.institution != null
+          ? String(updatedUser.institution)
+          : institution;
+
+      this.currentUser = {
+        ...(this.currentUser || {}),
+        ...(updatedUser || {}),
+        name: nextName,
+        user_name: nextName,
+        institution: nextInstitution,
+      };
+
+      // Refresh initials avatar when name changes
+      const avatarNow = String(this.currentUser.avatar || this.currentUser.picture || '');
+      if (!avatarNow || /ui-avatars\.com/i.test(avatarNow)) {
+        this.currentUser.avatar = this.resolveProfileAvatarUrl(this.currentUser);
+        this.currentUser.picture = this.currentUser.avatar;
+      }
+
+      try {
         sessionStorage.setItem('PMOS_user', JSON.stringify(this.currentUser));
-        this.updateUIForLoggedInUser();
+        if (localStorage.getItem('PMOS_remember_session') === '1') {
+          localStorage.setItem('PMOS_user', JSON.stringify(this.currentUser));
+        }
+      } catch (_) {
+        /* ignore storage quota / private mode */
+      }
+
+      this.updateUIForLoggedInUser();
+      try {
+        window.dispatchEvent(
+          new CustomEvent('pcode:profile-updated', { detail: { user: this.currentUser } })
+        );
+      } catch (_) {
+        /* ignore */
       }
 
       this.closeEditProfileModal();

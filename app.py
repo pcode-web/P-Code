@@ -3160,12 +3160,15 @@ def api_update_profile():
     )
     if uid <= 0:
         return _json_error("Invalid session", 401)
+    if name and len(name) < 2:
+        return _json_error("Name must be at least 2 characters", 400)
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 table = "clinical_providers" if is_provider else "users"
                 id_col = "id" if is_provider else "user_id"
+                auth_source = "clinical_providers" if is_provider else "users"
                 sets = []
                 vals: list[Any] = []
                 if name:
@@ -3184,11 +3187,36 @@ def api_update_profile():
                     f"UPDATE {table} SET {', '.join(sets)} WHERE {id_col} = %s",
                     tuple(vals),
                 )
+                if is_provider:
+                    cur.execute(
+                        "SELECT id, user_name, email, role, institution, avatar "
+                        f"FROM {table} WHERE {id_col} = %s LIMIT 1",
+                        (uid,),
+                    )
+                else:
+                    cur.execute(
+                        "SELECT user_id, user_name, email, role, institution, avatar "
+                        f"FROM {table} WHERE {id_col} = %s LIMIT 1",
+                        (uid,),
+                    )
+                row = cur.fetchone() or {}
     except Exception as exc:  # noqa: BLE001
         logger.exception("Update profile failed")
         return _json_error("Failed to update profile", 500, detail=str(exc))
 
-    return _json_ok(message="Profile updated")
+    display_name = str(row.get("user_name") or name or "").strip()
+    avatar_url = str(row.get("avatar") or "").strip() or _default_avatar(display_name)
+    user_payload = {
+        "id": int(row.get("id") or row.get("user_id") or uid),
+        "name": display_name,
+        "email": str(row.get("email") or decoded.get("email") or ""),
+        "role": str(row.get("role") or decoded.get("role") or ""),
+        "institution": str(row.get("institution") or ""),
+        "avatar": avatar_url,
+        "picture": avatar_url,
+        "auth_source": auth_source,
+    }
+    return _json_ok(message="Profile updated", user=user_payload)
 
 
 @app.post("/api/validate_clinical_timing")
