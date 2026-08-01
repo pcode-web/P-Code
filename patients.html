@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -55,7 +55,7 @@
             flex-shrink: 0;
             height: auto;
         }
-        /* Mobile drawer â€” fixed; must not consume layout height in the page flow */
+        /* Mobile drawer — fixed; must not consume layout height in the page flow */
         #mobile-menu.mobile-menu,
         #menu-overlay.mobile-menu-overlay {
             position: fixed !important;
@@ -168,12 +168,12 @@
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.65); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); align-items: center; justify-content: center; }
         .modal.show { display: flex; }
-        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260730-checkfix (#patient-modal) */
+        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260801-navcenter (#patient-modal) */
         .tab-button.active { background-color: #6B46C1; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Enhanced Modal shell â€” glass styles from pcode-app-bento-dark.css */
+        /* Enhanced Modal shell — glass styles from pcode-app-bento-dark.css */
         .modal-content {
             max-width: 900px;
             width: 90%;
@@ -246,7 +246,7 @@
             cursor: pointer;
         }
 
-        /* Unified footer height â€” page footer only (patient modal has its own rules) */
+        /* Unified footer height — page footer only (patient modal has its own rules) */
         footer:not(#modal-footer-section) {
             min-height: 64px;
             padding: 0 !important;
@@ -334,7 +334,7 @@
             color: rgba(200, 196, 210, 0.92);
         }
 
-        /* Checkbox size â€” checkmark drawing is in pcode-app-bento-dark.css */
+        /* Checkbox size — checkmark drawing is in pcode-app-bento-dark.css */
         #patient-modal input[type="checkbox"] {
             width: 18px;
             height: 18px;
@@ -370,9 +370,9 @@
             --tw-gradient-to: rgb(255 251 235 / var(--tw-bg-opacity));
         }
 
-        /* Patient modal stepper â€” see pcode-app-bento-dark.css (.pcode-step-glass) */
+        /* Patient modal stepper — see pcode-app-bento-dark.css (.pcode-step-glass) */
 
-        /* Add Patient modal â€” scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
+        /* Add Patient modal — scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
         #patient-modal .modal-content {
             max-height: 90vh;
             max-height: 90dvh;
@@ -417,7 +417,7 @@
             display: none;
         }
 
-        /* Patient table â€” fixed layout, centered cells (desktop/tablet) */
+        /* Patient table — fixed layout, centered cells (desktop/tablet) */
         table.patients-data-table {
             table-layout: fixed;
             width: 100%;
@@ -547,7 +547,7 @@
             color: white;
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260801-navcenter">
 <link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
 <link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260730-modalbtns">
@@ -685,7 +685,7 @@
       max-width: none !important;
     }
 
-    /* Keep semantic Positive / Borderline colors â€” deeper opaque in light */
+    /* Keep semantic Positive / Borderline colors — deeper opaque in light */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body span.bg-amber-100,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--borderline,
     html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body span.bg-amber-100 {
@@ -809,7 +809,7 @@
       background: #991b1b !important;
     }
 
-    /* Sidebar / mobile drawer â€” black text in light mode */
+    /* Sidebar / mobile drawer — black text in light mode */
     html.pcode-app-bento-root:not(.dark) #mobile-menu,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
@@ -850,7 +850,7 @@
       border-radius: 0.5rem !important;
     }
 
-    /* Sidebar â€” dark mode: white (not gray) profile + theme labels */
+    /* Sidebar — dark mode: white (not gray) profile + theme labels */
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-role,
     html.pcode-app-bento-root.dark #mobile-menu .mobile-nav-links a,
@@ -866,7 +866,7 @@
       opacity: 1 !important;
     }
 
-    /* ---- Add Patient modal â€” light chrome (beats unscoped dark bento rules) ---- */
+    /* ---- Add Patient modal — light chrome (beats unscoped dark bento rules) ---- */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__top,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__stepper-band,
@@ -1428,7 +1428,7 @@
         <!-- Pagination (desktop table + mobile cards share state) -->
         <nav id="patients-pagination" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6" aria-label="Patient list pagination">
             <p class="pcode-pagination-status m-0 text-sm text-gray-700">
-                Showing <span id="showing-start">1</span>â€“<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
+                Showing <span id="showing-start">1</span>–<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
             </p>
             <div class="flex gap-2 shrink-0" id="page-numbers">
                 <button type="button" id="prev-page" class="pcode-pagination-btn" aria-label="Previous page" disabled>Previous</button>
@@ -1520,7 +1520,7 @@
                 </div>
             </div>
 
-            <!-- Form body â€” independent scroll (header + footer pinned) -->
+            <!-- Form body — independent scroll (header + footer pinned) -->
             <div id="patient-modal-body" class="pcode-patient-modal-body flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4 md:px-6 md:py-5 scrollbar-thin">
             <form id="add-patient-form" class="min-h-0 w-full">
                 <!-- STEP 1: Personal Info -->
@@ -1602,7 +1602,7 @@
                             <div id="patient-weight-host" class="pcode-metric-host col-span-1"></div>
                             <input type="hidden" id="patient-weight" name="patient-weight">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">BMI (kg/mÂ²)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">BMI (kg/m²)</label>
                                 <input type="number" id="patient-bmi" readonly placeholder="Auto" step="0.1" class="input-medical bg-gray-50 text-gray-600">
                             </div>
                         </div>
@@ -1853,7 +1853,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 <p class="text-sm font-semibold text-gray-800 mb-0.5">Drop image or click to upload</p>
-                                <p class="text-xs text-gray-500 mb-3">JPG, PNG Â· Max 10MB</p>
+                                <p class="text-xs text-gray-500 mb-3">JPG, PNG · Max 10MB</p>
                             </div>
                             <div id="image-preview-section" class="hidden">
                                 <p class="text-sm font-semibold text-gray-800 mb-3">Image Preview</p>
@@ -1887,7 +1887,7 @@
                         <div class="pcode-history-panel__header">
                             <div>
                                 <h3 id="patient-diagnosis-history-title" class="pcode-history-panel__title">Diagnosis History</h3>
-                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0â€“54% Negative Â· 55â€“74% Borderline Â· ?75% Positive).</p>
+                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0–54% Negative · 55–74% Borderline · ?75% Positive).</p>
                             </div>
                             <span id="patient-diagnosis-history-count" class="pcode-history-panel__count" aria-live="polite"></span>
                         </div>
@@ -1908,7 +1908,7 @@
                         rows="12"
                         maxlength="8000"
                         class="form-control w-full min-h-[14rem] resize-y"
-                        placeholder="e.g. Lifestyle counseling, lab follow-up, medication review, return visit timing, referralâ€¦"
+                        placeholder="e.g. Lifestyle counseling, lab follow-up, medication review, return visit timing, referral…"
                     ></textarea>
                     <p class="mt-2 text-xs text-white/40">Optional. Click Save Patient to store these notes with the record and include them in the PDF report.</p>
                 </div>
@@ -1947,11 +1947,11 @@
                 <dl class="pcode-delete-modal__meta">
                     <div>
                         <dt>Patient name</dt>
-                        <dd id="delete-patient-name">â€”</dd>
+                        <dd id="delete-patient-name">—</dd>
                     </div>
                     <div>
                         <dt>Patient ID</dt>
-                        <dd id="delete-patient-id">â€”</dd>
+                        <dd id="delete-patient-id">—</dd>
                     </div>
                 </dl>
             </div>
@@ -2449,7 +2449,7 @@
                 return '<span class="pcode-latest-screening__empty">No runs yet</span>';
             }
             const dateLabel = patient.latest_screening_display
-                ? String(patient.latest_screening_display).replace(/\s*[Â·â€¢]\s*/g, ' Â· ')
+                ? String(patient.latest_screening_display).replace(/\s*[·•]\s*/g, ' · ')
                 : (patient.latest_screening_at || '-');
             const origin = patient.latest_screening_origin || '';
             const originShort =
@@ -2824,7 +2824,7 @@
             const confirmBtn = document.getElementById('delete-patient-confirm-btn');
             if (confirmBtn) {
                 confirmBtn.disabled = true;
-                confirmBtn.textContent = 'Deletingâ€¦';
+                confirmBtn.textContent = 'Deleting…';
             }
 
             // Extract numeric ID from PMOS-XXX format
@@ -2879,11 +2879,11 @@
                 return;
             }
 
-            // Dedicated export loader â€” other toasts cannot dismiss it
+            // Dedicated export loader — other toasts cannot dismiss it
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF reportâ€¦');
+                window.pcodeShowExportLoading('Generating PDF report…');
             } else {
-                showPatientsToast('Generating PDF reportâ€¦', 'loading', { persist: true });
+                showPatientsToast('Generating PDF report…', 'loading', { persist: true });
             }
 
             // Get current user info
@@ -3717,13 +3717,14 @@
                             return true;
                         })
                         .catch(() => {
-                            // Data saved, but table refresh failed â€” still close cleanly.
+                            // Data saved, but table refresh failed — still close cleanly.
                             closeModalImmediate();
                             return true;
                         });
                 } else {
                     const msg = data.error || data.message || 'Unknown error';
-                    alert('Error saving patient: ' + msg);
+                    const detail = data.detail ? ('\n\nDetails: ' + data.detail) : '';
+                    alert('Error saving patient: ' + msg + detail);
                     // Keep the modal open so the clinician can correct and retry.
                     return false;
                 }
@@ -3840,7 +3841,7 @@
             }
         }
 
-        // Obsidian glass stepper â€” class-driven states + per-step segment connectors
+        // Obsidian glass stepper — class-driven states + per-step segment connectors
         function updateStepIndicators(currentStep) {
             for (let i = 1; i <= PATIENT_MODAL_TOTAL_STEPS; i++) {
                 const indicator = document.getElementById(`step-${i}-indicator`);

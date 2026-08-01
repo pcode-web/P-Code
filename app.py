@@ -335,33 +335,65 @@ _DIAGNOSIS_ALIASES: dict[str, str] = {
     "cycle_regularity": "CycleR_I",
     "cycle_r_i": "CycleR_I",
     "Cycle_length": "Cycle_length_days",
+    "cycle_length": "Cycle_length_days",
     "Marriage_duration": "Marriage_Status_years",
+    "marriage_years": "Marriage_Status_years",
     "Pregnant_status": "Pregnant",
     "pregnant": "Pregnant",
     "No_abortions": "No_of_abortions",
+    "no_abortions": "No_of_abortions",
     "I_Beta_HCG": "I_beta_HCG_mIU_mL",
     "II_Beta_HCG": "II_beta_HCG_mIU_mL",
+    "beta_hcg_i": "I_beta_HCG_mIU_mL",
+    "beta_hcg_ii": "II_beta_HCG_mIU_mL",
     "FSH_level": "FSH_mIU_mL",
+    "fsh": "FSH_mIU_mL",
     "LH_level": "LH_mIU_mL",
+    "lh": "LH_mIU_mL",
     "AMH_level": "AMH_ng_mL",
+    "amh": "AMH_ng_mL",
     "TSH_level": "TSH_mIU_L",
+    "tsh": "TSH_mIU_L",
     "PRL_level": "PRL_ng_mL",
+    "prl": "PRL_ng_mL",
     "Vitamin_D3_level": "Vit_D3_ng_mL",
+    "vit_d3": "Vit_D3_ng_mL",
     "Progesterone_level": "PRG_ng_mL",
+    "prg": "PRG_ng_mL",
     "RBS": "RBS_mg_dl",
+    "rbs": "RBS_mg_dl",
     "Hemoglobin": "Hb_g_dl",
+    "hb": "Hb_g_dl",
     "Pulse_rate": "Pulse_rate_bpm",
     "pulse_rate": "Pulse_rate_bpm",
     "RR_breath": "RR_breath_min",
+    "rr_breath": "RR_breath_min",
     "BP_systolic": "BP_Systolic_mmHg",
     "bp_systolic": "BP_Systolic_mmHg",
     "BP_diastolic": "BP_Diastolic_mmHg",
     "bp_diastolic": "BP_Diastolic_mmHg",
     "Avg_F_size_L": "Avg_F_size_L_mm",
     "Avg_F_size_R": "Avg_F_size_R_mm",
+    "follicle_left": "Follicle_no_L",
+    "follicle_right": "Follicle_no_R",
+    "follicle_size_left": "Avg_F_size_L_mm",
+    "follicle_size_right": "Avg_F_size_R_mm",
+    "endometrium_thickness": "Endometrium_mm",
+    "hip_inch": "Hip_inch",
+    "waist_inch": "Waist_inch",
+    "waist_hip_ratio": "Waist_hip_ratio",
     "LH_FSH_Ratio": "FSH_LH",
     "lh_fsh_ratio": "FSH_LH",
     "blood_group": "Blood_Group",
+    "height": "Height_cm",
+    "weight": "Weight_kg",
+    "bmi": "BMI",
+    "weight_gain": "Weight_gain",
+    "hair_growth": "Hair_growth",
+    "skin_darkening": "Skin_darkening",
+    "hair_loss": "Hair_loss",
+    "pimples": "Pimples",
+    "fast_food": "Fast_food",
     "Regular_exercise": "Reg_Exercise",
     "reg_exercise": "Reg_Exercise",
     "image": "Ultrasound_image",
@@ -1456,6 +1488,45 @@ def _ensure_owner_provider_column(cur) -> None:
         )
     except Exception:  # noqa: BLE001
         pass
+
+
+def _ensure_clinical_recommendations_column(cur) -> None:
+    """Match PHP pcode_ensure_clinical_recommendations_column()."""
+    try:
+        cur.execute(
+            """
+            ALTER TABLE patient_personal_info
+            ADD COLUMN clinical_recommendations TEXT NULL DEFAULT NULL
+            """
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _coerce_contact_no(value: Any) -> Any:
+    """patient_personal_info.contact_no is BIGINT — empty strings 500 in strict mode."""
+    if value is None:
+        return None
+    raw = str(value).strip()
+    if not raw or raw.lower() in {"null", "undefined", "nan", "n/a"}:
+        return None
+    digits = re.sub(r"\D+", "", raw)
+    if not digits:
+        return None
+    try:
+        return int(digits)
+    except ValueError:
+        return None
+
+
+def _coerce_sql_date(value: Any) -> Any:
+    if value is None:
+        return None
+    raw = str(value).strip()
+    if not raw or raw.lower() in {"null", "undefined", "nan"}:
+        return None
+    m = re.match(r"^(\d{4}-\d{2}-\d{2})", raw)
+    return m.group(1) if m else None
 
 
 def _ensure_user_diagnosis_schema(cur) -> None:
@@ -3569,7 +3640,8 @@ def api_save_patient():
         except (TypeError, ValueError):
             pass
     dob = data.get("DOB") or data.get("date_of_birth") or None
-    contact = data.get("contact_no")
+    dob = _coerce_sql_date(dob)
+    contact = _coerce_contact_no(data.get("contact_no"))
     address = data.get("address") or ""
     civil_status = data.get("civil_status") or ""
     occupation = data.get("occupation") or ""
@@ -3605,6 +3677,8 @@ def api_save_patient():
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 _ensure_owner_provider_column(cur)
+                _ensure_clinical_recommendations_column(cur)
+                personal_cols = _table_columns(cur, "patient_personal_info")
                 exists = False
                 if patient_id > 0:
                     cur.execute(
@@ -3621,7 +3695,9 @@ def api_save_patient():
 
                 if not exists or has_personal:
                     if exists:
-                        if has_recs:
+                        if has_recs and (
+                            not personal_cols or "clinical_recommendations" in personal_cols
+                        ):
                             cur.execute(
                                 """
                                 UPDATE patient_personal_info
@@ -3651,17 +3727,39 @@ def api_save_patient():
                                 ),
                             )
                     else:
+                        insert_cols = [
+                            "patient_name",
+                            "age",
+                            "date_of_birth",
+                            "contact_no",
+                            "address",
+                            "civil_status",
+                            "occupation",
+                            "religion",
+                            "reffered_by",
+                        ]
+                        insert_vals: list[Any] = [
+                            name,
+                            age,
+                            dob,
+                            contact,
+                            address,
+                            civil_status,
+                            occupation,
+                            religion,
+                            referred_by,
+                        ]
+                        if not personal_cols or "clinical_recommendations" in personal_cols:
+                            insert_cols.append("clinical_recommendations")
+                            insert_vals.append(clinical_recommendations)
+                        if not personal_cols or "owner_provider_id" in personal_cols:
+                            insert_cols.append("owner_provider_id")
+                            insert_vals.append(provider_id)
+                        col_sql = ", ".join(insert_cols)
+                        placeholders = ", ".join(["%s"] * len(insert_cols))
                         cur.execute(
-                            """
-                            INSERT INTO patient_personal_info
-                            (patient_name, age, date_of_birth, contact_no, address, civil_status,
-                             occupation, religion, reffered_by, clinical_recommendations, owner_provider_id)
-                            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                            """,
-                            (
-                                name, age, dob, contact, address, civil_status, occupation,
-                                religion, referred_by, clinical_recommendations, provider_id,
-                            ),
+                            f"INSERT INTO patient_personal_info ({col_sql}) VALUES ({placeholders})",
+                            insert_vals,
                         )
                         patient_id = int(cur.lastrowid)
 
@@ -3723,23 +3821,25 @@ def api_save_patient():
                             )
 
                     try:
-                        _run_param_write(include_ultrasound=True)
-                    except Exception as us_exc:  # noqa: BLE001
-                        # Oversized ultrasound blobs / packet limits — retry clinical fields only
-                        msg = str(us_exc).lower()
-                        if "Ultrasound_image" in clinical and (
-                            "packet" in msg
-                            or "max_allowed_packet" in msg
-                            or "data too long" in msg
-                            or "gone away" in msg
-                        ):
-                            logger.warning(
-                                "Save patient ultrasound failed (%s); retrying without image",
-                                us_exc,
-                            )
-                            _run_param_write(include_ultrasound=False)
+                        if "Ultrasound_image" in clinical:
+                            cur.execute("SAVEPOINT sp_save_patient_us")
+                            try:
+                                _run_param_write(include_ultrasound=True)
+                                cur.execute("RELEASE SAVEPOINT sp_save_patient_us")
+                            except Exception as us_exc:  # noqa: BLE001
+                                try:
+                                    cur.execute("ROLLBACK TO SAVEPOINT sp_save_patient_us")
+                                except Exception:  # noqa: BLE001
+                                    pass
+                                logger.warning(
+                                    "Save patient ultrasound failed (%s); retrying without image",
+                                    us_exc,
+                                )
+                                _run_param_write(include_ultrasound=False)
                         else:
-                            raise
+                            _run_param_write(include_ultrasound=False)
+                    except Exception:
+                        raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Save patient failed")
         return _json_error("Failed to save patient", 500, detail=str(exc))
