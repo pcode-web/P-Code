@@ -168,8 +168,9 @@ def _ultrasound_validation_message(us_check):
     elif any(r in reasons for r in (
         'too_bright', 'large_bright_regions', 'document_like_background',
         'document_like_edges', 'missing_dark_field', 'insufficient_dark_field',
-        'missing_near_black', 'everyday_photo_texture', 'flat_texture',
-        'soft_nonclinical_texture',
+        'missing_near_black', 'missing_black_histogram_peak', 'missing_dark_border',
+        'everyday_photo_texture', 'flat_texture', 'soft_nonclinical_texture',
+        'color_photo_content', 'no_ultrasound_vignette',
     )):
         detail = (
             'The upload looks more like an everyday photo or bright document '
