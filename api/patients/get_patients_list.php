@@ -210,8 +210,9 @@ try {
             'I_beta_HCG_mIU_mL', 'II_beta_HCG_mIU_mL', 'FSH_mIU_mL', 'LH_mIU_mL', 'FSH_LH', 'Hip_inch',
             'Waist_inch', 'Waist_hip_ratio', 'TSH_mIU_L', 'AMH_ng_mL', 'PRL_ng_mL', 'Vit_D3_ng_mL',
             'PRG_ng_mL', 'RBS_mg_dl', 'Weight_gain', 'Hair_growth', 'Skin_darkening', 'Hair_loss',
-            'Pimples', 'Fast_food', 'Reg_Exercise', 'Follicle_no_L', 'Follicle_no_R',
-            'Avg_F_size_L_mm', 'Avg_F_size_R_mm', 'Endometrium_mm', 'Ultrasound_image',
+            'Pimples', 'Fast_food', 'Reg_Exercise', 'BP_Systolic_mmHg', 'BP_Diastolic_mmHg',
+            'Follicle_no_L', 'Follicle_no_R', 'Avg_F_size_L_mm', 'Avg_F_size_R_mm', 'Endometrium_mm',
+            'Ultrasound_image',
         ];
         foreach ($paramFields as $field) {
             if (array_key_exists($field, $params)) {
