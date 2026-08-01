@@ -160,6 +160,7 @@ def _ultrasound_likeness_check(image_bytes):
     we also reject overly bright / document-like images.
     Clinical machines often burn in small colored labels (yellow text, ROI markers);
     those overlays must not fail an otherwise grayscale dark-field scan.
+    Everyday photos (fabric, walls, blurry textures) lack the near-black US field.
     """
     try:
         img = Image.open(BytesIO(image_bytes))
@@ -183,6 +184,10 @@ def _ultrasound_likeness_check(image_bytes):
         bright_frac = float(np.mean(luminance > 0.78))
         very_bright_frac = float(np.mean(luminance > 0.90))
         dark_frac = float(np.mean(luminance < 0.25))
+        very_dark_frac = float(np.mean(luminance < 0.12))
+        luma_p5 = float(np.percentile(luminance, 5))
+        luma_p95 = float(np.percentile(luminance, 95))
+        dynamic_range = float(luma_p95 - luma_p5)
 
         # Local contrast / texture: ultrasound has soft grain; documents have sharp text edges
         # Use simple absolute gradient magnitude on luminance.
@@ -191,6 +196,7 @@ def _ultrasound_likeness_check(image_bytes):
         edge_mean = float((np.mean(gx) + np.mean(gy)) / 2.0)
         # High edge density with bright background is typical of printed text
         sharp_edge_frac = float((np.mean(gx > 0.18) + np.mean(gy > 0.18)) / 2.0)
+        soft_edge_frac = float((np.mean(gx > 0.04) + np.mean(gy > 0.04)) / 2.0)
 
         # Mostly grayscale US with annotation overlays: relax color thresholds
         if grayscale_frac >= 0.88:
@@ -229,6 +235,33 @@ def _ultrasound_likeness_check(image_bytes):
             ok = False
             reasons.append("missing_dark_field")
 
+        # Reject everyday mid-tone photos (fabric/towels/walls) that lack US dark field
+        if dark_frac < 0.14:
+            ok = False
+            reasons.append("insufficient_dark_field")
+        if very_dark_frac < 0.04:
+            ok = False
+            reasons.append("missing_near_black")
+        if (
+            0.28 <= mean_luma <= 0.62
+            and dark_frac < 0.20
+            and very_bright_frac < 0.08
+            and very_dark_frac < 0.08
+        ):
+            ok = False
+            reasons.append("everyday_photo_texture")
+        if dynamic_range < 0.38 and dark_frac < 0.22:
+            ok = False
+            reasons.append("flat_texture")
+        if (
+            soft_edge_frac > 0.35
+            and sharp_edge_frac < 0.04
+            and dark_frac < 0.22
+            and mean_luma > 0.30
+        ):
+            ok = False
+            reasons.append("soft_nonclinical_texture")
+
         return {
             "ok": bool(ok),
             "colorfulness": float(colorfulness),
@@ -238,8 +271,11 @@ def _ultrasound_likeness_check(image_bytes):
             "bright_fraction": bright_frac,
             "very_bright_fraction": very_bright_frac,
             "dark_fraction": dark_frac,
+            "very_dark_fraction": very_dark_frac,
+            "dynamic_range": dynamic_range,
             "edge_mean": edge_mean,
             "sharp_edge_fraction": sharp_edge_frac,
+            "soft_edge_fraction": soft_edge_frac,
             "reasons": reasons
         }
     except Exception as e:
@@ -261,10 +297,12 @@ def _ultrasound_validation_message(us_check):
         detail = 'Color variation is higher than expected for ultrasound imaging.'
     elif any(r in reasons for r in (
         'too_bright', 'large_bright_regions', 'document_like_background',
-        'document_like_edges', 'missing_dark_field'
+        'document_like_edges', 'missing_dark_field', 'insufficient_dark_field',
+        'missing_near_black', 'everyday_photo_texture', 'flat_texture',
+        'soft_nonclinical_texture',
     )):
         detail = (
-            'The upload looks more like a bright document or photo of paper '
+            'The upload looks more like an everyday photo or bright document '
             'than a dark-field pelvic ultrasound scan.'
         )
     elif 'validation_error' in reasons:
@@ -1075,11 +1113,20 @@ def predict(image_bytes, model_path, generate_gradcam=False, apply_smoothing=Tru
         image_validation = _image_validation_payload(us_check, maha_result)
         reliable = bool(classification_result['reliable']) and bool(image_validation.get('passed', True))
 
+        display_classification = classification_result['classification']
+        display_description = classification_result['description']
+        if not reliable:
+            display_classification = 'Pending'
+            display_description = (
+                'Imaging result withheld — upload could not be confirmed as a pelvic ultrasound scan.'
+            )
+
         result = {
             'success': True,
             'probability_percentage': round(probability_percentage, 2),
-            'classification': classification_result['classification'],
-            'description': classification_result['description'],
+            'classification': display_classification,
+            'raw_classification': classification_result['classification'],
+            'description': display_description,
             'reliable': reliable,
             'features_shape': features.shape[0],
             'smoothing_applied': apply_smoothing,

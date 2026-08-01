@@ -652,16 +652,28 @@ def build_api_result(
     if isinstance(image_validation, dict) and "passed" in image_validation:
         reliable = reliable and bool(image_validation.get("passed", True))
 
+    # Never surface Positive/Borderline as actionable when ultrasound was not confirmed
+    display_label = label
+    display_description = classification["description"]
+    display_diagnosis = diagnosis
+    if not reliable:
+        display_label = "Pending"
+        display_description = (
+            "Imaging result withheld — upload could not be confirmed as a pelvic ultrasound scan."
+        )
+        display_diagnosis = None
+
     result = {
         "success": True,
         "probability_percentage": round(pct, 2),
         "positive_probability": float(positive_prob),
         "positive_percent": round(pct, 2),
-        "classification": label,
-        "description": classification["description"],
-        "diagnosis": diagnosis,
-        "prediction": diagnosis,
-        "label": label,
+        "classification": display_label,
+        "raw_classification": label,
+        "description": display_description,
+        "diagnosis": display_diagnosis,
+        "prediction": display_diagnosis if display_diagnosis is not None else diagnosis,
+        "label": display_label,
         "reliable": reliable,
         "smoothing_applied": bool(apply_smoothing),
         "smoothing_factor": float(smoothing_factor) if apply_smoothing else None,
