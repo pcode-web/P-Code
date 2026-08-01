@@ -2904,6 +2904,8 @@
                 clinical_diagnosis: patient.xgboost_diagnosis || 'pending',
                 imaging_diagnosis: patient.cnn_diagnosis || 'pending',
                 date_added: patient.date_added || 'N/A',
+                last_screened_at: patient.last_screened_at || patient.latest_screening_at || null,
+                screening_created_at: patient.last_screened_at || patient.latest_screening_at || null,
                 // Include user ID for signatory
                 user_id: user ? user.id : null
             };

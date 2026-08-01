@@ -293,8 +293,15 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     }
 
     $released = date('d M Y g:i A');
-    $sample_received = !empty($patient['updated_at'])
-        ? date('d M Y g:i A', strtotime($patient['updated_at']))
+    // Prefer screening TIMESTAMP (history run time) over patient row dates
+    $sampleSource = $patient['screening_created_at']
+        ?? $patient['created_at']
+        ?? $patient['last_screened_at']
+        ?? $patient['history_created_at']
+        ?? $patient['updated_at']
+        ?? null;
+    $sample_received = !empty($sampleSource)
+        ? date('d M Y g:i A', strtotime((string) $sampleSource))
         : (!empty($patient['date_added']) ? date('d M Y g:i A', strtotime($patient['date_added'])) : $released);
 
     $logo_dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources' . DIRECTORY_SEPARATOR;
@@ -524,13 +531,13 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
         }
         if ($gc_src !== '') {
             $imaging_html .= '<td style="width:50%;padding:6px;text-align:center;vertical-align:top;">'
-                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (Grad-CAM++)</p>'
+                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (EigenCAM)</p>'
                 . '<img class="pcode-pdf-img" src="' . pcode_pdf_esc($gc_src) . '" alt="AI attention heatmap" style="max-width:100%;max-height:280px;border:1px solid #ccc;" />'
                 . '<p style="font-size:9px;color:#555;margin-top:4px;">Warmer colors = areas the imaging model focused on</p>'
                 . '</td>';
         } else if ($us_src !== '') {
             $imaging_html .= '<td style="width:50%;padding:6px;text-align:center;vertical-align:top;color:#666;font-size:10px;">'
-                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (Grad-CAM++)</p>'
+                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (EigenCAM)</p>'
                 . 'Heatmap was not available for this export. Complete imaging analysis in XAI Insights to include it.'
                 . '</td>';
         }
@@ -664,7 +671,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
 
 <div class="section" data-section="imaging">
   <h2 class="section-title">4. Ultrasound Image and AI Attention Map</h2>
-  <p class="section-help">Side-by-side view of the submitted ultrasound and the Grad-CAM++ heatmap showing where the imaging model focused.</p>
+  <p class="section-help">Side-by-side view of the submitted ultrasound and the EigenCAM heatmap showing where the imaging model focused.</p>
   {$imaging_html}
 </div>
 

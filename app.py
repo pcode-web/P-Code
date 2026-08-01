@@ -12,10 +12,24 @@ import re
 import sys
 import uuid
 from contextlib import contextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Iterator, Optional
+
+try:
+    from zoneinfo import ZoneInfo
+
+    PCODE_TZ = ZoneInfo("Asia/Manila")
+except Exception:  # noqa: BLE001
+    from datetime import timedelta
+
+    PCODE_TZ = timezone(timedelta(hours=8))
+
+# Philippine local time for history cards, last-tested labels, and PDF stamps.
+# MySQL TIMESTAMP is stored UTC; session +08:00 returns Manila wall-clock.
+PCODE_TZ_NAME = "Asia/Manila"
+PCODE_MYSQL_TZ = "+08:00"
 
 import bcrypt
 import pymysql
@@ -238,6 +252,15 @@ def reset_pool() -> None:
     _pool = None
 
 
+def _apply_mysql_session_timezone(conn: pymysql.connections.Connection) -> None:
+    """Align TIMESTAMP read/write with Asia/Manila (matches PHP date_default_timezone)."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SET time_zone = %s", (PCODE_MYSQL_TZ,))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Could not set MySQL time_zone=%s: %s", PCODE_MYSQL_TZ, exc)
+
+
 @contextmanager
 def get_db_connection() -> Iterator[pymysql.connections.Connection]:
     """
@@ -255,6 +278,7 @@ def get_db_connection() -> Iterator[pymysql.connections.Connection]:
             conn = get_pool().connection()
             conn.ping(reconnect=True)
 
+        _apply_mysql_session_timezone(conn)
         yield conn
         conn.commit()
     except Exception:
@@ -270,6 +294,61 @@ def get_db_connection() -> Iterator[pymysql.connections.Connection]:
                 conn.close()  # returns connection to pool
             except Exception:  # noqa: BLE001
                 pass
+
+
+def _parse_datetime_value(value: Any) -> Optional[datetime]:
+    """Coerce DB/ISO values into datetime; None if unparseable."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return datetime(value.year, value.month, value.day)
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        # Support "Z" and common MySQL "YYYY-MM-DD HH:MM:SS"
+        text = text.replace("Z", "+00:00")
+        if " " in text and "T" not in text:
+            text = text.replace(" ", "T", 1)
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError:
+            for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(value.strip(), fmt)
+                except ValueError:
+                    continue
+    return None
+
+
+def _to_manila(dt: datetime) -> datetime:
+    """
+    Normalize to Asia/Manila.
+    Naive values are treated as Manila wall-clock (MySQL session time_zone = +08:00).
+    If a naive value arrives without a Manila session (e.g. cached UTC), callers that
+    still see ~8h drift should verify SET time_zone ran on the connection.
+    """
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=PCODE_TZ)
+    return dt.astimezone(PCODE_TZ)
+
+
+def _format_manila_display(value: Any) -> Optional[str]:
+    """Human history/list stamp: 'Jul 30, 2026 · 12:51 PM' in Asia/Manila."""
+    dt = _parse_datetime_value(value)
+    if dt is None:
+        return None
+    local = _to_manila(dt)
+    # Match PHP: M j, Y · g:i A (no leading zeros on day/hour)
+    hour12 = local.hour % 12 or 12
+    ampm = "AM" if local.hour < 12 else "PM"
+    return f"{local.strftime('%b')} {local.day}, {local.year} · {hour12}:{local.strftime('%M')} {ampm}"
+
+
+def _now_manila() -> datetime:
+    return datetime.now(PCODE_TZ)
 
 
 # Columns allowed on INSERT into patient_diagnosis_parameters (excludes PK/auto fields)
@@ -1877,10 +1956,8 @@ def api_get_patients_list():
 
                     last_screened = row.get("last_screened_at")
                     last_screened_iso = _serialize_value(last_screened)
-                    last_tested_display = None
-                    if isinstance(last_screened, datetime):
-                        last_tested_display = last_screened.strftime("%b %d, %Y · %I:%M %p")
-                    elif last_screened_iso:
+                    last_tested_display = _format_manila_display(last_screened)
+                    if not last_tested_display and last_screened_iso:
                         last_tested_display = str(last_screened_iso)
 
                     formatted: dict[str, Any] = {
@@ -2017,10 +2094,8 @@ def _norm_history_entry(row: dict, source: str = "patient_diagnosis_results") ->
 
     created_at = row.get("created_at")
     created_iso = _serialize_value(created_at)
-    created_display = None
-    if isinstance(created_at, datetime):
-        created_display = created_at.strftime("%b %d, %Y · %I:%M %p")
-    elif created_iso:
+    created_display = _format_manila_display(created_at)
+    if not created_display and created_iso:
         created_display = str(created_iso)
 
     clinical = {}
@@ -3502,9 +3577,22 @@ def api_export_xai_pdf():
     if not isinstance(payload, dict):
         return _json_error("Invalid JSON export payload", 400)
     patient_id = str(payload.get("patient_id") or "unknown")
+    generated = _now_manila()
+    sample_src = (
+        payload.get("last_screened_at")
+        or payload.get("screening_created_at")
+        or payload.get("created_at")
+        or payload.get("date_added")
+    )
+    sample_display = _format_manila_display(sample_src) or generated.strftime(
+        f"%b {generated.day}, %Y · {(generated.hour % 12) or 12}:{generated.strftime('%M')} "
+        f"{'AM' if generated.hour < 12 else 'PM'}"
+    )
+    released_display = _format_manila_display(generated) or sample_display
     lines = [
         f"Patient ID: {patient_id}",
-        f"Generated: {datetime.utcnow().isoformat()}Z",
+        f"Released: {released_display} (Asia/Manila)",
+        f"Sample received: {sample_display} (Asia/Manila)",
         "",
         "Clinical / imaging summary (cloud export)",
     ]

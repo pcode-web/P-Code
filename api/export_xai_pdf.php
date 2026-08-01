@@ -33,7 +33,7 @@ $response = [
 ];
 
 try {
-    // Grad-CAM (TensorFlow) can take several minutes on first load
+    // EigenCAM (TensorFlow) can take several minutes on first load
     @ini_set('max_execution_time', '600');
     @set_time_limit(600);
     @ini_set('memory_limit', '1024M');
@@ -49,7 +49,7 @@ try {
         throw new Exception('Invalid JSON export payload');
     }
 
-    // DEBUG: log keys only (never dump ultrasound/Grad-CAM base64)
+    // DEBUG: log keys only (never dump ultrasound/EigenCAM base64)
     error_log('=== EXPORT PDF DEBUG ===');
     error_log('Input keys: ' . json_encode(array_keys($input)));
     error_log('Has shap_explanation: ' . (!empty($input['shap_explanation']) ? 'yes' : 'no'));
@@ -95,10 +95,7 @@ try {
     error_log('Frontend diagnosis data: ' . json_encode($frontend_diagnosis_data));
     
     // Connect to database
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($conn->connect_error) {
-        throw new Exception("Database connection failed: " . $conn->connect_error);
-    }
+    $conn = pcode_mysqli();
     pcode_ensure_clinical_recommendations_column($conn);
     
     // Get user name from database
@@ -201,7 +198,8 @@ try {
             `d`.`CNN_diagnosis_probability_percentage`,
             `d`.`Overall_diagnosis`,
             `d`.`Overall_diagnosis_probability_percentage`,
-            `d`.`diagnosis_id`
+            `d`.`diagnosis_id`,
+            `d`.`created_at` AS `screening_created_at`
         FROM `patient_personal_info` `p`
         LEFT JOIN `patient_diagnosis_parameters` `c` ON `p`.`patient_id` = `c`.`patient_id`
         LEFT JOIN `patient_diagnosis_results` `d` ON `p`.`patient_id` = `d`.`patient_id`
@@ -303,7 +301,8 @@ try {
                 `CNN_diagnosis`,
                 `CNN_diagnosis_probability_percentage`,
                 `Overall_diagnosis`,
-                `Overall_diagnosis_probability_percentage`
+                `Overall_diagnosis_probability_percentage`,
+                `created_at`
             FROM `patient_diagnosis_results`
             WHERE `patient_id` = ?
             ORDER BY `diagnosis_id` DESC
@@ -327,6 +326,9 @@ try {
                 $patient['CNN_diagnosis_probability_percentage'] = $diagnosis_row['CNN_diagnosis_probability_percentage'];
                 $patient['Overall_diagnosis'] = $diagnosis_row['Overall_diagnosis'];
                 $patient['Overall_diagnosis_probability_percentage'] = $diagnosis_row['Overall_diagnosis_probability_percentage'];
+                if (!empty($diagnosis_row['created_at'])) {
+                    $patient['screening_created_at'] = $diagnosis_row['created_at'];
+                }
                 $has_database_diagnosis = true;
                 
                 error_log('Updated patient array with diagnosis data from database');
@@ -480,18 +482,18 @@ try {
         }
     }
 
-    // Generate Grad-CAM++ when ultrasound is present but heatmap was not sent
+    // Generate EigenCAM when ultrasound is present but heatmap was not sent
     if (empty($patient['gradcam_visualization'])) {
         $usForCam = $patient['Ultrasound_image'] ?? $patient['ultrasound_image'] ?? ($input['ultrasound_image'] ?? '');
         $usLen = is_string($usForCam) ? strlen($usForCam) : 0;
-        error_log('EXPORT PDF: Grad-CAM missing; ultrasound_len=' . $usLen);
+        error_log('EXPORT PDF: EigenCAM missing; ultrasound_len=' . $usLen);
         if (is_string($usForCam) && $usForCam !== '') {
             $generatedCam = pcode_export_generate_gradcam($usForCam);
             if ($generatedCam !== '') {
                 $patient['gradcam_visualization'] = $generatedCam;
-                error_log('EXPORT PDF: Grad-CAM generated, len=' . strlen($generatedCam));
+                error_log('EXPORT PDF: EigenCAM generated, len=' . strlen($generatedCam));
             } else {
-                error_log('EXPORT PDF: Grad-CAM generation failed/empty');
+                error_log('EXPORT PDF: EigenCAM generation failed/empty');
             }
         }
     }
@@ -634,7 +636,7 @@ function pcode_export_extract_shap_contributions(array $input) {
 }
 
 /**
- * Python interpreter for ML export helpers (SHAP / Grad-CAM).
+ * Python interpreter for ML export helpers (SHAP / EigenCAM).
  * Must match predict_xgboost.php / predict_cnn_gradcam.php — NOT the PDF .venv
  * (that venv only has ReportLab and lacks tensorflow/pandas/shap).
  */
@@ -721,7 +723,7 @@ function pcode_export_recompute_shap(array $patient, array $input) {
 }
 
 /**
- * Generate Grad-CAM++ visualization PNG (data URI) for the PDF when missing.
+ * Generate EigenCAM visualization PNG (data URI) for the PDF when missing.
  */
 function pcode_export_generate_gradcam($imageBase64) {
     $scriptPath = realpath(__DIR__ . '/../cnn_predict.py');
@@ -744,7 +746,7 @@ function pcode_export_generate_gradcam($imageBase64) {
     $output = shell_exec($cmd);
     @unlink($tempImage);
     if (!$output) {
-        error_log('EXPORT PDF Grad-CAM: empty shell output; python=' . $python);
+        error_log('EXPORT PDF EigenCAM: empty shell output; python=' . $python);
         return '';
     }
     $result = json_decode($output, true);
@@ -754,11 +756,11 @@ function pcode_export_generate_gradcam($imageBase64) {
         }
     }
     if (!is_array($result)) {
-        error_log('EXPORT PDF Grad-CAM: non-JSON sample=' . substr($output, 0, 300));
+        error_log('EXPORT PDF EigenCAM: non-JSON sample=' . substr($output, 0, 300));
         return '';
     }
     if (empty($result['success']) && empty($result['gradcam_visualization'])) {
-        error_log('EXPORT PDF Grad-CAM: script error=' . ($result['error'] ?? 'unknown'));
+        error_log('EXPORT PDF EigenCAM: script error=' . ($result['error'] ?? 'unknown'));
         return '';
     }
     $viz = $result['gradcam_visualization'] ?? '';

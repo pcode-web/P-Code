@@ -32,10 +32,7 @@ try {
         exit;
     }
 
-    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($mysqli->connect_error) {
-        throw new Exception('Database connection failed');
-    }
+    $mysqli = pcode_mysqli();
     pcode_diagnosis_history_ensure_columns($mysqli);
 
     $historyStmt = $mysqli->prepare('

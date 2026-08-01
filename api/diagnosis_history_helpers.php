@@ -270,13 +270,19 @@ function pcode_normalize_history_row(array $row, string $sourceTable): array
         $createdAt = date('Y-m-d H:i:s');
     }
 
+    // Format in Asia/Manila (config sets PHP + MySQL session time_zone)
+    $createdTs = strtotime((string) $createdAt);
+    $createdDisplay = $createdTs
+        ? date('M j, Y · g:i A', $createdTs)
+        : (string) $createdAt;
+
     return [
         'diagnosis_id' => (int) ($row['diagnosis_id'] ?? 0),
         'screening_id' => $row['screening_id'] ?? null,
         'parameter_id' => isset($row['parameter_id']) ? (int) $row['parameter_id'] : null,
         'source' => $sourceTable,
         'created_at' => $createdAt,
-        'created_at_display' => date('M j, Y · g:i A', strtotime($createdAt)),
+        'created_at_display' => $createdDisplay,
         'created_by' => $origin['code'],
         'origin_label' => $origin['label'],
         'origin_badge_class' => $origin['badge_class'],

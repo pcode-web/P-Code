@@ -27,10 +27,7 @@ try {
 
     requireProvider();
 
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($conn->connect_error) {
-        throw new Exception('Connection failed: ' . $conn->connect_error);
-    }
+    $conn = pcode_mysqli();
 
     pcode_diagnosis_history_ensure_columns($conn);
     pcode_ensure_clinical_recommendations_column($conn);

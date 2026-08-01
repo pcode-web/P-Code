@@ -48,13 +48,16 @@ try {
     );
 
     // Ensure schema extensions exist (idempotent for dev environments).
-    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($mysqli->connect_error) {
-        throw new Exception('Database connection failed');
-    }
+    $mysqli = pcode_mysqli();
     pcode_diagnosis_history_ensure_columns($mysqli);
     $providerId = pcode_require_provider_owns_patient($mysqli, $patientId, $providerAuth);
     $mysqli->close();
+
+    try {
+        $pdo->exec("SET time_zone = '+08:00'");
+    } catch (Throwable $e) {
+        // Non-fatal: display still uses PHP Asia/Manila when strings are local
+    }
 
     $patientStmt = $pdo->prepare('
         SELECT patient_id, patient_name, linked_user_id

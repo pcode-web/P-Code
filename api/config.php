@@ -180,6 +180,9 @@ try {
     }
     
     $conn->set_charset("utf8");
+
+    // TIMESTAMP / CURRENT_TIMESTAMP in Philippine local time (match date_default_timezone)
+    @$conn->query("SET time_zone = '+08:00'");
     
     // Enable strict mysqli exceptions only in debug mode
     if (PCODE_DEBUG) {
@@ -199,6 +202,22 @@ function pcode_users_db() {
         throw new Exception('DB connection failed: ' . $c->connect_error);
     }
     $c->set_charset("utf8");
+    @$c->query("SET time_zone = '+08:00'");
+    return $c;
+}
+
+/**
+ * Open a mysqli connection with utf8 + Asia/Manila session time_zone.
+ * Prefer this for ad-hoc connections outside the shared $conn from config.php.
+ */
+function pcode_mysqli(): mysqli
+{
+    $c = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    if ($c->connect_error) {
+        throw new Exception('DB connection failed: ' . $c->connect_error);
+    }
+    $c->set_charset('utf8');
+    @$c->query("SET time_zone = '+08:00'");
     return $c;
 }
 
