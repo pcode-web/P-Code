@@ -659,7 +659,7 @@ def build_api_result(
     if not reliable:
         display_label = "Pending"
         display_description = (
-            "Imaging result withheld — upload could not be confirmed as a pelvic ultrasound scan."
+            "Imaging result withheld — upload could not be confirmed as an ultrasound scan."
         )
         display_diagnosis = None
 

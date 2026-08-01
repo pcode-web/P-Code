@@ -411,7 +411,7 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
 
 def _ultrasound_validation_message(us_check: dict) -> str:
     if us_check.get("ok", False):
-        return "The system confirmed this image as a pelvic ultrasound scan."
+        return "The system confirmed this image as an ultrasound scan."
     reasons = list(us_check.get("reasons") or [])
     if "too_colorful" in reasons:
         detail = "The upload appears too colorful for a typical grayscale ultrasound frame."
@@ -438,14 +438,14 @@ def _ultrasound_validation_message(us_check: dict) -> str:
     ):
         detail = (
             "The upload looks more like an everyday photo or bright document "
-            "than a dark-field pelvic ultrasound scan."
+            "than a dark-field ultrasound scan."
         )
     elif "validation_error" in reasons:
         detail = "The system could not complete ultrasound-likeness checks for this file."
     else:
-        detail = "The upload does not match expected pelvic ultrasound visual characteristics."
+        detail = "The upload does not match expected ultrasound visual characteristics."
     return (
-        "The system could not confirm this image as a valid pelvic ultrasound scan. "
+        "The system could not confirm this image as a valid ultrasound scan. "
         + detail
         + " CNN imaging results may be unreliable."
     )
@@ -466,7 +466,7 @@ def image_validation_payload(us_check: dict, maha_result=None) -> dict:
             mahalanobis_anomaly = True
             reasons.append("mahalanobis_anomaly")
             message_parts.append(
-                "The system could not confirm this image as a valid pelvic ultrasound scan. "
+                "The system could not confirm this image as a valid ultrasound scan. "
                 "CNN imaging results may be unreliable."
             )
 
@@ -477,12 +477,12 @@ def image_validation_payload(us_check: dict, maha_result=None) -> dict:
 
     passed = (not mahalanobis_anomaly) and us_ok
     if passed:
-        message = "The system confirmed this image as a pelvic ultrasound scan."
+        message = "The system confirmed this image as an ultrasound scan."
     else:
         message = (
             " ".join(message_parts)
             if message_parts
-            else "The system could not confirm this image as a valid pelvic ultrasound scan."
+            else "The system could not confirm this image as a valid ultrasound scan."
         )
 
     payload = {

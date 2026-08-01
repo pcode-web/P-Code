@@ -159,7 +159,7 @@ def _ultrasound_likeness_check(image_bytes):
 def _ultrasound_validation_message(us_check):
     """Human-readable validation summary for API / UI consumers."""
     if us_check.get('ok', False):
-        return 'The system confirmed this image as a pelvic ultrasound scan.'
+        return 'The system confirmed this image as an ultrasound scan.'
     reasons = us_check.get('reasons') or []
     if 'too_colorful' in reasons:
         detail = 'The upload appears too colorful for a typical grayscale ultrasound frame.'
@@ -174,14 +174,14 @@ def _ultrasound_validation_message(us_check):
     )):
         detail = (
             'The upload looks more like an everyday photo or bright document '
-            'than a dark-field pelvic ultrasound scan.'
+            'than a dark-field ultrasound scan.'
         )
     elif 'validation_error' in reasons:
         detail = 'The system could not complete ultrasound-likeness checks for this file.'
     else:
-        detail = 'The upload does not match expected pelvic ultrasound visual characteristics.'
+        detail = 'The upload does not match expected ultrasound visual characteristics.'
     return (
-        'The system could not confirm this image as a valid pelvic ultrasound scan. '
+        'The system could not confirm this image as a valid ultrasound scan. '
         + detail
         + ' CNN imaging results may be unreliable.'
     )
@@ -201,7 +201,7 @@ def _image_validation_payload(us_check, maha_result=None):
             mahalanobis_anomaly = True
             reasons.append('mahalanobis_anomaly')
             message_parts.append(
-                'The system could not confirm this image as a valid pelvic ultrasound scan. '
+                'The system could not confirm this image as a valid ultrasound scan. '
                 'CNN imaging results may be unreliable.'
             )
 
@@ -213,13 +213,13 @@ def _image_validation_payload(us_check, maha_result=None):
     passed = (not mahalanobis_anomaly) and us_ok
     if passed:
         if maha_available and maha_reliable and us_ok:
-            message = 'The system confirmed this image as a pelvic ultrasound scan.'
+            message = 'The system confirmed this image as an ultrasound scan.'
         elif us_ok:
-            message = 'The system confirmed this image as a pelvic ultrasound scan.'
+            message = 'The system confirmed this image as an ultrasound scan.'
         else:
             message = 'Image passed validation checks.'
     else:
-        message = ' '.join(message_parts) if message_parts else 'The system could not confirm this image as a valid pelvic ultrasound scan.'
+        message = ' '.join(message_parts) if message_parts else 'The system could not confirm this image as a valid ultrasound scan.'
 
     payload = {
         'is_ultrasound': us_ok,
@@ -989,7 +989,7 @@ def predict(image_bytes, model_path, generate_gradcam=False, apply_smoothing=Tru
         if not reliable:
             display_classification = 'Pending'
             display_description = (
-                'Imaging result withheld — upload could not be confirmed as a pelvic ultrasound scan.'
+                'Imaging result withheld — upload could not be confirmed as an ultrasound scan.'
             )
 
         result = {

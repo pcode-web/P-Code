@@ -301,14 +301,14 @@
       passed = false;
     }
     var message = passed
-      ? 'The system confirmed this image as a pelvic ultrasound scan.'
-      : 'The system could not confirm this image as a valid pelvic ultrasound scan.';
+      ? 'The system confirmed this image as an ultrasound scan.'
+      : 'The system could not confirm this image as a valid ultrasound scan.';
     if (mahaAvailable && mahaReliable === false) {
-      message = 'The system could not confirm this image as a valid pelvic ultrasound scan. Imaging AI results may be unreliable.';
+      message = 'The system could not confirm this image as a valid ultrasound scan. Imaging AI results may be unreliable.';
     } else if (!usOk) {
       message =
         (us && us.message) ||
-        'The system could not confirm this image as a valid pelvic ultrasound scan.';
+        'The system could not confirm this image as a valid ultrasound scan.';
     }
     return {
       is_ultrasound: usOk && passed,
@@ -371,7 +371,7 @@
     var validation = (imagingData && imagingData.ultrasound_validation) || {};
     return (
       validation.message ||
-      'The system could not confirm this upload as a valid pelvic ultrasound scan. Imaging AI results will not be saved. You can still save clinical metrics/results, or upload a valid pelvic ultrasound and re-run imaging analysis.'
+      'The system could not confirm this upload as a valid ultrasound scan. Imaging AI results will not be saved. You can still save clinical metrics/results, or upload a valid ultrasound and re-run imaging analysis.'
     );
   }
 
@@ -428,7 +428,7 @@
         '<span class="pcode-system-review__icon" aria-hidden="true">✓</span>' +
         '<div class="pcode-system-review__copy">' +
         '<span class="pcode-system-review__label">System review</span>' +
-        '<span class="pcode-system-review__message">Confirmed as a pelvic ultrasound image.</span>' +
+        '<span class="pcode-system-review__message">Confirmed as an ultrasound image.</span>' +
         '</div></div>';
       return;
     }
@@ -437,7 +437,7 @@
       '<span class="pcode-system-review__icon" aria-hidden="true">!</span>' +
       '<div class="pcode-system-review__copy">' +
       '<span class="pcode-system-review__label">System review</span>' +
-      '<span class="pcode-system-review__message">Could not confirm this image as a pelvic ultrasound scan.</span>' +
+      '<span class="pcode-system-review__message">Could not confirm this image as an ultrasound scan.</span>' +
       '</div></div>';
   }
 
@@ -455,7 +455,7 @@
       '<p class="text-sm text-amber-100 leading-relaxed">' +
       '<span class="font-semibold">Ultrasound image not confirmed:</span> ' +
       (validation.message ||
-        'The system could not confirm this upload as a valid pelvic ultrasound scan.') +
+        'The system could not confirm this upload as a valid ultrasound scan.') +
       ' Imaging AI confidence may be unreliable and will be excluded from Save. Clinical metrics can still be saved.' +
       '</p>';
   }
