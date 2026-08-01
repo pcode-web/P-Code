@@ -247,7 +247,7 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
     ROI markers). Those overlays must not fail an otherwise grayscale dark-field scan.
 
     Everyday photos (fabric, walls, blurry textures) are mid-tone and lack the
-    near-black field typical of pelvic ultrasound — reject those explicitly.
+    near-black field / dark margins typical of pelvic ultrasound — reject those.
     """
     try:
         from PIL import Image
@@ -268,6 +268,7 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         very_bright_frac = float(np.mean(luminance > 0.90))
         dark_frac = float(np.mean(luminance < 0.25))
         very_dark_frac = float(np.mean(luminance < 0.12))
+        near_black_frac = float(np.mean(luminance < 0.08))
         luma_p5 = float(np.percentile(luminance, 5))
         luma_p95 = float(np.percentile(luminance, 95))
         dynamic_range = float(luma_p95 - luma_p5)
@@ -277,16 +278,43 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         sharp_edge_frac = float((np.mean(gx > 0.18) + np.mean(gy > 0.18)) / 2.0)
         soft_edge_frac = float((np.mean(gx > 0.04) + np.mean(gy > 0.04)) / 2.0)
 
+        # Dark margins are nearly universal on clinical US frames (letterboxing / CRT field).
+        border = 14
+        border_pixels = np.concatenate(
+            [
+                luminance[:border, :].ravel(),
+                luminance[-border:, :].ravel(),
+                luminance[:, :border].ravel(),
+                luminance[:, -border:].ravel(),
+            ]
+        )
+        border_very_dark = float(np.mean(border_pixels < 0.10))
+        center = luminance[48:176, 48:176]
+        center_mean = float(np.mean(center))
+        center_dark = float(np.mean(center < 0.25))
+        corner = float(
+            np.mean(
+                np.concatenate(
+                    [
+                        luminance[:40, :40].ravel(),
+                        luminance[:40, -40:].ravel(),
+                        luminance[-40:, :40].ravel(),
+                        luminance[-40:, -40:].ravel(),
+                    ]
+                )
+            )
+        )
+
         # Mostly grayscale US with annotation overlays: relax color thresholds
         if grayscale_frac >= 0.88:
             color_limit = 55.0
             spread_limit = 0.22
-        elif grayscale_frac >= 0.75:
-            color_limit = 32.0
-            spread_limit = 0.14
+        elif grayscale_frac >= 0.78:
+            color_limit = 28.0
+            spread_limit = 0.12
         else:
-            color_limit = 18.0
-            spread_limit = 0.08
+            color_limit = 12.0
+            spread_limit = 0.06
 
         ok = True
         reasons = []
@@ -296,51 +324,64 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
         if channel_spread > spread_limit:
             ok = False
             reasons.append("high_channel_spread")
-        if mean_luma > 0.58:
+        if mean_luma > 0.52:
             ok = False
             reasons.append("too_bright")
-        if bright_frac > 0.42:
+        if bright_frac > 0.35:
             ok = False
             reasons.append("large_bright_regions")
-        if very_bright_frac > 0.22 and dark_frac < 0.20:
+        if very_bright_frac > 0.18 and dark_frac < 0.22:
             ok = False
             reasons.append("document_like_background")
-        # Require enough dark field so bright paper + text still fails
-        if mean_luma > 0.45 and sharp_edge_frac > 0.08 and dark_frac < 0.25:
+        if mean_luma > 0.40 and sharp_edge_frac > 0.08 and dark_frac < 0.28:
             ok = False
             reasons.append("document_like_edges")
-        if dark_frac < 0.08 and mean_luma > 0.50:
+        if dark_frac < 0.08 and mean_luma > 0.45:
             ok = False
             reasons.append("missing_dark_field")
 
         # Pelvic US frames almost always retain a meaningful near-black field.
-        # Soft mid-tone photos (fabric, walls, towels) fail this gate.
-        if dark_frac < 0.14:
+        if dark_frac < 0.22:
             ok = False
             reasons.append("insufficient_dark_field")
-        if very_dark_frac < 0.04:
+        if very_dark_frac < 0.08:
             ok = False
             reasons.append("missing_near_black")
+        if near_black_frac < 0.05:
+            ok = False
+            reasons.append("missing_black_histogram_peak")
+        if border_very_dark < 0.18:
+            ok = False
+            reasons.append("missing_dark_border")
         if (
-            0.28 <= mean_luma <= 0.62
-            and dark_frac < 0.20
-            and very_bright_frac < 0.08
-            and very_dark_frac < 0.08
+            0.22 <= mean_luma <= 0.62
+            and dark_frac < 0.35
+            and very_bright_frac < 0.10
+            and very_dark_frac < 0.12
         ):
             ok = False
             reasons.append("everyday_photo_texture")
-        if dynamic_range < 0.38 and dark_frac < 0.22:
+        if dynamic_range < 0.42 and dark_frac < 0.30:
             ok = False
             reasons.append("flat_texture")
-        # Soft, low-contrast grain without US dark field (blurry fabric/cloth)
+        # Soft mid-tone cloth/blur without a strong US dark field
         if (
-            soft_edge_frac > 0.35
-            and sharp_edge_frac < 0.04
-            and dark_frac < 0.22
-            and mean_luma > 0.30
+            soft_edge_frac > 0.40
+            and sharp_edge_frac < 0.035
+            and dark_frac < 0.25
+            and mean_luma > 0.28
+            and very_dark_frac < 0.10
         ):
             ok = False
             reasons.append("soft_nonclinical_texture")
+        # Colorful camera photos of fabric/objects (even with some shadows)
+        if grayscale_frac < 0.72 and colorfulness > 9.0 and center_dark < 0.30:
+            ok = False
+            reasons.append("color_photo_content")
+        # No US vignette / sector: corners about as bright as the center
+        if abs(corner - center_mean) < 0.07 and dark_frac < 0.40 and mean_luma > 0.22 and border_very_dark < 0.25:
+            ok = False
+            reasons.append("no_ultrasound_vignette")
 
         return {
             "ok": bool(ok),
@@ -352,6 +393,8 @@ def ultrasound_likeness_check(image_bytes: bytes) -> dict:
             "very_bright_fraction": very_bright_frac,
             "dark_fraction": dark_frac,
             "very_dark_fraction": very_dark_frac,
+            "near_black_fraction": near_black_frac,
+            "border_very_dark_fraction": border_very_dark,
             "dynamic_range": dynamic_range,
             "edge_mean": edge_mean,
             "sharp_edge_fraction": sharp_edge_frac,
@@ -384,9 +427,13 @@ def _ultrasound_validation_message(us_check: dict) -> str:
             "missing_dark_field",
             "insufficient_dark_field",
             "missing_near_black",
+            "missing_black_histogram_peak",
+            "missing_dark_border",
             "everyday_photo_texture",
             "flat_texture",
             "soft_nonclinical_texture",
+            "color_photo_content",
+            "no_ultrasound_vignette",
         )
     ):
         detail = (

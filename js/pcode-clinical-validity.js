@@ -259,17 +259,22 @@
     if (!result || typeof result !== 'object') return null;
     if (result.image_validation && typeof result.image_validation === 'object') {
       var iv = result.image_validation;
-      var hasPassFlag = typeof iv.anomaly_passed === 'boolean' || typeof iv.passed === 'boolean';
-      var passed = hasPassFlag
-        ? iv.anomaly_passed !== false && iv.passed !== false
-        : false;
-      var hasUsFlag =
-        typeof iv.is_ultrasound === 'boolean' || typeof iv.ultrasound_likeness_ok === 'boolean';
-      var isUs = hasUsFlag
-        ? iv.is_ultrasound !== false && iv.ultrasound_likeness_ok !== false
-        : false;
+      var passed =
+        iv.anomaly_passed === true &&
+        iv.passed === true &&
+        iv.is_ultrasound !== false &&
+        iv.ultrasound_likeness_ok !== false;
+      var isUs = iv.is_ultrasound === true || iv.ultrasound_likeness_ok === true;
+      // Fail closed: confirmed only when flags are explicitly true
+      if (iv.anomaly_passed !== true || iv.passed !== true) {
+        passed = false;
+      }
+      if (iv.is_ultrasound === false || iv.ultrasound_likeness_ok === false) {
+        passed = false;
+        isUs = false;
+      }
       return {
-        is_ultrasound: isUs,
+        is_ultrasound: !!isUs && passed,
         anomaly_passed: passed,
         passed: passed,
         anomaly_detected: iv.anomaly_detected === true || passed === false,
@@ -287,8 +292,14 @@
     var mahaAvailable = maha && maha.available === true;
     var mahaReliable = mahaAvailable && typeof maha.reliable === 'boolean' ? maha.reliable : null;
     // Missing ultrasound_check must NOT default to confirmed
-    var usOk = us && typeof us.ok === 'boolean' ? us.ok : false;
-    var passed = usOk && (mahaReliable === null || mahaReliable);
+    var usOk = us && us.ok === true;
+    var passed = usOk && (mahaReliable === null || mahaReliable === true);
+    if (result.reliable === false) {
+      passed = false;
+    }
+    if (String(result.classification || '').toLowerCase() === 'pending') {
+      passed = false;
+    }
     var message = passed
       ? 'The system confirmed this image as a pelvic ultrasound scan.'
       : 'The system could not confirm this image as a valid pelvic ultrasound scan.';
@@ -300,7 +311,7 @@
         'The system could not confirm this image as a valid pelvic ultrasound scan.';
     }
     return {
-      is_ultrasound: usOk,
+      is_ultrasound: usOk && passed,
       anomaly_passed: passed,
       passed: passed,
       anomaly_detected: !passed,
@@ -320,9 +331,9 @@
   function resolveImagingReliability(result) {
     var validation = resolveImageValidation(result);
     if (validation) {
-      return validation.anomaly_passed !== false;
+      return validation.anomaly_passed === true;
     }
-    return Boolean(result && result.reliable);
+    return result && result.reliable === true;
   }
 
   function imagingNeedsSaveConfirmation(imagingData) {
@@ -335,9 +346,15 @@
     if (imagingData.reliable === false) return true;
     if (imagingData.anomaly_passed === false) return true;
     if (imagingData.is_ultrasound === false) return true;
+    if (String(imagingData.classification || '').toLowerCase() === 'pending') return true;
     var validation = imagingData.ultrasound_validation || {};
     if (validation.anomaly_passed === false || validation.passed === false) return true;
     if (validation.is_ultrasound === false) return true;
+    // Fail closed unless explicitly confirmed
+    if (validation.anomaly_passed !== true && validation.passed !== true && imagingData.reliable !== true) {
+      // When validation object exists without an explicit pass, treat as unreliable
+      if (validation && (validation.reasons || validation.message)) return true;
+    }
     var maha = imagingData.mahalanobis;
     if (
       maha &&
@@ -405,7 +422,7 @@
     }
     host.classList.remove('hidden');
     host.className = '';
-    if (validation.anomaly_passed !== false) {
+    if (validation.anomaly_passed === true && validation.is_ultrasound === true) {
       host.innerHTML =
         '<div class="pcode-system-review pcode-system-review--confirmed" role="status" aria-live="polite">' +
         '<span class="pcode-system-review__icon" aria-hidden="true">✓</span>' +
@@ -428,7 +445,7 @@
     var host = $('image-ultrasound-validation-warning');
     if (!host) return;
     var validation = resolveImageValidation(result);
-    if (!validation || validation.anomaly_passed !== false) {
+    if (!validation || validation.anomaly_passed === true) {
       host.classList.add('hidden');
       host.innerHTML = '';
       return;
