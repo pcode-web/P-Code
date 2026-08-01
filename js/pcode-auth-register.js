@@ -1,5 +1,6 @@
 /**
- * Credential registration UI for patient + provider login pages.
+ * Credential sign-in + registration for patient + provider login pages.
+ * Firebase Hosting has no PHP — all auth goes through the Render Flask API.
  */
 (function (global) {
   'use strict';
@@ -29,6 +30,29 @@
     );
   }
 
+  function apiUrl(path) {
+    if (typeof global.pcodeApiUrl === 'function') {
+      return global.pcodeApiUrl(path);
+    }
+    if (global.auth && typeof global.auth.resolveApiUrl === 'function') {
+      return global.auth.resolveApiUrl(String(path).replace(/^api\//i, ''));
+    }
+    return (
+      'https://p-code-nqak.onrender.com/api/' +
+      String(path).replace(/^api\//i, '').replace(/\.php$/i, '')
+    );
+  }
+
+  function hashPassword(password) {
+    if (global.PcodePassword && typeof global.PcodePassword.sha256Hex === 'function') {
+      return global.PcodePassword.sha256Hex(password);
+    }
+    if (global.auth && typeof global.auth.hashPasswordForApi === 'function') {
+      return global.auth.hashPasswordForApi(password);
+    }
+    return Promise.resolve(password);
+  }
+
   function setMode(root, mode) {
     var isRegister = mode === 'register';
     root.querySelectorAll('[data-auth-mode="signin"]').forEach(function (el) {
@@ -47,6 +71,62 @@
         ? subtitle.dataset.subtitleRegister
         : subtitle.dataset.subtitleSignin;
     }
+
+    // Keep Google available for both sign-in and create-account
+    try {
+      document.body && document.body.setAttribute('data-pcode-auth-mode', isRegister ? 'register' : 'signin');
+      var divider = root.querySelector('[data-google-divider-signin]');
+      if (divider) {
+        divider.textContent = isRegister
+          ? divider.getAttribute('data-google-divider-register') || 'or create account with Google'
+          : divider.getAttribute('data-google-divider-signin') || 'or continue with Google';
+      }
+      var label = root.querySelector('[data-google-label-signin]');
+      if (label) {
+        label.textContent = isRegister
+          ? label.getAttribute('data-google-label-register') || 'Sign up with Google'
+          : label.getAttribute('data-google-label-signin') || 'Sign in with Google';
+      }
+      var mount = root.querySelector('#google-signin-mount');
+      if (mount) {
+        mount.setAttribute(
+          'aria-label',
+          isRegister ? 'Sign up with Google' : 'Sign in with Google'
+        );
+      }
+      if (global.PcodeLoginGoogle && typeof global.PcodeLoginGoogle.render === 'function') {
+        global.PcodeLoginGoogle.render();
+      }
+    } catch (_) {}
+  }
+
+  function afterLoginSuccess(result, portal) {
+    var token = result.token;
+    var user = result.user;
+    var expiresIn = result.expiresIn != null ? result.expiresIn : 2592000;
+    var portalKey = portal === 'provider' ? 'provider' : 'community';
+
+    if (global.auth && typeof global.auth.setSession === 'function') {
+      global.auth.setSession(token, user, expiresIn, true, portalKey);
+    } else {
+      try {
+        var expiryMs = Date.now() + Number(expiresIn) * 1000;
+        sessionStorage.setItem('PMOS_auth_token', token);
+        sessionStorage.setItem('PMOS_user', JSON.stringify(user));
+        sessionStorage.setItem('PMOS_token_expiry', String(expiryMs));
+        sessionStorage.setItem('PMOS_login_portal', portalKey);
+      } catch (_) {}
+    }
+
+    var next =
+      portal === 'provider'
+        ? 'provider-dashboard.html'
+        : typeof global.auth !== 'undefined' &&
+            global.auth &&
+            typeof global.auth.getDefaultDashboardForUser === 'function'
+          ? global.auth.getDefaultDashboardForUser(user)
+          : 'index.html';
+    global.location.replace(next);
   }
 
   function init(options) {
@@ -66,6 +146,77 @@
       });
     });
 
+    if (signinForm) {
+      signinForm.removeAttribute('action');
+      signinForm.setAttribute('action', '#');
+      signinForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        setError(errorEl, '');
+        setError(successEl, '');
+
+        var emailField = signinForm.elements.email;
+        var passwordField = signinForm.elements.password;
+        var email = emailField ? String(emailField.value || '').trim() : '';
+        var password = passwordField ? String(passwordField.value || '') : '';
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setError(errorEl, 'Please enter a valid email address.');
+          return;
+        }
+        if (password.length < 8) {
+          setError(errorEl, 'Password must be at least 8 characters.');
+          return;
+        }
+
+        var submitBtn = signinForm.querySelector('[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        hashPassword(password)
+          .then(function (digest) {
+            return fetch(apiUrl('api/login.php'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                email: email,
+                password: digest,
+                expectedAccess: portal === 'provider' ? 'provider' : 'community',
+                loginContext: 'portal-pick',
+              }),
+            });
+          })
+          .then(function (res) {
+            return res.text().then(function (text) {
+              var data = null;
+              try {
+                data = text ? JSON.parse(text) : null;
+              } catch (_) {
+                data = null;
+              }
+              return { ok: res.ok, status: res.status, data: data };
+            });
+          })
+          .then(function (result) {
+            if (!result.data || result.data.success !== true || !result.data.token || !result.data.user) {
+              var msg =
+                (result.data && (result.data.message || result.data.error)) ||
+                (result.status === 404
+                  ? 'Sign-in API not found. Check that the Render API is online.'
+                  : 'Invalid email or password.');
+              setError(errorEl, msg);
+              return;
+            }
+            afterLoginSuccess(result.data, portal);
+          })
+          .catch(function () {
+            setError(errorEl, 'Cannot reach the auth API. Please try again.');
+          })
+          .finally(function () {
+            if (submitBtn) submitBtn.disabled = false;
+          });
+      });
+    }
+
     if (!registerForm) return;
 
     registerForm.addEventListener('submit', function (e) {
@@ -83,8 +234,6 @@
       var password = passwordField ? String(passwordField.value || '') : '';
       var institution = institutionField ? String(institutionField.value || '').trim() : '';
 
-      // Name / institution are optional at signup — derive a display name from email.
-      // Users can update profile details later in Edit Profile.
       if (!name && email) {
         var local = email.split('@')[0] || '';
         name = local
@@ -111,16 +260,11 @@
       var submitBtn = registerForm.querySelector('[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
 
-      var hashPromise =
-        global.PcodePassword && typeof global.PcodePassword.sha256Hex === 'function'
-          ? global.PcodePassword.sha256Hex(password)
-          : Promise.resolve(password);
-
-      hashPromise
+      hashPassword(password)
         .then(function (digest) {
-          return fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/register.php'):'api/register.php'), {
+          return fetch(apiUrl('api/register.php'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify({
               user_name: name,
               email: email,
@@ -139,7 +283,8 @@
           if (!result.data || result.data.success !== true) {
             setError(
               errorEl,
-              (result.data && result.data.message) || 'Registration failed. Please try again.'
+              (result.data && (result.data.message || result.data.error)) ||
+                'Registration failed. Please try again.'
             );
             return;
           }
@@ -161,7 +306,6 @@
         });
     });
 
-    // Deep-link ?mode=register
     var params = new URLSearchParams(global.location.search);
     if (params.get('mode') === 'register') {
       setMode(root, 'register');

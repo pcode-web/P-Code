@@ -96,6 +96,18 @@
     }
   }
 
+  function isRegisterAuthMode() {
+    try {
+      if (document.body && document.body.getAttribute('data-pcode-auth-mode') === 'register') {
+        return true;
+      }
+      var reg = document.querySelector('[data-auth-mode="register"]:not(.hidden)');
+      return !!(reg && !reg.classList.contains('hidden'));
+    } catch (_) {
+      return false;
+    }
+  }
+
   function resolvePortalType() {
     try {
       var bodyPortal = document.body && document.body.getAttribute('data-pcode-auth-portal');
@@ -168,7 +180,7 @@
           type: 'standard',
           theme: 'filled_black',
           size: 'large',
-          text: 'signin_with',
+          text: isRegisterAuthMode() ? 'signup_with' : 'signin_with',
           shape: 'rectangular',
           logo_alignment: 'left',
           width: renderWidth,

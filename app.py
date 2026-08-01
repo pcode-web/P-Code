@@ -867,6 +867,9 @@ def api_google_auth():
 
     id_token = str(payload.get("id_token") or payload.get("credential") or "").strip()
     expected = str(payload.get("expectedAccess") or "").strip().lower()
+    allow_register = bool(payload.get("allowRegister")) or str(
+        payload.get("mode") or ""
+    ).strip().lower() in ("signup", "register", "create")
 
     try:
         token_data = _verify_google_id_token(id_token)
@@ -897,12 +900,58 @@ def api_google_auth():
                         (email,),
                     )
                     provider = cur.fetchone()
-                    if not provider or int(provider.get("is_active") or 0) != 1:
+                    if provider and int(provider.get("is_active") or 0) != 1:
                         return _json_error(
-                            "This Google account is not authorized for the OB-GYN portal",
+                            "This provider account is inactive. Contact an administrator.",
                             403,
                         )
-                    if picture:
+                    if not provider:
+                        if not allow_register:
+                            return _json_error(
+                                "This Google account is not authorized for the OB-GYN portal. "
+                                "Use Create account (or Sign up with Google) first.",
+                                403,
+                            )
+                        # Self-serve provider signup via Google
+                        cur.execute(
+                            "SELECT 1 FROM users WHERE email = %s LIMIT 1",
+                            (email,),
+                        )
+                        if cur.fetchone():
+                            return _json_error(
+                                "This email is already registered as a regular user account.",
+                                409,
+                            )
+                        random_pw = bcrypt.hashpw(
+                            _password_to_digest(os.urandom(16).hex()).encode("utf-8"),
+                            bcrypt.gensalt(),
+                        ).decode("utf-8")
+                        cur.execute(
+                            """
+                            INSERT INTO clinical_providers
+                              (email, password, user_name, role, institution, avatar, is_active)
+                            VALUES (%s, %s, %s, %s, %s, %s, 1)
+                            """,
+                            (
+                                email,
+                                random_pw,
+                                name or _derive_display_name(email, "Provider"),
+                                "Ob-Gyn",
+                                "",
+                                picture or None,
+                            ),
+                        )
+                        new_id = int(cur.lastrowid)
+                        provider = {
+                            "id": new_id,
+                            "email": email,
+                            "user_name": name or _derive_display_name(email, "Provider"),
+                            "role": "Ob-Gyn",
+                            "institution": "",
+                            "avatar": picture,
+                            "is_active": 1,
+                        }
+                    elif picture:
                         cur.execute(
                             "UPDATE clinical_providers SET avatar = %s WHERE id = %s",
                             (picture, int(provider["id"])),
@@ -2700,10 +2749,69 @@ def api_register():
     if "@" not in email or "." not in email.split("@")[-1]:
         return _json_error("Invalid email format", 400)
     if portal == "provider":
-        return _json_error(
-            "Provider accounts must be created by an administrator. Self-registration for OB-GYN portals is disabled.",
-            403,
-            code="provider_registration_disabled",
+        # Self-serve OB-GYN registration (email/password) — mirrors Google allowRegister
+        if not _password_is_sha256_digest(password) and len(password) < 8:
+            return _json_error("Password must be at least 8 characters", 400)
+        try:
+            hashed = _hash_password_for_storage(password)
+        except Exception as exc:  # noqa: BLE001
+            return _json_error("Failed to secure password", 500, detail=str(exc))
+        if len(name) < 2:
+            name = _derive_display_name(email, "Provider")
+        try:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1 FROM users WHERE email = %s LIMIT 1", (email,))
+                    if cur.fetchone():
+                        return _json_error("Email already registered", 409)
+                    cur.execute(
+                        "SELECT 1 FROM clinical_providers WHERE email = %s LIMIT 1",
+                        (email,),
+                    )
+                    if cur.fetchone():
+                        return _json_error("Email already registered", 409)
+                    cur.execute(
+                        """
+                        INSERT INTO clinical_providers
+                          (email, password, user_name, role, institution, avatar, is_active)
+                        VALUES (%s, %s, %s, %s, %s, %s, 1)
+                        """,
+                        (email, hashed, name, "Ob-Gyn", institution, None),
+                    )
+                    new_id = int(cur.lastrowid)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Provider registration failed")
+            return _json_error("Registration failed", 500, detail=str(exc))
+
+        token = generate_jwt(
+            {
+                "id": new_id,
+                "email": email,
+                "user_name": name,
+                "name": name,
+                "role": "Ob-Gyn",
+                "auth_source": "clinical_providers",
+            }
+        )
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": "Provider account created. You can sign in now.",
+                    "portal": "provider",
+                    "token": token,
+                    "expiresIn": JWT_EXPIRY,
+                    "user": {
+                        "id": new_id,
+                        "name": name,
+                        "email": email,
+                        "role": "Ob-Gyn",
+                        "institution": institution,
+                        "avatar": _default_avatar(name),
+                    },
+                }
+            ),
+            201,
         )
     if len(name) < 2:
         name = _derive_display_name(email, "Patient")

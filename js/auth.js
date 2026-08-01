@@ -2849,7 +2849,10 @@ class AuthManager {
   }
 
   showErrorInline(elementId, message) {
-    const element = document.getElementById(elementId);
+    let element = document.getElementById(elementId);
+    if (!element && elementId === 'login-general-error') {
+      element = document.getElementById('oauth-bootstrap-error');
+    }
     if (element) {
       element.innerHTML = message;
       if (element.classList.contains('edit-profile-modal__error')) {
@@ -3021,6 +3024,14 @@ class AuthManager {
         googleBody.expectedAccess = portalForGoogle;
         googleBody.loginContext = 'portal-pick';
       }
+      try {
+        const regVisible = document.querySelector('[data-auth-mode="register"]:not(.hidden)');
+        const modeAttr = document.body && document.body.getAttribute('data-pcode-auth-mode');
+        if (modeAttr === 'register' || (regVisible && !regVisible.classList.contains('hidden'))) {
+          googleBody.mode = 'signup';
+          googleBody.allowRegister = true;
+        }
+      } catch (_) {}
       const response = await fetch(this.resolveApiUrl('auth/google_callback.php'), {
         method: 'POST',
         headers: {
@@ -3119,15 +3130,12 @@ class AuthManager {
             }
           }
         } else {
-          const errorMsg = result?.message || 'Google sign-in failed';
+          const errorMsg =
+            result?.error || result?.message || 'Google sign-in failed';
           console.error('Google login failed:', errorMsg);
           this.invalidateSessionOnAuthFailure();
           if (this.isLoginNewPortalUserContext()) {
-            if (response.status === 403) {
-              this.showLoginNewCredentialsRejectedInline(errorMsg);
-            } else {
-              this.showLoginNewCredentialsRejectedInline(errorMsg);
-            }
+            this.showLoginNewCredentialsRejectedInline(errorMsg);
           } else {
             this.showErrorInline('login-general-error', errorMsg);
           }
