@@ -3152,6 +3152,7 @@ def api_update_profile():
     name = str(payload.get("user_name") or payload.get("name") or "").strip()
     institution = payload.get("institution")
     avatar = payload.get("avatar")
+    password = str(payload.get("password") or "").strip()
     uid = int(decoded.get("id") or 0)
     source = str(decoded.get("auth_source") or "")
     role = str(decoded.get("role") or "").lower()
@@ -3162,6 +3163,8 @@ def api_update_profile():
         return _json_error("Invalid session", 401)
     if name and len(name) < 2:
         return _json_error("Name must be at least 2 characters", 400)
+    if password and not _password_is_sha256_digest(password) and len(password) < 8:
+        return _json_error("Password must be at least 8 characters", 400)
 
     try:
         with get_db_connection() as conn:
@@ -3180,6 +3183,9 @@ def api_update_profile():
                 if avatar is not None:
                     sets.append("avatar = %s")
                     vals.append(str(avatar))
+                if password:
+                    sets.append("password = %s")
+                    vals.append(_hash_password_for_storage(password))
                 if not sets:
                     return _json_error("No profile fields to update", 400)
                 vals.append(uid)

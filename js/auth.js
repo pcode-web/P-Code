@@ -1151,7 +1151,7 @@ class AuthManager {
             <section class="edit-profile-modal__password-panel" aria-labelledby="ep-password-section-title">
               <h3 id="ep-password-section-title" class="edit-profile-modal__password-title">Change password (optional)</h3>
               <p class="edit-profile-modal__hint" style="margin-bottom:0.65rem;">
-                For security, you can email yourself a Firebase password-reset link, or set a new password below after recent sign-in.
+                Set a new password below to update your P-Code login immediately, or email yourself a secure link to choose a new password on the login page.
               </p>
               <button type="button" id="ep-send-password-reset-btn" class="edit-profile-modal__btn edit-profile-modal__btn--cancel" style="width:100%;margin-bottom:0.75rem;">
                 Email me a password reset link
@@ -1220,18 +1220,33 @@ class AuthManager {
         await new Promise((r) => setTimeout(r, 50));
         tries += 1;
       }
-      if (!window.PcodeFirebase || typeof window.PcodeFirebase.sendPasswordReset !== 'function') {
+      if (!window.PcodeFirebase || typeof window.PcodeFirebase.sendEmailSignInLink !== 'function') {
         throw new Error('Firebase Auth is not available on this page.');
       }
+      // Email-link reset works for MySQL accounts that are not in Firebase Auth.
+      // After the user opens the link, they set a password which syncs to MySQL.
+      const portal = this.isProviderUser(this.currentUser) ? 'provider' : 'community';
       const continueUrl =
-        window.location.origin + (window.location.pathname || '/pcode/index.html');
-      await window.PcodeFirebase.sendPasswordReset(email, continueUrl);
+        window.location.origin +
+        '/login-new.html?firebaseEmailLink=1&portal=' +
+        encodeURIComponent(portal) +
+        '&pwdReset=1';
+      await window.PcodeFirebase.sendEmailSignInLink(email, {
+        mode: 'password',
+        continueUrl
+      });
       if (status) {
-        status.textContent = 'Password reset link sent to ' + email + '. Check your inbox.';
+        status.textContent =
+          'Secure link sent to ' +
+          email +
+          '. Open it, then set your new password on the login page (that updates your P-Code login).';
       }
       this.showNotification('Password reset email sent.', 'success');
     } catch (err) {
-      const msg = (err && err.message) || 'Could not send password reset email.';
+      let msg = (err && err.message) || 'Could not send password reset email.';
+      if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
+        msg = 'Add this site to Firebase Auth authorized domains (Authentication → Settings).';
+      }
       if (status) status.textContent = msg;
       this.showNotification(msg, 'error');
     }
@@ -1399,7 +1414,12 @@ class AuthManager {
       }
 
       this.closeEditProfileModal();
-      this.showNotification('Profile updated successfully.', 'success');
+      this.showNotification(
+        password
+          ? 'Profile and password updated. Use the new password next time you sign in.'
+          : 'Profile updated successfully.',
+        'success'
+      );
     } catch (e) {
       console.error('Profile update error:', e);
       this.showErrorInline('ep-general-error', 'Network error. Please try again.');
@@ -3282,10 +3302,10 @@ class AuthManager {
         this.hideError('login-general-error');
         this.setSession(result.token, result.user, result.expiresIn, true, pForSession);
 
-        // After passwordless sign-in, offer optional password set on login-new
+        // After passwordless / reset link, offer password set on login-new
         try {
           const wrap = document.getElementById('firebase-set-password-wrap');
-          if (wrap && opts.mode === 'signup') {
+          if (wrap && (opts.mode === 'signup' || opts.mode === 'password')) {
             wrap.classList.remove('hidden');
           }
         } catch (_) {}
@@ -3313,16 +3333,26 @@ class AuthManager {
           }
         }
 
-        // For signup, briefly allow setting a password before redirect
-        if (opts.mode === 'signup' && document.getElementById('firebase-set-password-wrap')) {
+        try {
+          sessionStorage.setItem('PMOS_post_password_set_redirect', redirectUrl);
+        } catch (_) {}
+
+        // Signup: optional password. Password-reset link: require time to set new password.
+        if (
+          (opts.mode === 'signup' || opts.mode === 'password') &&
+          document.getElementById('firebase-set-password-wrap')
+        ) {
           const status = document.getElementById('firebase-email-status');
           if (status) {
             status.hidden = false;
             status.classList.remove('is-error');
             status.textContent =
-              'Signed in. Optional: set a password below, or continue — redirecting in a few seconds…';
+              opts.mode === 'password'
+                ? 'Signed in. Set your new P-Code password below, then continue.'
+                : 'Signed in. Optional: set a password below, or continue — redirecting in a few seconds…';
           }
-          setTimeout(() => window.location.replace(redirectUrl), 4500);
+          const delayMs = opts.mode === 'password' ? 120000 : 4500;
+          setTimeout(() => window.location.replace(redirectUrl), delayMs);
           return;
         }
 

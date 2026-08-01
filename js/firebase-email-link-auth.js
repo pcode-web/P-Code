@@ -129,12 +129,31 @@
     setBusy(true);
     try {
       var fb = await waitForFirebase();
+      var portal = portalType();
+      if (portal !== 'community' && portal !== 'provider') {
+        setStatus('Choose Regular User or OB-GYN first.', true);
+        return;
+      }
+      // Email sign-in link works even when the account only exists in MySQL
+      // (Firebase Auth password-reset emails require a Firebase Auth user).
       var continueUrl =
-        window.location.origin + window.location.pathname + '?firebasePasswordReset=1';
-      await fb.sendPasswordReset(email, continueUrl);
-      setStatus('Password reset email sent to ' + email + '. Follow the link to choose a new password.');
+        window.location.origin +
+        window.location.pathname +
+        '?firebaseEmailLink=1&portal=' +
+        encodeURIComponent(portal) +
+        '&pwdReset=1';
+      await fb.sendEmailSignInLink(email, { mode: 'password', continueUrl: continueUrl });
+      setStatus(
+        'Check your inbox for a secure link for ' +
+          email +
+          '. Open it on this device, then set your new P-Code password.'
+      );
     } catch (err) {
-      setStatus((err && err.message) || 'Could not send password reset email.', true);
+      var msg = (err && err.message) || 'Could not send password reset email.';
+      if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
+        msg = 'Add this site to Firebase Auth authorized domains (Authentication → Settings).';
+      }
+      setStatus(msg, true);
     } finally {
       setBusy(false);
     }
@@ -156,25 +175,65 @@
     setBusy(true);
     try {
       var fb = await waitForFirebase();
-      await fb.setFirebasePassword(a);
-      // Also sync to P-Code profile password when a session exists
+      try {
+        await fb.setFirebasePassword(a);
+      } catch (fbErr) {
+        // MySQL is the source of truth for email/password login; Firebase sync is best-effort.
+        console.warn('Firebase password update skipped:', fbErr);
+      }
+      // Sync to P-Code (MySQL) profile password when a session exists
       if (global.auth && global.auth.token && a) {
         var hashed =
           typeof global.auth.hashPasswordForApi === 'function'
             ? await global.auth.hashPasswordForApi(a)
             : a;
-        await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('./api/update_profile.php'):'./api/update_profile.php'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + global.auth.token
-          },
-          body: JSON.stringify({ password: hashed })
+        var user = global.auth.currentUser || {};
+        var syncBody = { password: hashed };
+        if (user.name || user.user_name) {
+          syncBody.name = String(user.name || user.user_name || '');
+        }
+        if (user.institution != null) {
+          syncBody.institution = String(user.institution);
+        }
+        var syncRes = await fetch(
+          typeof pcodeApiUrl === 'function'
+            ? pcodeApiUrl('./api/update_profile.php')
+            : './api/update_profile.php',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + global.auth.token
+            },
+            body: JSON.stringify(syncBody)
+          }
+        );
+        var syncData = await syncRes.json().catch(function () {
+          return null;
         });
+        if (!syncRes.ok || !syncData || syncData.success !== true) {
+          throw new Error(
+            (syncData && (syncData.message || syncData.error)) ||
+              'Could not save password to your P-Code account.'
+          );
+        }
+      } else {
+        throw new Error('Sign in first, then set your password.');
       }
-      setStatus('Password updated. You can use it next time alongside email link sign-in.');
+      setStatus('Password updated. You can sign in with email and this password next time.');
       if (p1) p1.value = '';
       if (p2) p2.value = '';
+      var redirectUrl = 'index.html';
+      try {
+        redirectUrl =
+          sessionStorage.getItem('PMOS_post_password_set_redirect') ||
+          sessionStorage.getItem('PMOS_post_login_redirect') ||
+          redirectUrl;
+        sessionStorage.removeItem('PMOS_post_password_set_redirect');
+      } catch (_) {}
+      setTimeout(function () {
+        window.location.replace(redirectUrl);
+      }, 1200);
     } catch (err) {
       setStatus((err && err.message) || 'Could not update password.', true);
     } finally {

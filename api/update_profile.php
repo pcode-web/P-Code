@@ -146,25 +146,32 @@ try {
         sendResponse(false, 'Invalid JSON payload', null, 400);
     }
 
-    $name = isset($input['name']) ? trim($input['name']) : '';
-    $institution = isset($input['institution']) ? trim($input['institution']) : '';
-    $password = isset($input['password']) ? trim($input['password']) : '';
+    $name = isset($input['name']) ? trim((string) $input['name']) : '';
+    $institution = array_key_exists('institution', $input) ? trim((string) $input['institution']) : null;
+    $password = isset($input['password']) ? trim((string) $input['password']) : '';
 
-    if ($name === '' || strlen($name) < 2) {
+    if ($name !== '' && strlen($name) < 2) {
         sendResponse(false, 'Name must be at least 2 characters', null, 400);
+    }
+    if ($name === '' && $password === '' && $institution === null) {
+        sendResponse(false, 'No profile fields to update', null, 400);
     }
 
     $fields = [];
     $types = '';
     $values = [];
 
-    $fields[] = 'user_name = ?';
-    $types .= 's';
-    $values[] = $name;
+    if ($name !== '') {
+        $fields[] = 'user_name = ?';
+        $types .= 's';
+        $values[] = $name;
+    }
 
-    $fields[] = 'institution = ?';
-    $types .= 's';
-    $values[] = $institution;
+    if ($institution !== null) {
+        $fields[] = 'institution = ?';
+        $types .= 's';
+        $values[] = $institution;
+    }
 
     if ($password !== '') {
         if (!pcode_password_is_sha256_digest($password) && strlen($password) < 8) {
@@ -174,6 +181,10 @@ try {
         $fields[] = 'password = ?';
         $types .= 's';
         $values[] = $hashed_password;
+    }
+
+    if ($fields === []) {
+        sendResponse(false, 'No profile fields to update', null, 400);
     }
 
     $types .= 'i';
