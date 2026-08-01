@@ -191,29 +191,54 @@
       }
     }
 
-    function handleSave() {
-      if (closed) return;
-      var result = opts.onSave ? opts.onSave({ setBusy: setBusy, close: cleanup }) : true;
+    function handleSave(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (closed || saveBtn.disabled) return;
+      var result;
+      try {
+        result = opts.onSave ? opts.onSave({ setBusy: setBusy, close: cleanup }) : true;
+      } catch (err) {
+        console.error('[PcodeFormGuard] Save threw', err);
+        setBusy(false);
+        if (global.pcodeShowCenterAlert) {
+          global.pcodeShowCenterAlert('Could not save. Please try again.', 'error');
+        } else {
+          global.alert('Could not save. Please try again.');
+        }
+        return;
+      }
       if (result && typeof result.then === 'function') {
         setBusy(true);
         result.then(function (ok) {
           setBusy(false);
           if (ok !== false) cleanup();
-        }).catch(function () {
+        }).catch(function (err) {
           setBusy(false);
+          console.error('[PcodeFormGuard] Save rejected', err);
         });
       } else if (result !== false) {
         cleanup();
       }
     }
 
-    function handleDiscard() {
-      if (closed) return;
+    function handleDiscard(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (closed || discardBtn.disabled) return;
       cleanup();
       if (opts.onDiscard) opts.onDiscard();
     }
 
-    function handleCancel() {
+    function handleCancel(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       if (closed) return;
       cleanup();
       if (opts.onCancel) opts.onCancel();
@@ -223,14 +248,14 @@
     discardBtn.addEventListener('click', handleDiscard);
     cancelBtn.addEventListener('click', handleCancel);
     overlay.addEventListener('mousedown', function (e) {
-      if (e.target === overlay) handleCancel();
+      if (e.target === overlay) handleCancel(e);
     });
     document.addEventListener('keydown', onKey, true);
 
     document.body.appendChild(overlay);
     requestAnimationFrame(function () {
       overlay.classList.add('is-visible');
-      saveBtn.focus();
+      try { saveBtn.focus(); } catch (_) {}
     });
 
     return { close: cleanup };

@@ -657,7 +657,7 @@
   <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
   <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-v4fix">
   <link rel="stylesheet" href="css/pcode-form-autosave.css?v=20260709b">
-  <link rel="stylesheet" href="css/pcode-form-guard.css?v=20260724-guardlight">
+  <link rel="stylesheet" href="css/pcode-form-guard.css?v=20260801-saveclick">
   <link rel="stylesheet" href="css/pcode-detect-user.css?v=20260725-uscompact">
   <link rel="stylesheet" href="css/pcode-clinical-notes.css?v=20260723-btnfix">
   <link rel="stylesheet" href="css/pcode-detect-stepper.css?v=20260723-stepgap2">
@@ -1907,7 +1907,7 @@
             }
             runGuard({
                 hasUnsaved: hasUnsavedDiagnosisResults,
-                save: function () { return saveToPatientRecord({ quiet: true }); },
+                save: function () { return saveToPatientRecord({ quiet: true, notifyErrors: true }); },
                 discard: discardDiagnosisResults,
                 proceed: proceedFn
             });
@@ -5337,13 +5337,19 @@
 
         function saveToPatientRecord(options = {}) {
             const quiet = !!options.quiet;
+            const notifyErrors = !quiet || !!options.notifyErrors;
             if (window.__pcodeSaveInFlight) {
+                if (notifyErrors) {
+                    const msg = 'A save is already in progress. Please wait a moment, then try again.';
+                    if (typeof window.pcodeShowCenterAlert === 'function') window.pcodeShowCenterAlert(msg, 'info');
+                    else alert(msg);
+                }
                 return Promise.resolve(false);
             }
             try {
             // Check if we have at least one analysis (clinical or imaging)
             if (!clinicalData && !imagingData) {
-                if (!quiet) alert('Please complete at least one analysis (clinical or imaging data) before saving.');
+                if (notifyErrors) alert('Please complete at least one analysis (clinical or imaging data) before saving.');
                 return Promise.resolve(false);
             }
 
@@ -5358,7 +5364,7 @@
             console.log('[SAVE] Imaging Data:', imagingData);
 
             if (!token) {
-                if (!quiet) alert('Session expired. Please log in again.');
+                if (notifyErrors) alert('Session expired. Please log in again.');
                 return Promise.resolve(false);
             }
 
@@ -5366,7 +5372,7 @@
             console.log('[SAVE] Actor:', actor);
 
             if (actor.isGuest) {
-                if (!quiet) alert('Guest users cannot permanently save results. Please create an account to save.');
+                if (notifyErrors) alert('Guest users cannot permanently save results. Please create an account to save.');
                 return Promise.resolve(false);
             }
 
@@ -5387,23 +5393,23 @@
                 if (!clinicalData && imagingData && imagingIsUnreliableForSave(imagingData)) {
                     if (window.PcodeClinicalValidity && window.PcodeClinicalValidity.assertImagingReliableForSave) {
                         window.PcodeClinicalValidity.assertImagingReliableForSave(imagingData, {
-                            quiet: quiet,
+                            quiet: !notifyErrors,
                             hasClinical: false,
                             allowClinicalOnly: false
                         });
-                    } else if (!quiet) {
-                        alert('Cannot save imaging-only results ? unreliable ultrasound. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.');
+                    } else if (notifyErrors) {
+                        alert('Cannot save imaging-only results — unreliable ultrasound. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.');
                     }
                     return Promise.resolve(false);
                 }
 
                 // Allow clinical-only, imaging-only, or both
                 if (!clinicalData && !imagingForSave) {
-                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
+                    if (notifyErrors) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
                     return Promise.resolve(false);
                 }
 
-                if (!quiet && imagingExcluded && clinicalData) {
+                if (notifyErrors && imagingExcluded && clinicalData) {
                     const proceed = window.confirm(
                         'Ultrasound image could not be confirmed as a valid scan.\n\n' +
                         'Save clinical metrics only? (Imaging AI results will be excluded.)'
@@ -5538,7 +5544,7 @@
                 }
 
                 if (combinedProbability === null || !Number.isFinite(combinedProbability)) {
-                    if (!quiet) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
+                    if (notifyErrors) alert('Nothing to save yet. Complete clinical analysis and/or ultrasound analysis first.');
                     return Promise.resolve(false);
                 }
 
@@ -5682,7 +5688,7 @@
                 console.error('[SAVE] Unexpected error:', err);
                 window.__pcodeSaveInFlight = false;
                 setSaveRecordLoading(false, { quiet: quiet });
-                if (!quiet) alert('Could not save your record: ' + (err && err.message ? err.message : String(err)));
+                if (notifyErrors) alert('Could not save your record: ' + (err && err.message ? err.message : String(err)));
                 return Promise.resolve(false);
             }
         }
@@ -5732,9 +5738,9 @@
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating...</span>';
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF report…');
+                window.pcodeShowExportLoading('Generating PDF report?');
             } else if (typeof window.pcodeShowCenterAlert === 'function') {
-                window.pcodeShowCenterAlert('Generating PDF report…', 'loading', { persist: true });
+                window.pcodeShowCenterAlert('Generating PDF report?', 'loading', { persist: true });
             }
 
             try {
@@ -5807,7 +5813,7 @@
 
                 btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating PDF...</span>';
                 if (typeof window.pcodeShowExportLoading === 'function') {
-                    window.pcodeShowExportLoading('Generating PDF report…');
+                    window.pcodeShowExportLoading('Generating PDF report?');
                 }
 
                 const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
@@ -5889,8 +5895,8 @@
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
     <script src="js/pcode-image-crop.js?v=20260731-capture-tip"></script>
     <script src="js/pcode-user-care.js?v=20260730-nodraftbar"></script>
-    <script src="js/pcode-form-guard.js?v=20260710a"></script>
-    <script src="js/pcode-diagnosis-guard.js?v=20260710a"></script>
+    <script src="js/pcode-form-guard.js?v=20260801-saveclick"></script>
+    <script src="js/pcode-diagnosis-guard.js?v=20260801-saveclick"></script>
     <script src="js/pcode-diagnostic-severity.js"></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
     <script src="js/pcode-clinical-validity.js?v=20260801-uslabel"></script>

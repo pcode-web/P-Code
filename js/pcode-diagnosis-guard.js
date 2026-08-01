@@ -27,13 +27,29 @@
       discardLabel: opts.discardLabel || 'Discard results',
       cancelLabel: opts.cancelLabel || 'Cancel',
       onSave: function () {
-        var savePromise = opts.save ? opts.save() : Promise.resolve(true);
-        return Promise.resolve(savePromise).then(function (ok) {
-          if (ok === false) return false;
-          if (opts.discard) opts.discard();
-          if (opts.proceed) opts.proceed();
-          return true;
-        });
+        var savePromise = opts.save
+          ? opts.save()
+          : Promise.resolve(true);
+        return Promise.resolve(savePromise)
+          .then(function (ok) {
+            if (ok === false) {
+              // Keep dialog open; save handlers must surface the reason (patient missing, etc.).
+              return false;
+            }
+            if (opts.discard) opts.discard();
+            if (opts.proceed) opts.proceed();
+            return true;
+          })
+          .catch(function (err) {
+            console.error('[PcodeDiagnosisGuard] Save failed', err);
+            var msg = (err && err.message) ? String(err.message) : 'Could not save diagnosis. Please try again.';
+            if (typeof global.pcodeShowCenterAlert === 'function') {
+              global.pcodeShowCenterAlert(msg, 'error');
+            } else {
+              global.alert(msg);
+            }
+            return false;
+          });
       },
       onDiscard: function () {
         if (opts.discard) opts.discard();
