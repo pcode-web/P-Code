@@ -5417,9 +5417,9 @@
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating...</span>';
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF report?');
+                window.pcodeShowExportLoading('Generating PDF report…');
             } else if (typeof window.pcodeShowCenterAlert === 'function') {
-                window.pcodeShowCenterAlert('Generating PDF report?', 'loading', { persist: true });
+                window.pcodeShowCenterAlert('Generating PDF report…', 'loading', { persist: true });
             }
 
             try {
@@ -5492,7 +5492,7 @@
 
                 btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating PDF...</span>';
                 if (typeof window.pcodeShowExportLoading === 'function') {
-                    window.pcodeShowExportLoading('Generating PDF report?');
+                    window.pcodeShowExportLoading('Generating PDF report…');
                 }
 
                 const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
