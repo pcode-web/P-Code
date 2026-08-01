@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="pcode-app-bento-root dark">
 <head>
   <script src="js/pcode-theme-init.js"></script>
@@ -131,7 +131,7 @@
       font-weight: 600;
     }
   </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260801-navcenter">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260730-checkfix">
   <link rel="stylesheet" href="css/pcode-xai-clinical-ui.css?v=20260731-chipfix">
   <link rel="stylesheet" href="css/pcode-diagnostic-severity.css">
 <link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
@@ -262,7 +262,7 @@
           </svg>
         </div>
         <p id="xai-loading-title" class="text-white font-semibold text-lg sm:text-xl tracking-tight">Loading Interpretability...</p>
-        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your clinical parameter insights and ultrasound heatmap interpretation — this usually takes just a moment.</p>
+        <p class="text-sm text-zinc-400 leading-relaxed max-w-sm">Preparing your clinical parameter insights and ultrasound heatmap interpretation—this usually takes just a moment.</p>
       </div>
     </div>
 
@@ -328,7 +328,7 @@
             This chart shows which patient details the system pays the most attention to when reviewing cases. Items near the top usually have a stronger influence on the overall result than items lower on the list.
           </p>
           <p class="text-sm mt-3 px-4 py-3 pcode-xai-clinical-note">
-            <span class="pcode-xai-clinical-note__label">Helpful hint:</span> Use this as a quick review list — if a top item looks unusual, missing, or out of range, compare it with the patient's chart, lab results, and visit notes before relying on the output.
+            <span class="pcode-xai-clinical-note__label">Helpful hint:</span> Use this as a quick review list—if a top item looks unusual, missing, or out of range, compare it with the patient's chart, lab results, and visit notes before relying on the output.
           </p>
         </div>
 
@@ -347,7 +347,7 @@
           </div>
           <div>
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Clinical summary explanation</h2>
-            <p class="text-sm text-gray-600 mt-1">Plain-language walkthrough of the SHAP charts — key drivers, interpretation, and suggested next steps.</p>
+            <p class="text-sm text-gray-600 mt-1">Plain-language walkthrough of the SHAP charts—key drivers, interpretation, and suggested next steps.</p>
           </div>
         </div>
         <div class="text-base sm:text-lg text-gray-800 leading-relaxed space-y-4" id="shap-explanation">Select a patient and load XAI to generate a short narrative for this case.</div>
@@ -499,11 +499,11 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
   <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
   <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
-  <script src="js/pcode-xai-clinical-copy.js?v=20260731-eigencam"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260801-usflag"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
-  <script src="js/pcode-api.js?v=20260731-liveauth"></script>
+  <script src="js/pcode-api.js?v=20260731-apifix2"></script>
   <script src="js/auth.js?v=20260731-btneq"></script>
   <script src="js/pcode-xai-loading.js"></script>
   <script src="js/pcode-gradcam-canvas.js?v=20260731-eigencam"></script>
@@ -2540,8 +2540,18 @@
       return Number.isFinite(fallback) ? fallback : null;
     }
 
-    function resolveImagingClassificationLabel(classification, imagingScore) {
-      if (classification) return String(classification);
+    function resolveImagingClassificationLabel(classification, imagingScore, result) {
+      if (window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result)) {
+        const copy = PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'provider');
+        return copy.label;
+      }
+      if (classification) {
+        const raw = String(classification);
+        if (/^pending$/i.test(raw) && result && result.reliable === false) {
+          return 'Not an ultrasound image';
+        }
+        return raw;
+      }
       const score = Number(imagingScore);
       if (!Number.isFinite(score)) return null;
       return score >= GRADCAM_POSITIVE_THRESHOLD ? 'Positive' : 'Negative';
@@ -2552,6 +2562,7 @@
       if (label === 'Positive') return 'text-sm font-semibold text-red-600';
       if (label === 'Negative') return 'text-sm font-semibold text-green-600';
       if (label === 'Borderline') return 'text-sm font-semibold text-amber-600';
+      if (/not an ultrasound/i.test(String(label || ''))) return 'text-sm font-semibold text-amber-700';
       return 'text-sm font-semibold text-gray-500';
     }
 
@@ -2583,25 +2594,37 @@
       }
 
       if (mode === 'ready') {
-        const cnnScore = resolveCnnImagingScore(options.result, options.imagingScore);
-        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—';
+        const result = options.result || null;
+        const flagged = !!(window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result));
+        const flaggedCopy = flagged && window.PcodeXaiClinical.ultrasoundFlaggedCopy
+          ? PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'provider')
+          : null;
+        const cnnScore = resolveCnnImagingScore(result, options.imagingScore);
+        const scoreText = flagged
+          ? '—'
+          : (Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—');
         const classification = resolveImagingClassificationLabel(
-          options.result && options.result.classification,
-          cnnScore
+          result && result.classification,
+          cnnScore,
+          result
         ) || 'Unknown';
+        const detailHtml = flaggedCopy
+          ? `<p class="mt-3 text-xs text-amber-800 leading-relaxed">${flaggedCopy.detail.replace(/</g, '&lt;')}</p>`
+          : '';
         container.innerHTML = `
-          <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div class="p-4 ${flagged ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'} rounded-lg border">
             <p class="text-sm font-semibold text-gray-800">Imaging Prediction Results</p>
             <div class="mt-3 space-y-2">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-700">Imaging Score</span>
-                <span class="text-lg font-bold text-blue-600">${scoreText}</span>
+                <span class="text-lg font-bold ${flagged ? 'text-amber-700' : 'text-blue-600'}">${scoreText}</span>
               </div>
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center gap-3">
                 <span class="text-sm text-gray-700">Classification</span>
-                <span id="imaging-classification-value" class="${imagingClassificationClass(classification, false)}">${classification}</span>
+                <span id="imaging-classification-value" class="${imagingClassificationClass(classification, false)} text-right">${classification}</span>
               </div>
             </div>
+            ${detailHtml}
           </div>
         `;
       }
@@ -2758,6 +2781,21 @@
       const ultrasoundSrc = currentPatient
         ? (currentPatient.ultrasound_image || currentPatient.Ultrasound_image)
         : null;
+
+      const flagged = !!(window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result));
+      const flaggedCopy = flagged && window.PcodeXaiClinical.ultrasoundFlaggedCopy
+        ? PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'provider')
+        : null;
+
+      if (flagged && flaggedCopy) {
+        renderImagingPredictionStats('ready', { result, imagingScore });
+        if (heatmapContainer) heatmapContainer.innerHTML = flaggedCopy.heatmapHtml;
+        const caption = document.getElementById('gradcam-heatmap-caption');
+        if (caption) caption.innerHTML = flaggedCopy.captionHtml;
+        const interpretationText = document.getElementById('gradcam-text');
+        if (interpretationText) interpretationText.innerHTML = flaggedCopy.interpretationHtml;
+        return;
+      }
 
       function showImage(src) {
         const img = new Image();
@@ -2959,7 +2997,7 @@
       if (menuIcon) menuIcon.classList.remove('hidden');
     }
 
-    // Note: in “desktop site” mode we keep hamburger + profile actions,
+    // Note: in ?desktop site? mode we keep hamburger + profile actions,
     // but hide the sidebar navigation link list via CSS (when present).
 
     // Guest registration modal functions for XAI features

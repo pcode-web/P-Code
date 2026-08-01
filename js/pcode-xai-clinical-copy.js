@@ -49,6 +49,97 @@
     return '<span class="text-sm text-gray-600">' + msg + '</span>';
   }
 
+  /**
+   * True when CNN/EigenCAM response indicates the upload failed ultrasound confirmation.
+   */
+  function isUltrasoundFlagged(result) {
+    if (!result || typeof result !== 'object') return false;
+    if (result.reliable === false) return true;
+    var iv = result.image_validation || result.ultrasound_validation || {};
+    if (iv.passed === false || iv.is_ultrasound === false || iv.ultrasound_likeness_ok === false) {
+      return true;
+    }
+    var us = result.ultrasound_check;
+    if (us && us.ok === false) return true;
+    var label = String(result.classification || result.label || '').trim().toLowerCase();
+    if (label === 'pending' || label === 'not ultrasound' || label === 'not an ultrasound image') {
+      // Pending alone can mean "still processing" — only treat as flagged with supporting signals
+      if (result.reliable === false) return true;
+      if (iv && (iv.passed === false || iv.is_ultrasound === false)) return true;
+      if (us && us.ok === false) return true;
+      if (result.description && /ultrasound scan|not.*ultrasound|could not be confirmed/i.test(String(result.description))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function ultrasoundFlaggedCopy(result, portal) {
+    var detail =
+      (result && (result.description || (result.image_validation && result.image_validation.message))) ||
+      'This upload was flagged by the system as not a valid ultrasound scan. Imaging AI classification is withheld.';
+    var label = 'Not an ultrasound image';
+    var heatmapMsg =
+      'EigenCAM was not applied because this image was flagged as not an ultrasound scan.';
+    if (portal === 'user') {
+      return {
+        label: label,
+        detail: detail,
+        heatmapHtml:
+          '<div class="text-center p-6 px-4">' +
+          '<p class="text-sm font-semibold text-amber-200 mb-2">Image flagged</p>' +
+          '<p class="text-sm text-violet-100/90 leading-relaxed">' +
+          escapeHtml(heatmapMsg) +
+          '</p>' +
+          '<p class="text-xs text-violet-300/75 mt-3 leading-relaxed">' +
+          escapeHtml(detail) +
+          '</p></div>',
+        interpretationHtml:
+          '<div class="space-y-2 text-sm text-violet-100/90 leading-relaxed">' +
+          '<p><span class="font-semibold text-amber-200">System review:</span> ' +
+          escapeHtml(detail) +
+          '</p>' +
+          '<p class="text-violet-300/80">Upload a clear pelvic ultrasound scan to generate EigenCAM Image Interpretation and an imaging classification.</p>' +
+          '</div>',
+        captionHtml:
+          '<span class="font-semibold text-amber-200">Note:</span> ' +
+          'Heatmap interpretation is unavailable for non-ultrasound uploads.',
+      };
+    }
+    return {
+      label: label,
+      detail: detail,
+      heatmapHtml:
+        '<div class="text-center p-6 px-4">' +
+        '<p class="text-sm font-semibold text-amber-700 mb-2">Image flagged</p>' +
+        '<p class="text-sm text-gray-700 leading-relaxed">' +
+        escapeHtml(heatmapMsg) +
+        '</p>' +
+        '<p class="text-xs text-gray-500 mt-3 leading-relaxed">' +
+        escapeHtml(detail) +
+        '</p></div>',
+      interpretationHtml:
+        '<div class="space-y-2 text-sm text-gray-700 leading-relaxed">' +
+        '<p><span class="font-semibold text-amber-700">System review:</span> ' +
+        escapeHtml(detail) +
+        '</p>' +
+        '<p class="text-gray-500">Upload a confirmed ultrasound image to generate EigenCAM Image Interpretation and an imaging classification.</p>' +
+        '</div>',
+      captionHtml:
+        '<span class="font-semibold text-amber-700">Note:</span> ' +
+        'Heatmap interpretation is unavailable for non-ultrasound uploads.',
+    };
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function buildGradcamInterpretationHtml(imagingScore, meta, portal) {
     const scoreText = Number(imagingScore).toFixed(2);
     const isPositive = meta && meta.classification === 'Positive';
@@ -85,7 +176,7 @@
     if (isPositive) {
       return (
         '<div class="space-y-3">' +
-        '<p><span class="' + titleClass + '">AI Heatmap Image Interpretation (PMOS Positive):</span></p>' +
+        '<p><span class="' + titleClass + '">EigenCAM Image Interpretation (PMOS Positive):</span></p>' +
         '<p class="' + bodyClass + '">' + positiveBody + '</p>' +
         bandLegend +
         '<p class="' + bodyClass + ' mt-3"><span class="' + labelClass + '">Clinical context:</span> Imaging score ' + scoreText + '%. Warmer overlay zones should align with follicular regions of interest.</p>' +
@@ -94,7 +185,7 @@
     }
     return (
       '<div class="space-y-3">' +
-      '<p><span class="' + titleClass + '">AI Heatmap Image Interpretation (PMOS Negative):</span></p>' +
+      '<p><span class="' + titleClass + '">EigenCAM Image Interpretation (PMOS Negative):</span></p>' +
       '<p class="' + bodyClass + '">' + negativeBody + '</p>' +
       bandLegend +
       '<p class="' + bodyClass + ' mt-3"><span class="' + labelClass + '">Clinical context:</span> Imaging score ' + scoreText + '%.</p>' +
@@ -617,7 +708,7 @@
         '">' +
         '<li>Verify top contributors against the chart, labs, and ultrasound quality.</li>' +
         '<li>If Cycle / FSH–LH / follicle counts dominate, confirm timing relative to menses and assay units.</li>' +
-        '<li>Use this narrative with Grad-CAM (if present) as an audit trail for the visit note—not as diagnostic criteria.</li>' +
+        '<li>Use this narrative with EigenCAM (if present) as an audit trail for the visit note—not as diagnostic criteria.</li>' +
         '<li>Document clinical judgment when model output and bedside assessment disagree.</li>' +
         '</ul>';
 
@@ -683,6 +774,8 @@
     gradcamHeatmapCaptionHtml: gradcamHeatmapCaptionHtml,
     buildGradcamInterpretationHtml: buildGradcamInterpretationHtml,
     gradcamUnavailableMessage: gradcamUnavailableMessage,
+    isUltrasoundFlagged: isUltrasoundFlagged,
+    ultrasoundFlaggedCopy: ultrasoundFlaggedCopy,
     cleanFeatureLabel: cleanFeatureLabel,
     formatFeatureContributor: formatFeatureContributor,
     extractUnitFromFeatureName: extractUnitFromFeatureName

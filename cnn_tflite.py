@@ -659,7 +659,8 @@ def build_api_result(
     if not reliable:
         display_label = "Pending"
         display_description = (
-            "Imaging result withheld — upload could not be confirmed as an ultrasound scan."
+            "This upload was flagged by the system as not a valid ultrasound scan. "
+            "Imaging AI classification is withheld."
         )
         display_diagnosis = None
 

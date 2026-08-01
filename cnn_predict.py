@@ -989,7 +989,8 @@ def predict(image_bytes, model_path, generate_gradcam=False, apply_smoothing=Tru
         if not reliable:
             display_classification = 'Pending'
             display_description = (
-                'Imaging result withheld — upload could not be confirmed as an ultrasound scan.'
+                'This upload was flagged by the system as not a valid ultrasound scan. '
+                'Imaging AI classification is withheld.'
             )
 
         result = {

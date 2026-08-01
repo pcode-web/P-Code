@@ -795,7 +795,7 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" crossorigin="anonymous"></script>
   <script src="js/pcode-echart-neon-bars.js?v=20260724-chartink"></script>
   <script src="js/pcode-diagnostic-severity.js?v=20260723-fonts"></script>
-  <script src="js/pcode-xai-clinical-copy.js?v=20260731-eigencam"></script>
+  <script src="js/pcode-xai-clinical-copy.js?v=20260801-usflag"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous"></script>
 
   <!-- Load auth module -->
@@ -3042,8 +3042,18 @@
       return Number.isFinite(fallback) ? fallback : null;
     }
 
-    function resolveImagingClassificationLabel(classification, imagingScore) {
-      if (classification) return String(classification);
+    function resolveImagingClassificationLabel(classification, imagingScore, result) {
+      if (window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result)) {
+        const copy = PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'user');
+        return copy.label;
+      }
+      if (classification) {
+        const raw = String(classification);
+        if (/^pending$/i.test(raw) && result && result.reliable === false) {
+          return 'Not an ultrasound image';
+        }
+        return raw;
+      }
       const score = Number(imagingScore);
       if (!Number.isFinite(score)) return null;
       return score >= GRADCAM_POSITIVE_THRESHOLD ? 'Positive' : 'Negative';
@@ -3054,6 +3064,7 @@
       if (label === 'Positive') return 'text-sm font-semibold text-red-400';
       if (label === 'Negative') return 'text-sm font-semibold text-fuchsia-200';
       if (label === 'Borderline') return 'text-sm font-semibold text-amber-300';
+      if (/not an ultrasound/i.test(String(label || ''))) return 'text-sm font-semibold text-amber-200';
       return 'text-sm font-semibold text-violet-200';
     }
 
@@ -3085,32 +3096,46 @@
       }
 
       if (mode === 'ready') {
-        const cnnScore = resolveCnnImagingScore(options.result, options.imagingScore);
-        const scoreText = Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—';
+        const result = options.result || null;
+        const flagged = !!(window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result));
+        const flaggedCopy = flagged && window.PcodeXaiClinical.ultrasoundFlaggedCopy
+          ? PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'user')
+          : null;
+        const cnnScore = resolveCnnImagingScore(result, options.imagingScore);
+        const scoreText = flagged
+          ? '—'
+          : (Number.isFinite(cnnScore) ? cnnScore.toFixed(2) + '%' : '—');
         const classification = resolveImagingClassificationLabel(
-          options.result && options.result.classification,
-          cnnScore
+          result && result.classification,
+          cnnScore,
+          result
         ) || 'Unknown';
-        const ultrasoundCheckOk = options.ultrasoundCheckOk;
+        const ultrasoundCheckOk = flagged
+          ? false
+          : (options.ultrasoundCheckOk);
         const ultrasoundImageLabel = ultrasoundCheckOk === true ? 'Yes' : (ultrasoundCheckOk === false ? 'No' : 'Unknown');
         const ultrasoundImageLabelClass = ultrasoundCheckOk === true ? 'text-fuchsia-100' : (ultrasoundCheckOk === false ? 'text-red-400' : 'text-violet-200');
+        const detailHtml = flaggedCopy
+          ? `<p class="mt-3 text-xs text-amber-100/90 leading-relaxed">${flaggedCopy.detail.replace(/</g, '&lt;')}</p>`
+          : '';
         container.innerHTML = `
-          <div class="p-4 bento-callout bento-callout--info rounded-xl">
+          <div class="p-4 bento-callout ${flagged ? 'bento-callout--warn' : 'bento-callout--info'} rounded-xl">
             <p class="text-sm font-semibold text-white">Imaging Prediction Results</p>
             <div class="mt-3 space-y-2">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-violet-200/85">Imaging Score</span>
-                <span class="text-lg font-bold text-sky-200">${scoreText}</span>
+                <span class="text-lg font-bold ${flagged ? 'text-amber-200' : 'text-sky-200'}">${scoreText}</span>
               </div>
-              <div class="flex justify-between items-center">
+              <div class="flex justify-between items-center gap-3">
                 <span class="text-sm text-violet-200/85">Classification</span>
-                <span id="imaging-classification-value" class="${imagingClassificationClass(classification, false)}">${classification}</span>
+                <span id="imaging-classification-value" class="${imagingClassificationClass(classification, false)} text-right">${classification}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-sm text-violet-200/85">Ultrasound Image</span>
                 <span class="text-sm font-semibold ${ultrasoundImageLabelClass}">${ultrasoundImageLabel}</span>
               </div>
             </div>
+            ${detailHtml}
           </div>
         `;
       }
@@ -3270,6 +3295,25 @@
       const ultrasoundSrc = currentPatient
         ? (currentPatient.ultrasound_image || currentPatient.Ultrasound_image)
         : null;
+
+      const flagged = !!(window.PcodeXaiClinical && PcodeXaiClinical.isUltrasoundFlagged && PcodeXaiClinical.isUltrasoundFlagged(result));
+      const flaggedCopy = flagged && window.PcodeXaiClinical.ultrasoundFlaggedCopy
+        ? PcodeXaiClinical.ultrasoundFlaggedCopy(result, 'user')
+        : null;
+
+      if (flagged && flaggedCopy) {
+        renderImagingPredictionStats('ready', {
+          result,
+          imagingScore,
+          ultrasoundCheckOk: false
+        });
+        if (heatmapContainer) heatmapContainer.innerHTML = flaggedCopy.heatmapHtml;
+        const caption = document.getElementById('gradcam-heatmap-caption');
+        if (caption) caption.innerHTML = flaggedCopy.captionHtml;
+        const interpretationText = document.getElementById('gradcam-text');
+        if (interpretationText) interpretationText.innerHTML = flaggedCopy.interpretationHtml;
+        return;
+      }
 
       function showImage(src) {
         const img = new Image();
