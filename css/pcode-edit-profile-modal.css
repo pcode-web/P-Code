@@ -242,6 +242,9 @@
 }
 
 .edit-profile-modal__password-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
   padding: 1rem 1.125rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.75rem;
@@ -249,7 +252,7 @@
 }
 
 .edit-profile-modal__password-title {
-  margin: 0 0 0.875rem;
+  margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
   color: #e4e4e7;
@@ -259,13 +262,20 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin: 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .edit-profile-modal__hint {
-  margin: 0.25rem 0 0;
+  margin: 0;
   font-size: 0.75rem;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.4);
+}
+
+.edit-profile-modal__hint--status:empty {
+  display: none;
 }
 
 .edit-profile-modal__error {
@@ -280,18 +290,17 @@
   display: block;
 }
 
-/* ---- Footer — inset from modal edges ------------------------------------ */
+/* ---- Footer — equal-width actions, consistent gap ----------------------- */
 .edit-profile-modal__footer {
   flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: stretch;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  column-gap: 0.875rem;
+  row-gap: 0.875rem;
   width: 100%;
   box-sizing: border-box;
-  padding: 1.125rem 1.5rem 1.375rem;
+  padding: 1rem 1.25rem 1.25rem;
   background: rgba(13, 11, 20, 0.96);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   -webkit-backdrop-filter: none !important;
@@ -303,23 +312,31 @@
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  flex: 1 1 0;
+  width: 100%;
   min-width: 0;
+  height: 2.75rem;
   min-height: 2.75rem;
-  height: auto;
-  padding: 0.625rem 1.25rem;
+  max-height: 2.75rem;
+  padding: 0 1rem;
   margin: 0;
   border-radius: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
   font-size: 0.9375rem;
   font-weight: 600;
   font-family: inherit;
-  line-height: 1.25;
+  line-height: 1;
   cursor: pointer;
   white-space: nowrap;
   box-sizing: border-box;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+.edit-profile-modal__btn--block {
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .edit-profile-modal__btn--cancel {
@@ -373,8 +390,10 @@
   }
 
   .edit-profile-modal__footer {
-    padding: 1.125rem 1.25rem 1.5rem !important;
-    gap: 0.75rem;
+    padding: 1rem 1.125rem calc(1.125rem + env(safe-area-inset-bottom, 0px)) !important;
+    column-gap: 0.75rem;
+    row-gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
   }
 
   .edit-profile-modal__field-row {
@@ -382,7 +401,9 @@
   }
 
   .edit-profile-modal__btn {
-    flex: 1 1 0;
-    min-width: 0;
+    width: 100%;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
   }
 }

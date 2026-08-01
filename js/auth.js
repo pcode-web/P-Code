@@ -1079,7 +1079,7 @@ class AuthManager {
 
   ensureEditProfileStyles() {
     const hrefBase = /\/(obgyn|user)\//i.test(window.location.pathname || '') ? '../' : '';
-    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260731-btneq';
+    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260801-btnspace';
     let link = document.getElementById('pcode-edit-profile-modal-css');
     if (link) {
       if (link.getAttribute('href') !== href) link.setAttribute('href', href);
@@ -1094,7 +1094,7 @@ class AuthManager {
 
   ensureEditProfileModal() {
     this.ensureEditProfileStyles();
-    const EP_MODAL_VERSION = '20260723-eppad';
+    const EP_MODAL_VERSION = '20260801-btnspace';
     const existing = document.getElementById('edit-profile-modal');
     if (existing && existing.getAttribute('data-ep-version') === EP_MODAL_VERSION) {
       return;
@@ -1150,13 +1150,13 @@ class AuthManager {
 
             <section class="edit-profile-modal__password-panel" aria-labelledby="ep-password-section-title">
               <h3 id="ep-password-section-title" class="edit-profile-modal__password-title">Change password (optional)</h3>
-              <p class="edit-profile-modal__hint" style="margin-bottom:0.65rem;">
+              <p class="edit-profile-modal__hint">
                 Set a new password below to update your P-Code login immediately, or email yourself a secure link to choose a new password on the login page.
               </p>
-              <button type="button" id="ep-send-password-reset-btn" class="edit-profile-modal__btn edit-profile-modal__btn--cancel" style="width:100%;margin-bottom:0.75rem;">
+              <button type="button" id="ep-send-password-reset-btn" class="edit-profile-modal__btn edit-profile-modal__btn--cancel edit-profile-modal__btn--block">
                 Email me a password reset link
               </button>
-              <p id="ep-password-reset-status" class="edit-profile-modal__hint" role="status"></p>
+              <p id="ep-password-reset-status" class="edit-profile-modal__hint edit-profile-modal__hint--status" role="status"></p>
               <div class="edit-profile-modal__password-fields">
                 <div class="edit-profile-modal__field">
                   <label class="edit-profile-modal__label" for="ep-password">New password</label>
