@@ -1079,7 +1079,7 @@ class AuthManager {
 
   ensureEditProfileStyles() {
     const hrefBase = /\/(obgyn|user)\//i.test(window.location.pathname || '') ? '../' : '';
-    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260803-btneq';
+    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260803-eqbtns';
     let link = document.getElementById('pcode-edit-profile-modal-css');
     if (link) {
       if (link.getAttribute('href') !== href) link.setAttribute('href', href);
@@ -1094,7 +1094,7 @@ class AuthManager {
 
   ensureEditProfileModal() {
     this.ensureEditProfileStyles();
-    const EP_MODAL_VERSION = '20260803-btneq';
+    const EP_MODAL_VERSION = '20260803-eqbtns';
     const existing = document.getElementById('edit-profile-modal');
     if (existing && existing.getAttribute('data-ep-version') === EP_MODAL_VERSION) {
       return;
@@ -1151,12 +1151,8 @@ class AuthManager {
             <section class="edit-profile-modal__password-panel" aria-labelledby="ep-password-section-title">
               <h3 id="ep-password-section-title" class="edit-profile-modal__password-title">Change password (optional)</h3>
               <p class="edit-profile-modal__hint">
-                Set a new password below to update your P-Code login immediately, or email yourself a secure link to choose a new password on the login page.
+                Set a new password below to update your P-Code login immediately.
               </p>
-              <button type="button" id="ep-send-password-reset-btn" class="edit-profile-modal__btn edit-profile-modal__btn--cancel edit-profile-modal__btn--block">
-                Email me a password reset link
-              </button>
-              <p id="ep-password-reset-status" class="edit-profile-modal__hint edit-profile-modal__hint--status" role="status"></p>
               <div class="edit-profile-modal__password-fields">
                 <div class="edit-profile-modal__field">
                   <label class="edit-profile-modal__label" for="ep-password">New password</label>
@@ -1176,8 +1172,12 @@ class AuthManager {
         </div>
 
         <footer class="edit-profile-modal__footer">
-          <button type="button" class="edit-profile-modal__btn edit-profile-modal__btn--cancel" data-ep-close="1">Cancel</button>
-          <button type="button" id="ep-save-btn" class="edit-profile-modal__btn edit-profile-modal__btn--save">Save changes</button>
+          <div class="edit-profile-modal__footer-slot">
+            <button type="button" class="edit-profile-modal__btn edit-profile-modal__btn--cancel" data-ep-close="1">Cancel</button>
+          </div>
+          <div class="edit-profile-modal__footer-slot">
+            <button type="button" id="ep-save-btn" class="edit-profile-modal__btn edit-profile-modal__btn--save">Save changes</button>
+          </div>
         </footer>
       </div>
     `;
@@ -1195,64 +1195,6 @@ class AuthManager {
     const saveBtn = modal.querySelector('#ep-save-btn');
     if (saveBtn) {
       saveBtn.addEventListener('click', () => this.saveProfileChanges());
-    }
-    const resetLinkBtn = modal.querySelector('#ep-send-password-reset-btn');
-    if (resetLinkBtn) {
-      resetLinkBtn.addEventListener('click', () => this.sendFirebasePasswordResetFromProfile());
-    }
-  }
-
-  async sendFirebasePasswordResetFromProfile() {
-    const status = document.getElementById('ep-password-reset-status');
-    const email = (this.currentUser && this.currentUser.email) || '';
-    if (!email) {
-      if (status) status.textContent = 'No email on this account.';
-      return;
-    }
-    if (status) status.textContent = 'Sending reset email…';
-    try {
-      // Load Firebase module on demand if not present (Home / dashboard pages)
-      if (!window.PcodeFirebase) {
-        await import('./firebase-config.js?v=20260803-authdomain');
-      }
-      let tries = 0;
-      while (!window.PcodeFirebase && tries < 40) {
-        await new Promise((r) => setTimeout(r, 50));
-        tries += 1;
-      }
-      if (!window.PcodeFirebase || typeof window.PcodeFirebase.sendEmailSignInLink !== 'function') {
-        throw new Error('Firebase Auth is not available on this page.');
-      }
-      // Email-link reset works for MySQL accounts that are not in Firebase Auth.
-      // After the user opens the link, they set a password which syncs to MySQL.
-      const portal = this.isProviderUser(this.currentUser) ? 'provider' : 'community';
-      const continuePath =
-        '/login-new.html?firebaseEmailLink=1&portal=' +
-        encodeURIComponent(portal) +
-        '&pwdReset=1';
-      const continueUrl =
-        typeof window.PcodeFirebase.buildEmailLinkContinueUrl === 'function'
-          ? window.PcodeFirebase.buildEmailLinkContinueUrl(continuePath)
-          : continuePath;
-      await window.PcodeFirebase.sendEmailSignInLink(email, {
-        mode: 'password',
-        continueUrl
-      });
-      if (status) {
-        status.textContent =
-          'Secure link sent to ' +
-          email +
-          '. Open it, then set your new password on the login page (that updates your P-Code login).';
-      }
-      this.showNotification('Password reset email sent.', 'success');
-    } catch (err) {
-      let msg = (err && err.message) || 'Could not send password reset email.';
-      if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
-        msg =
-          'Could not send the reset email from this site URL. Try again in a moment, or set a new password below.';
-      }
-      if (status) status.textContent = msg;
-      this.showNotification(msg, 'error');
     }
   }
 
