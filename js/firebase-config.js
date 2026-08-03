@@ -46,6 +46,56 @@ function buildActionCodeSettings(continueUrl) {
 }
 
 /**
+ * Origin Firebase Auth always allows for email-link continue URLs.
+ * Custom Hosting URLs (e.g. p-code.web.app) must be added manually in
+ * Firebase Console → Authentication → Settings → Authorized domains.
+ */
+function resolveAuthorizedEmailLinkOrigin() {
+  const authOrigin = 'https://' + firebaseConfig.authDomain;
+  if (typeof window === 'undefined') {
+    return authOrigin;
+  }
+  const host = window.location.hostname || '';
+  const origin = window.location.origin;
+  const autoAuthorized =
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === firebaseConfig.authDomain ||
+    host === firebaseConfig.projectId + '.web.app';
+  return autoAuthorized ? origin : authOrigin;
+}
+
+/** Build a continue URL on a Firebase-authorized domain (same app content). */
+function buildEmailLinkContinueUrl(pathAndQuery) {
+  let path = String(pathAndQuery || '/login-new.html');
+  if (!path.startsWith('/')) {
+    path = '/' + path;
+  }
+  return (resolveAuthorizedEmailLinkOrigin() + path).split('#')[0];
+}
+
+function normalizeContinueUrl(continueUrl) {
+  if (!continueUrl) {
+    if (typeof window !== 'undefined') {
+      return buildEmailLinkContinueUrl(
+        window.location.pathname + window.location.search
+      );
+    }
+    return buildEmailLinkContinueUrl('/login-new.html');
+  }
+  try {
+    const base =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://' + firebaseConfig.authDomain;
+    const parsed = new URL(String(continueUrl), base);
+    return buildEmailLinkContinueUrl(parsed.pathname + parsed.search);
+  } catch (_) {
+    return buildEmailLinkContinueUrl('/login-new.html');
+  }
+}
+
+/**
  * Send a passwordless email sign-in / sign-up link.
  * @param {string} email
  * @param {{ mode?: 'signin'|'signup'|'password', continueUrl?: string }} [opts]
@@ -56,7 +106,7 @@ async function sendEmailSignInLink(email, opts) {
     throw new Error('Enter a valid email address.');
   }
   const mode = (opts && opts.mode) || 'signin';
-  const settings = buildActionCodeSettings(opts && opts.continueUrl);
+  const settings = buildActionCodeSettings(normalizeContinueUrl(opts && opts.continueUrl));
   await sendSignInLinkToEmail(auth, cleaned, settings);
   try {
     window.localStorage.setItem(EMAIL_LINK_STORAGE_KEY, cleaned);
@@ -73,7 +123,7 @@ async function sendPasswordReset(email, continueUrl) {
   if (!cleaned || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleaned)) {
     throw new Error('Enter a valid email address.');
   }
-  const settings = continueUrl ? buildActionCodeSettings(continueUrl) : undefined;
+  const settings = continueUrl ? buildActionCodeSettings(normalizeContinueUrl(continueUrl)) : undefined;
   await sendPasswordResetEmail(auth, cleaned, settings);
   return { email: cleaned };
 }
@@ -154,6 +204,7 @@ const api = {
   firebaseConfig,
   sendEmailSignInLink,
   sendPasswordReset,
+  buildEmailLinkContinueUrl,
   completeEmailLinkSignIn,
   pageIsEmailSignInLink,
   getStoredEmailForLink,
@@ -175,6 +226,7 @@ export {
   firebaseConfig,
   sendEmailSignInLink,
   sendPasswordReset,
+  buildEmailLinkContinueUrl,
   completeEmailLinkSignIn,
   pageIsEmailSignInLink,
   getStoredEmailForLink,

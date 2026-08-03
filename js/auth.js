@@ -1213,7 +1213,7 @@ class AuthManager {
     try {
       // Load Firebase module on demand if not present (Home / dashboard pages)
       if (!window.PcodeFirebase) {
-        await import('./firebase-config.js');
+        await import('./firebase-config.js?v=20260803-authdomain');
       }
       let tries = 0;
       while (!window.PcodeFirebase && tries < 40) {
@@ -1226,11 +1226,14 @@ class AuthManager {
       // Email-link reset works for MySQL accounts that are not in Firebase Auth.
       // After the user opens the link, they set a password which syncs to MySQL.
       const portal = this.isProviderUser(this.currentUser) ? 'provider' : 'community';
-      const continueUrl =
-        window.location.origin +
+      const continuePath =
         '/login-new.html?firebaseEmailLink=1&portal=' +
         encodeURIComponent(portal) +
         '&pwdReset=1';
+      const continueUrl =
+        typeof window.PcodeFirebase.buildEmailLinkContinueUrl === 'function'
+          ? window.PcodeFirebase.buildEmailLinkContinueUrl(continuePath)
+          : continuePath;
       await window.PcodeFirebase.sendEmailSignInLink(email, {
         mode: 'password',
         continueUrl
@@ -1245,7 +1248,8 @@ class AuthManager {
     } catch (err) {
       let msg = (err && err.message) || 'Could not send password reset email.';
       if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
-        msg = 'Add this site to Firebase Auth authorized domains (Authentication → Settings).';
+        msg =
+          'Could not send the reset email from this site URL. Try again in a moment, or set a new password below.';
       }
       if (status) status.textContent = msg;
       this.showNotification(msg, 'error');

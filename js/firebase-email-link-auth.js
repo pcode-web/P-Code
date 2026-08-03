@@ -114,7 +114,7 @@
     } catch (err) {
       var msg = (err && err.message) || 'Could not send email link.';
       if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
-        msg = 'Add this site to Firebase Auth authorized domains (Authentication → Settings).';
+        msg = 'Could not send the reset email from this site URL. Try again in a moment.';
       }
       setStatus(msg, true);
     } finally {
@@ -151,7 +151,7 @@
     } catch (err) {
       var msg = (err && err.message) || 'Could not send password reset email.';
       if (String(msg).indexOf('auth/unauthorized-continue-uri') >= 0) {
-        msg = 'Add this site to Firebase Auth authorized domains (Authentication → Settings).';
+        msg = 'Could not send the reset email from this site URL. Try again in a moment.';
       }
       setStatus(msg, true);
     } finally {
