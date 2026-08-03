@@ -1079,7 +1079,7 @@ class AuthManager {
 
   ensureEditProfileStyles() {
     const hrefBase = /\/(obgyn|user)\//i.test(window.location.pathname || '') ? '../' : '';
-    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260801-btnspace';
+    const href = hrefBase + 'css/pcode-edit-profile-modal.css?v=20260803-btneq';
     let link = document.getElementById('pcode-edit-profile-modal-css');
     if (link) {
       if (link.getAttribute('href') !== href) link.setAttribute('href', href);
@@ -1094,7 +1094,7 @@ class AuthManager {
 
   ensureEditProfileModal() {
     this.ensureEditProfileStyles();
-    const EP_MODAL_VERSION = '20260801-btnspace';
+    const EP_MODAL_VERSION = '20260803-btneq';
     const existing = document.getElementById('edit-profile-modal');
     if (existing && existing.getAttribute('data-ep-version') === EP_MODAL_VERSION) {
       return;

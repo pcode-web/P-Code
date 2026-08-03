@@ -1088,6 +1088,8 @@ html[data-pcode-theme="light"] .edit-profile-modal__footer {
 html.pcode-app-bento-root:not(.dark) .edit-profile-modal__footer,
 html[data-pcode-theme="light"] .edit-profile-modal__footer {
   padding: 1rem 1.25rem 1.25rem !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
   column-gap: 0.875rem !important;
   row-gap: 0.875rem !important;
 }
@@ -1099,6 +1101,15 @@ html[data-pcode-theme="light"] .edit-profile-modal__footer {
     column-gap: 0.75rem !important;
     row-gap: 0.75rem !important;
   }
+}
+
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__footer > .edit-profile-modal__btn,
+html[data-pcode-theme="light"] .edit-profile-modal__footer > .edit-profile-modal__btn,
+html.pcode-app-bento-root:not(.dark) .edit-profile-modal__btn--block,
+html[data-pcode-theme="light"] .edit-profile-modal__btn--block {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
 }
 
 html.pcode-app-bento-root:not(.dark) .edit-profile-modal__close,
