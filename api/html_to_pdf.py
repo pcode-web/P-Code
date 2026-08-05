@@ -411,7 +411,10 @@ def _process_cover_header(section_html, styles):
         if meta_text:
             meta_raw = meta_text
 
-    left_parts = [f'<b>{_pdf_esc(brand_name)}</b>'] + [_pdf_esc(s) for s in subs[:2]]
+    # Purple brand name to match lab reference PDF
+    left_parts = [
+        f'<font color="#5b2d8e"><b>{_pdf_esc(brand_name)}</b></font>'
+    ] + [_pdf_esc(s) for s in subs[:2]]
     left_text = Paragraph('<br/>'.join(left_parts), styles['ReportHeaderLeft'])
     right = Paragraph(_pdf_esc(meta_raw), styles['ReportHeaderRight'])
 
@@ -460,11 +463,34 @@ def _process_cover_header(section_html, styles):
     elements.append(header)
     elements.append(Spacer(1, 0.04 * inch))
 
-    note = re.search(r'class=["\']note["\'][^>]*>(.*?)</p>', section_html, re.IGNORECASE | re.DOTALL)
+    note = re.search(
+        r'class=["\'][^"\']*\b(?:disclaimer|note)\b[^"\']*["\'][^>]*>(.*?)</p>',
+        section_html,
+        re.IGNORECASE | re.DOTALL,
+    )
     if note:
         note_text = _strip_html_keep_breaks(note.group(1))
         if note_text:
-            elements.append(Paragraph(_pdf_esc(note_text), styles['SectionBody']))
+            disclaimer_style = ParagraphStyle(
+                'CoverDisclaimer',
+                parent=styles['SectionBody'],
+                fontSize=8.5,
+                textColor=colors.HexColor('#333333'),
+                alignment=TA_CENTER,
+                fontName='Helvetica-Oblique',
+                leading=11,
+                spaceBefore=2,
+                spaceAfter=2,
+            )
+            elements.append(Paragraph(_pdf_esc(note_text), disclaimer_style))
+            # Rule below disclaimer (header already has LINEBELOW)
+            rule = Table([['']], colWidths=[7.5 * inch])
+            rule.setStyle(TableStyle([
+                ('LINEBELOW', (0, 0), (-1, -1), 1.0, colors.black),
+                ('TOPPADDING', (0, 0), (-1, -1), 2),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ]))
+            elements.append(rule)
             elements.append(Spacer(1, 0.05 * inch))
     return elements
 

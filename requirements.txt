@@ -30,3 +30,6 @@ ai-edge-litert>=1.2.0,<3; platform_system != "Windows"
 tensorflow>=2.15.0,<2.22; platform_system == "Windows"
 Pillow>=10.0.0,<12
 opencv-python-headless>=4.8.0,<5
+
+# Lab-style PDF export (ReportLab HTML → PDF)
+reportlab>=4.0.0,<6

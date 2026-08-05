@@ -3598,61 +3598,256 @@ def api_delete_user():
     return jsonify({"success": True, "message": "User deleted"}), 200
 
 
+def _load_patient_for_pdf(patient_id: int) -> Optional[dict[str, Any]]:
+    """Load personal + clinical + latest diagnosis row for lab PDF export."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                _ensure_owner_provider_column(cur)
+                cur.execute(
+                    """
+                    SELECT
+                        p.patient_id, p.patient_name, p.age, p.date_of_birth, p.date_added,
+                        p.contact_no, p.address, p.reffered_by, p.civil_status, p.occupation,
+                        p.religion, p.clinical_recommendations, p.owner_provider_id, p.linked_user_id
+                    FROM patient_personal_info p
+                    WHERE p.patient_id = %s
+                    LIMIT 1
+                    """,
+                    (patient_id,),
+                )
+                personal = cur.fetchone()
+                if not personal:
+                    return None
+                patient: dict[str, Any] = {
+                    k: _serialize_value(v) for k, v in dict(personal).items()
+                }
+
+                cur.execute(
+                    """
+                    SELECT * FROM patient_diagnosis_parameters
+                    WHERE patient_id = %s
+                    ORDER BY parameter_id DESC
+                    LIMIT 1
+                    """,
+                    (patient_id,),
+                )
+                params = cur.fetchone() or {}
+                for k, v in dict(params).items():
+                    if k in ("parameter_id", "patient_id", "screening_id", "created_at", "created_by"):
+                        continue
+                    if k == "Ultrasound_image":
+                        patient[k] = _format_ultrasound(v)
+                    else:
+                        patient[k] = _serialize_value(v)
+
+                cur.execute(
+                    """
+                    SELECT
+                        diagnosis_id,
+                        XGBoost_diagnosis,
+                        XGBoost_diagnosis_probability_percentage,
+                        CNN_diagnosis,
+                        CNN_diagnosis_probability_percentage,
+                        Overall_diagnosis,
+                        Overall_diagnosis_probability_percentage,
+                        created_at AS screening_created_at
+                    FROM patient_diagnosis_results
+                    WHERE patient_id = %s
+                    ORDER BY diagnosis_id DESC
+                    LIMIT 1
+                    """,
+                    (patient_id,),
+                )
+                dx = cur.fetchone()
+                if dx:
+                    for k, v in dict(dx).items():
+                        patient[k] = _serialize_value(v)
+                return patient
+    except Exception:  # noqa: BLE001
+        logger.exception("PDF patient load failed for id=%s", patient_id)
+        return None
+
+
+def _merge_pdf_payload(patient: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """Merge slim frontend export fields into DB patient dict (DB wins when present)."""
+    out = dict(patient)
+    aliases = {
+        "patient_name": ("patient_name", "name"),
+        "age": ("age",),
+        "clinical_score_percentage": ("clinical_score_percentage", "xgboost_probability"),
+        "imaging_score_percentage": ("imaging_score_percentage", "cnn_probability"),
+        "overall_diagnosis_percentage": ("overall_diagnosis_percentage", "overall_probability"),
+        "overall_diagnosis": ("overall_diagnosis",),
+        "clinical_diagnosis": ("clinical_diagnosis", "xgboost_diagnosis"),
+        "imaging_diagnosis": ("imaging_diagnosis", "cnn_diagnosis"),
+        "date_added": ("date_added",),
+        "last_screened_at": ("last_screened_at", "screening_created_at"),
+        "screening_created_at": ("screening_created_at", "last_screened_at"),
+    }
+    for dest, sources in aliases.items():
+        if out.get(dest) not in (None, ""):
+            continue
+        for src in sources:
+            if payload.get(src) not in (None, ""):
+                out[dest] = payload[src]
+                break
+
+    # Map frontend diagnosis fallbacks into DB column names when empty
+    if out.get("XGBoost_diagnosis") in (None, "") and out.get("clinical_diagnosis") not in (None, ""):
+        out["XGBoost_diagnosis"] = out["clinical_diagnosis"]
+    if out.get("XGBoost_diagnosis_probability_percentage") in (None, "") and out.get(
+        "clinical_score_percentage"
+    ) not in (None, ""):
+        out["XGBoost_diagnosis_probability_percentage"] = out["clinical_score_percentage"]
+    if out.get("CNN_diagnosis") in (None, "") and out.get("imaging_diagnosis") not in (None, ""):
+        out["CNN_diagnosis"] = out["imaging_diagnosis"]
+    if out.get("CNN_diagnosis_probability_percentage") in (None, "") and out.get(
+        "imaging_score_percentage"
+    ) not in (None, ""):
+        out["CNN_diagnosis_probability_percentage"] = out["imaging_score_percentage"]
+    if out.get("Overall_diagnosis") in (None, "") and out.get("overall_diagnosis") not in (None, ""):
+        out["Overall_diagnosis"] = out["overall_diagnosis"]
+    if out.get("Overall_diagnosis_probability_percentage") in (None, "") and out.get(
+        "overall_diagnosis_percentage"
+    ) not in (None, ""):
+        out["Overall_diagnosis_probability_percentage"] = out["overall_diagnosis_percentage"]
+
+    clinical = payload.get("clinical_data") if isinstance(payload.get("clinical_data"), dict) else {}
+    for k, v in clinical.items():
+        if out.get(k) in (None, "") and v not in (None, ""):
+            out[k] = v
+
+    imaging = payload.get("imaging_data") if isinstance(payload.get("imaging_data"), dict) else {}
+    for k, v in imaging.items():
+        if k == "gradcam_visualization" and v:
+            out["gradcam_visualization"] = v
+        elif out.get(k) in (None, "") and v not in (None, ""):
+            out[k] = v
+
+    if payload.get("ultrasound_image") and not out.get("Ultrasound_image"):
+        out["Ultrasound_image"] = payload["ultrasound_image"]
+    if payload.get("gradcam_visualization"):
+        out["gradcam_visualization"] = payload["gradcam_visualization"]
+    elif payload.get("gradcam_image"):
+        out["gradcam_visualization"] = payload["gradcam_image"]
+
+    return out
+
+
 @app.post("/api/export_xai_pdf")
 @app.post("/api/export_xai_pdf.php")
 def api_export_xai_pdf():
-    """Cloud-friendly PDF export from client payload (no PHP TCPDF)."""
-    try:
-        decode_jwt(request.headers.get("Authorization") or "")
-    except ValueError:
-        # Allow guest/export with client-held payload only
-        pass
+    """
+    Lab-style PMOS clinical PDF (matches PHP _lab_report_template + html_to_pdf).
+    Returns a data: URL so Firebase Hosting clients can download without /exports/.
+    """
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return _json_error("Invalid JSON export payload", 400)
-    patient_id = str(payload.get("patient_id") or "unknown")
-    generated = _now_manila()
-    sample_src = (
-        payload.get("last_screened_at")
-        or payload.get("screening_created_at")
-        or payload.get("created_at")
-        or payload.get("date_added")
-    )
-    sample_display = _format_manila_display(sample_src) or generated.strftime(
-        f"%b {generated.day}, %Y · {(generated.hour % 12) or 12}:{generated.strftime('%M')} "
-        f"{'AM' if generated.hour < 12 else 'PM'}"
-    )
-    released_display = _format_manila_display(generated) or sample_display
-    lines = [
-        f"Patient ID: {patient_id}",
-        f"Released: {released_display} (Asia/Manila)",
-        f"Sample received: {sample_display} (Asia/Manila)",
-        "",
-        "Clinical / imaging summary (cloud export)",
-    ]
-    clinical = payload.get("clinical_data") if isinstance(payload.get("clinical_data"), dict) else {}
-    imaging = payload.get("imaging_data") if isinstance(payload.get("imaging_data"), dict) else {}
-    for key in (
-        "xgboost_probability",
-        "cnn_probability",
-        "overall_probability",
-        "XGBoost_diagnosis_probability_percentage",
-        "CNN_diagnosis_probability_percentage",
-        "Overall_diagnosis_probability_percentage",
+
+    raw_id = str(payload.get("patient_id") or "").strip()
+    if not raw_id:
+        return _json_error("Patient ID is required", 400)
+    m = re.search(r"(\d+)", raw_id)
+    try:
+        patient_id = int(m.group(1)) if m else 0
+    except (TypeError, ValueError):
+        patient_id = 0
+    if patient_id <= 0:
+        return _json_error("Invalid patient ID format", 400)
+
+    # Optional auth — providers should only export their patients
+    decoded: dict[str, Any] = {}
+    try:
+        decoded = decode_jwt(request.headers.get("Authorization") or "")
+    except ValueError:
+        decoded = {}
+
+    patient = _load_patient_for_pdf(patient_id)
+    if patient:
+        role = str(decoded.get("role") or "").lower()
+        uid = int(decoded.get("id") or 0)
+        if role in ("provider", "healthcare provider", "ob-gyn", "obgyn") and uid > 0:
+            owner = int(patient.get("owner_provider_id") or 0)
+            if owner > 0 and owner != uid and role not in ("administrator", "admin", "system administrator"):
+                return _json_error("You do not have access to this patient record", 403)
+        if role in ("user", "patient", "community") and uid > 0:
+            linked = int(patient.get("linked_user_id") or 0)
+            if linked > 0 and linked != uid and role not in ("administrator", "admin"):
+                return _json_error("You do not have access to this patient record", 403)
+    else:
+        # Guest / slim payload-only export
+        frontend = payload.get("full_patient_data") if isinstance(payload.get("full_patient_data"), dict) else {}
+        patient = {
+            "patient_id": patient_id,
+            "patient_name": frontend.get("name")
+            or payload.get("patient_name")
+            or "Guest Patient",
+            "age": frontend.get("age") or payload.get("age"),
+            "Overall_diagnosis": payload.get("overall_diagnosis") or "pending",
+            "Overall_diagnosis_probability_percentage": payload.get("overall_diagnosis_percentage") or 0,
+            "XGBoost_diagnosis": payload.get("clinical_diagnosis") or "pending",
+            "XGBoost_diagnosis_probability_percentage": payload.get("clinical_score_percentage") or 0,
+            "CNN_diagnosis": payload.get("imaging_diagnosis") or "pending",
+            "CNN_diagnosis_probability_percentage": payload.get("imaging_score_percentage") or 0,
+        }
+        if isinstance(frontend.get("clinical_data"), dict):
+            patient.update(frontend["clinical_data"])
+
+    patient = _merge_pdf_payload(patient, payload)
+
+    # Optional SHAP from client
+    shap_data: dict[str, Any] = {"top_contributions": []}
+    for candidate in (
+        (payload.get("shap_explanation") or {}).get("top_contributions")
+        if isinstance(payload.get("shap_explanation"), dict)
+        else None,
+        payload.get("top_contributions"),
+        ((payload.get("clinical_data") or {}).get("shap_explanation") or {}).get("top_contributions")
+        if isinstance(payload.get("clinical_data"), dict)
+        else None,
     ):
-        if key in payload and payload[key] not in (None, ""):
-            lines.append(f"{key}: {payload[key]}")
-        if key in clinical and clinical[key] not in (None, ""):
-            lines.append(f"clinical.{key}: {clinical[key]}")
-        if key in imaging and imaging[key] not in (None, ""):
-            lines.append(f"imaging.{key}: {imaging[key]}")
-    pdf = _minimal_pdf_bytes("P-Code / PMOS Detection Report", lines)
-    b64 = base64.b64encode(pdf).decode("ascii")
-    filename = f"PMOS_Report_{re.sub(r'[^A-Za-z0-9_-]+', '_', patient_id)}.pdf"
+        if isinstance(candidate, list) and candidate:
+            shap_data["top_contributions"] = candidate
+            break
+
+    user_name = "Healthcare Professional"
+    try:
+        uid = int(payload.get("user_id") or decoded.get("id") or 0)
+        if uid > 0:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT user_name FROM users WHERE user_id = %s LIMIT 1",
+                        (uid,),
+                    )
+                    row = cur.fetchone()
+                    if row and row.get("user_name"):
+                        user_name = str(row["user_name"])
+    except Exception:  # noqa: BLE001
+        pass
+
+    try:
+        if str(BASE_DIR / "api") not in sys.path:
+            sys.path.insert(0, str(BASE_DIR / "api"))
+        from lab_report_pdf import generate_lab_pdf_bytes  # noqa: WPS433
+
+        pdf_bytes = generate_lab_pdf_bytes(patient, shap_data, user_name)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Lab PDF generation failed")
+        return _json_error("PDF generation failed", 500, detail=str(exc))
+
+    if not pdf_bytes or len(pdf_bytes) < 100:
+        return _json_error("PDF generation produced an empty file", 500)
+
+    b64 = base64.b64encode(pdf_bytes).decode("ascii")
+    stamp = _now_manila().strftime("%Y%m%d_%H%M%S")
+    filename = f"PMOS_Report_{patient_id:03d}_{stamp}.pdf"
     return jsonify(
         {
             "success": True,
-            "message": "PDF generated",
+            "message": "Report generated successfully",
             "filename": filename,
             "file_url": f"data:application/pdf;base64,{b64}",
         }

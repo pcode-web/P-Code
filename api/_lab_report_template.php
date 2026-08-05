@@ -596,7 +596,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
   .lab-header { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
   .lab-header td { vertical-align: top; padding: 0; }
   .brand-logo { width: 48px; height: 48px; display: block; }
-  .brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+  .brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.3px; color: #5b2d8e; }
   .brand-sub { font-size: 10px; color: #333; margin-top: 2px; }
   .clinic-meta { text-align: right; font-size: 9px; line-height: 1.35; color: #222; }
   .clinic-meta strong { font-size: 10px; display: block; margin-bottom: 2px; }
@@ -606,9 +606,10 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
   .results th { text-align: left; font-size: 9px; font-weight: 700; padding: 4px; border-top: 1px solid #000; border-bottom: 1px solid #000; border-left: none; border-right: none; background: transparent; text-transform: uppercase; }
   .results td { border: none; }
   .results tr.pcode-group-row td { border-top: 0.5px solid #666; border-bottom: 0.5px solid #666; border-left: none; border-right: none; background: transparent; }
-  .section-title { font-size: 11px; font-weight: 700; margin: 0 0 4px; text-transform: uppercase; border: none; border-top: 1px solid #000; border-bottom: 1px solid #000; background: transparent; padding: 4px 0; }
+  .section-title { font-size: 11px; font-weight: 700; margin: 0 0 4px; border: none; border-top: 1px solid #000; border-bottom: 1px solid #000; background: transparent; padding: 4px 0; }
   .section-help { font-size: 8.5px; color: #444; margin: 0 0 5px; line-height: 1.35; }
   .note { font-size: 8.5px; color: #333; margin: 5px 0; }
+  .disclaimer { font-size: 8.5px; color: #333; margin: 6px 0; text-align: center; font-style: italic; }
   .important { font-size: 9px; margin-top: 6px; }
   .plain-box { border: none; border-top: 0.6px solid #666; border-bottom: 0.6px solid #666; background: transparent; padding: 6px 2px; margin-top: 6px; font-size: 9px; }
   .sign-table { width: 100%; border-collapse: collapse; margin-top: 8px; border: none; }
@@ -644,7 +645,8 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     </tr>
   </table>
   <hr class="rule">
-  <p class="note">This report summarizes screening inputs and AI-assisted results to support clinical discussion. It is not a standalone medical diagnosis.</p>
+  <p class="disclaimer note">This report summarizes screening inputs and AI-assisted results to support clinical discussion. It is not a standalone medical diagnosis.</p>
+  <hr class="rule">
 </div>
 
 <div class="section" data-section="patient">

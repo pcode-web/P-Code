@@ -22,7 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
     <style>
         * { box-sizing: border-box; }
-        html { width: 100%; max-width: 100%; overflow-x: hidden; }
+        html { width: 100%; max-width: 100%; }
         body { 
             font-family: 'Inter', sans-serif;
             background: white;
@@ -168,7 +168,7 @@
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.65); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); align-items: center; justify-content: center; }
         .modal.show { display: flex; }
-        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260801-navcenter (#patient-modal) */
+        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260805-menublur1 (#patient-modal) */
         .tab-button.active { background-color: #6B46C1; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -547,17 +547,17 @@
             color: white;
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260801-navcenter">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260805-menublur1">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260805-navfix2">
 <link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
 <link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260730-modalbtns">
-<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260805-padfix1">
 <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
 <link rel="stylesheet" href="css/pcode-metric-stealth.css">
 <link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
-  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-mobtn">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260805-padfix1">
   <link rel="stylesheet" href="css/pcode-form-guard.css?v=20260724-guardlight">
-  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260803-btneq">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260801-btnspace">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
   <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260726-lightmetrics">
   <!-- Patients light-mode: gray text/borders -> black (dark mode untouched) -->
@@ -1261,21 +1261,18 @@
     <nav class="pcode-topnav bg-white shadow-lg border-b-2 border-purple-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Left: Logo -->
                 <div class="pcode-topnav__brand flex items-center gap-3">
                     <img src="assets/logo.png" alt="P-Code Logo" class="pcode-nav-logo h-8 w-8 object-contain flex-shrink-0" width="32" height="32" decoding="async">
-                    <h1 class="text-xl sm:text-2xl font-bold text-purple-800">P-Code</h1>
+                    <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl font-bold text-purple-800 dark:text-purple-200">P-Code</h1>
                 </div>
-                <!-- Center: Navigation Links (Desktop) -->
-                <div class="nav-desktop">
-                    <a href="provider-dashboard.html" class="text-gray-600 hover:text-purple-800 transition-colors text-sm">Dashboard</a>
-                    <a href="patients.html" class="text-purple-800 font-semibold border-b-2 border-purple-800 pb-1 text-sm">Patients</a>
-                    <a href="detect-provider.html" class="text-gray-600 hover:text-purple-800 transition-colors text-sm">Detect</a>
-                    <a href="xai-provider.html" class="text-gray-600 hover:text-purple-800 transition-colors text-sm">XAI Insights</a>
-                    <a href="model-performance.html" class="text-gray-600 hover:text-purple-800 transition-colors text-sm">Model Performance</a>
-                    <a href="about.html" class="text-gray-600 hover:text-purple-800 transition-colors text-sm">About</a>
+                <div class="nav-desktop flex gap-2 sm:gap-8">
+                    <a href="provider-dashboard.html" class="pcode-nav-link text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Dashboard</a>
+                    <a href="patients.html" class="pcode-nav-link is-active text-purple-800 dark:text-purple-300 font-semibold border-b-2 border-purple-800 dark:border-purple-400 pb-1 text-sm">Patients</a>
+                    <a href="detect-provider.html" class="pcode-nav-link text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Detect</a>
+                    <a href="xai-provider.html" class="pcode-nav-link text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">XAI Insights</a>
+                    <a href="model-performance.html" class="pcode-nav-link text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">Model Performance</a>
+                    <a href="about.html" class="pcode-nav-link text-gray-600 dark:text-slate-300 hover:text-purple-800 dark:hover:text-purple-300 transition-colors text-sm">About</a>
                 </div>
-                <!-- Right: Hamburger Menu -->
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Menu Button (Hamburger) -->
                     <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -1697,11 +1694,11 @@
                                 <input type="number" id="vit-d3-level" step="0.1" placeholder="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">I ?-HCG (mIU/mL)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">I β-HCG (mIU/mL)</label>
                                 <input type="number" id="beta-hcg-i" step="0.1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">II ?-HCG (mIU/mL)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">II β-HCG (mIU/mL)</label>
                                 <input type="number" id="beta-hcg-ii" step="0.1" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                             </div>
                             <div>
@@ -2008,7 +2005,7 @@
 
     <!-- Auth Module -->
     <script src="js/pcode-api.js?v=20260731-apifix2"></script>
-  <script src="js/auth.js?v=20260803-btneq"></script>
+  <script src="js/auth.js?v=20260803-eqbtns5"></script>
     <script src="js/pcode-form-guard.js?v=20260708a"></script>
   <script src="js/pcode-diagnosis-history.js?v=20260730-apiscan"></script>
     <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
@@ -2951,9 +2948,15 @@
                 console.log('?? API Response:', data);
                 if (data && data.success && data.file_url) {
                     const rawUrl = String(data.file_url || '');
-                    const fileUrl = (/^(https?:|data:)/i.test(rawUrl) || rawUrl.startsWith('/'))
-                        ? rawUrl
-                        : ((rawUrl.startsWith('/') ? '' : '/pcode/') + rawUrl);
+                    // Prefer absolute / data URLs from Render; never fetch relative exports
+                    // paths against Firebase Hosting (that yields a garbled HTML-as-PDF).
+                    let fileUrl = rawUrl;
+                    if (!/^(https?:|data:)/i.test(rawUrl)) {
+                        const apiBase = (typeof pcodeApiUrl === 'function')
+                            ? String(pcodeApiUrl('api/export_xai_pdf.php')).replace(/\/api\/export_xai_pdf(?:\.php)?\/?$/i, '/')
+                            : 'https://p-code-nqak.onrender.com/';
+                        fileUrl = apiBase.replace(/\/?$/, '/') + rawUrl.replace(/^\//, '');
+                    }
                     console.log('Downloading PDF from:', fileUrl.slice(0, 80));
 
                     const triggerDownload = (href) => {
@@ -4111,3 +4114,6 @@
     </script>
 </body>
 </html>
+
+
+
