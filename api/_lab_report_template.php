@@ -1,6 +1,6 @@
 <?php
 /**
- * Lab-style PMOS screening PDF — ordered for patients and clinicians:
+ * Lab-style PMOS screening PDF: ordered for patients and clinicians:
  * 1) Patient information
  * 2) Clinical findings (Detect groups: Vitals → Hormones → Reproductive → Metabolic → Ultrasound → Symptoms)
  * 3) Top factors that influenced the clinical screening
@@ -9,11 +9,84 @@
  */
 
 function pcode_pdf_empty($html = true) {
-    return $html ? '<span style="color:#888;">—</span>' : '—';
+    return $html ? '<span style="color:#888;">: </span>' : ': ';
 }
 
 function pcode_pdf_esc($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Word-wrap clinical recommendations into ruled PDF line rows.
+ */
+function pcode_pdf_wrap_recommendation_lines($text, $width = 92) {
+    $raw = trim(str_replace(["\r\n", "\r"], "\n", (string)$text));
+    if ($raw === '') {
+        return [];
+    }
+    $out = [];
+    $chunks = preg_split("/\n\s*\n+/u", $raw) ?: [];
+    $chunkCount = count($chunks);
+    foreach ($chunks as $i => $chunk) {
+        $parts = preg_split("/\n/u", $chunk) ?: [];
+        $paraParts = [];
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part !== '') {
+                $paraParts[] = $part;
+            }
+        }
+        $para = trim(implode(' ', $paraParts));
+        if ($para === '') {
+            continue;
+        }
+        $words = preg_split('/\s+/u', $para) ?: [];
+        $current = '';
+        foreach ($words as $word) {
+            $trial = $current === '' ? $word : ($current . ' ' . $word);
+            if (mb_strlen($trial) <= $width) {
+                $current = $trial;
+            } else {
+                if ($current !== '') {
+                    $out[] = $current;
+                }
+                while (mb_strlen($word) > $width) {
+                    $out[] = mb_substr($word, 0, $width);
+                    $word = mb_substr($word, $width);
+                }
+                $current = $word;
+            }
+        }
+        if ($current !== '') {
+            $out[] = $current;
+        }
+        if ($i < $chunkCount - 1) {
+            $out[] = '';
+        }
+    }
+    while (!empty($out) && end($out) === '') {
+        array_pop($out);
+    }
+    return $out;
+}
+
+function pcode_pdf_recommendations_ruled_html($recsRaw, $minLines = 5, $blankOnly = 7) {
+    $lines = pcode_pdf_wrap_recommendation_lines($recsRaw);
+    $target = max($minLines, count($lines) + (!empty($lines) ? 2 : 0));
+    if (empty($lines)) {
+        $target = $blankOnly;
+    }
+    while (count($lines) < $target) {
+        $lines[] = '';
+    }
+    $rows = '';
+    foreach ($lines as $ln) {
+        $cell = $ln !== '' ? pcode_pdf_esc($ln) : '&nbsp;';
+        $rows .= '<tr class="pcode-recs-line"><td style="padding:0;border:none;">' . $cell . '</td></tr>';
+    }
+    return '<table class="pcode-recs-ruled results" style="width:100%;border-collapse:collapse;">'
+        . $rows
+        . '</table>';
 }
 
 function pcode_pdf_fmt($value, $decimals = null) {
@@ -61,7 +134,7 @@ function pcode_pdf_dx_plain($label) {
 }
 
 /**
- * Blood group labels — same codes as Detect / XAI (11–18; legacy 1–8).
+ * Blood group labels: same codes as Detect / XAI (11-18; legacy 1-8).
  */
 function pcode_pdf_blood_group($raw) {
     if ($raw === null || $raw === '') return pcode_pdf_empty();
@@ -74,7 +147,7 @@ function pcode_pdf_blood_group($raw) {
     $map = [
         11 => 'O+', 12 => 'O-', 13 => 'A+', 14 => 'A-',
         15 => 'B+', 16 => 'B-', 17 => 'AB+', 18 => 'AB-',
-        // Legacy 1–8
+        // Legacy 1-8
         1 => 'O+', 2 => 'O-', 3 => 'A+', 4 => 'A-',
         5 => 'B+', 6 => 'B-', 7 => 'AB+', 8 => 'AB-',
     ];
@@ -86,7 +159,7 @@ function pcode_pdf_blood_group($raw) {
 }
 
 /**
- * Cycle regularity — same logic as patients.html / Detect save:
+ * Cycle regularity: same logic as patients.html / Detect save:
  * DB numeric 0 = Regular, 1 = Irregular; also accepts text labels.
  * @return array{text:string,abnormal:bool}
  */
@@ -135,7 +208,7 @@ function pcode_pdf_feature_label($raw) {
         'Hemoglobin' => 'Hemoglobin',
         'Waist_inch' => 'Waist Circumference',
         'Hip_inch' => 'Hip Circumference',
-        'Waist_hip_ratio' => 'Waist–Hip Ratio',
+        'Waist_hip_ratio' => 'Waist: Hip Ratio',
         'LH_mIU_mL' => 'LH (Luteinizing Hormone)',
         'LH_level' => 'LH (Luteinizing Hormone)',
         'FSH_mIU_mL' => 'FSH (Follicle-Stimulating Hormone)',
@@ -254,10 +327,25 @@ function pcode_pdf_ob_final_dx_row($label) {
 }
 
 function pcode_pdf_pick($patient, $keys, $decimals = null, $yn = false) {
+    $lowerMap = [];
+    foreach ((array)$patient as $pk => $_pv) {
+        $lowerMap[strtolower((string)$pk)] = $pk;
+    }
+    $seen = [];
     foreach ((array)$keys as $k) {
-        if (array_key_exists($k, $patient) && $patient[$k] !== null && $patient[$k] !== '') {
-            return $yn ? pcode_pdf_yn($patient[$k]) : pcode_pdf_fmt($patient[$k], $decimals);
+        $actual = array_key_exists($k, $patient) ? $k : ($lowerMap[strtolower((string)$k)] ?? null);
+        if ($actual === null || isset($seen[$actual])) {
+            continue;
         }
+        $seen[$actual] = true;
+        $val = $patient[$actual] ?? null;
+        if ($val === null || $val === '') {
+            continue;
+        }
+        if (is_string($val) && in_array(trim($val), ['', ':', '-', '—', 'N/A', 'null', 'None'], true)) {
+            continue;
+        }
+        return $yn ? pcode_pdf_yn($val) : pcode_pdf_fmt($val, $decimals);
     }
     return pcode_pdf_empty();
 }
@@ -287,7 +375,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     $diagnosis = pcode_pdf_map_dx($patient['Overall_diagnosis'] ?? $patient['overall_diagnosis'] ?? 'Pending');
     $confidence = number_format((float)($patient['Overall_diagnosis_probability_percentage'] ?? $patient['overall_diagnosis_percentage'] ?? 0), 1);
 
-    $dob_display = '—';
+    $dob_display = ': ';
     if (!empty($patient['date_of_birth']) && $patient['date_of_birth'] !== '0000-00-00') {
         $dob_display = date('d M Y', strtotime($patient['date_of_birth']));
     }
@@ -318,39 +406,59 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
 
     $patient_name = strtoupper(trim((string)($patient['patient_name'] ?? 'UNKNOWN PATIENT')));
     $patient_name_esc = pcode_pdf_esc($patient_name);
-    $age = $patient['age'] ?? $patient['Age_yrs'] ?? '—';
+    $firstName = trim((string)($patient['first_name'] ?? ''));
+    $middleName = trim((string)($patient['middle_name'] ?? ''));
+    $surname = trim((string)($patient['surname'] ?? ''));
+    if ($firstName === '' && $middleName === '' && $surname === '' && $patient_name !== '' && $patient_name !== 'UNKNOWN PATIENT') {
+        if (function_exists('pcode_split_legacy_patient_name')) {
+            [$firstName, $middleName, $surname] = pcode_split_legacy_patient_name($patient_name);
+        } else {
+            $legacyText = preg_replace('/^(?:PMOS|PCOS)-\d+\s*[:\-–]\s*/i', '', $patient_name) ?? $patient_name;
+            $legacyParts = preg_split('/\s+/', trim((string)$legacyText), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            if (count($legacyParts) === 1) {
+                $firstName = $legacyParts[0];
+            } elseif (count($legacyParts) === 2) {
+                $firstName = $legacyParts[0];
+                $surname = $legacyParts[1];
+            } elseif (count($legacyParts) >= 3) {
+                $firstName = array_shift($legacyParts);
+                $surname = array_pop($legacyParts);
+                $middleName = implode(' ', $legacyParts);
+            }
+        }
+    }
+    if ($firstName === '') $firstName = ': ';
+    if ($middleName === '') $middleName = ': ';
+    if ($surname === '') $surname = ': ';
+    $age = $patient['age'] ?? $patient['Age_yrs'] ?? ': ';
     $age_esc = pcode_pdf_esc((string)$age);
     $gender = !empty($patient['gender']) ? strtoupper((string)$patient['gender']) : 'F';
     $gender_esc = pcode_pdf_esc($gender);
     $referring = trim((string)($patient['reffered_by'] ?? $patient['referred_by'] ?? ''));
-    if ($referring === '') $referring = '—';
+    if ($referring === '') $referring = ': ';
     $referring_esc = pcode_pdf_esc($referring);
 
     $recsRaw = trim((string)($patient['clinical_recommendations'] ?? $patient['recommendations'] ?? ''));
-    // Ruled blank lines for wet-ink / handwritten recommendations
-    $wetInkLine = '_______________________________________________________________';
-    $wetInkCount = $recsRaw !== '' ? 10 : 12;
-    $wetInkBlock = '<p style="font-size:10px;line-height:2.05;margin:0;">'
-        . implode('<br/>', array_fill(0, $wetInkCount, $wetInkLine))
-        . '</p>';
-    if ($recsRaw !== '') {
-        $recsLines = preg_split('/\R/u', $recsRaw) ?: [];
-        $recsEscLines = array_map('pcode_pdf_esc', $recsLines);
-        $recs_body_html = '<p style="font-size:10px;line-height:1.45;margin:0 0 12px 0;">'
-            . implode('<br/>', $recsEscLines)
-            . '</p>'
-            . $wetInkBlock;
-    } else {
-        $recs_body_html = $wetInkBlock;
-    }
+    $recs_body_html = pcode_pdf_recommendations_ruled_html($recsRaw);
     $contact = trim((string)($patient['contact_no'] ?? ''));
-    if ($contact === '') $contact = '—';
+    if ($contact === '') $contact = ': ';
     $contact_esc = pcode_pdf_esc($contact);
     $address = trim((string)($patient['address'] ?? ''));
-    if ($address === '') $address = '—';
+    if ($address === '') $address = ': ';
+    $addressStreet = trim((string)($patient['address_street'] ?? ''));
+    if ($addressStreet === '' && $address !== ': ') {
+        $addressStreet = $address;
+    }
+    if ($addressStreet === '') $addressStreet = ': ';
+    $addressBarangay = trim((string)($patient['address_barangay'] ?? ($patient['address_town'] ?? '')));
+    if ($addressBarangay === '') $addressBarangay = ': ';
+    $addressMunicipality = trim((string)($patient['address_municipality'] ?? ''));
+    if ($addressMunicipality === '') $addressMunicipality = ': ';
+    $addressCity = trim((string)($patient['address_city'] ?? ''));
+    if ($addressCity === '') $addressCity = ': ';
     $civilRaw = $patient['civil_status'] ?? '';
     $civilMap = [
-        '0' => '—', 0 => '—',
+        '0' => ': ', 0 => ': ',
         '1' => 'Single', 1 => 'Single',
         '2' => 'Married', 2 => 'Married',
         '3' => 'Widowed', 3 => 'Widowed',
@@ -359,19 +467,19 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
         'widowed' => 'Widowed', 'separated' => 'Separated',
     ];
     if ($civilRaw === null || $civilRaw === '') {
-        $civil = '—';
+        $civil = ': ';
     } else if (isset($civilMap[$civilRaw])) {
         $civil = $civilMap[$civilRaw];
     } else if (isset($civilMap[strtolower(trim((string)$civilRaw))])) {
         $civil = $civilMap[strtolower(trim((string)$civilRaw))];
     } else {
         $civil = trim((string)$civilRaw);
-        if ($civil === '') $civil = '—';
+        if ($civil === '') $civil = ': ';
     }
     $occupation = trim((string)($patient['occupation'] ?? ''));
-    if ($occupation === '') $occupation = '—';
+    if ($occupation === '') $occupation = ': ';
     $religion = trim((string)($patient['religion'] ?? ''));
-    if ($religion === '') $religion = '—';
+    if ($religion === '') $religion = ': ';
     $dob_esc = pcode_pdf_esc($dob_display);
     $sample_esc = pcode_pdf_esc($sample_received);
     $released_esc = pcode_pdf_esc($released);
@@ -392,12 +500,17 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     // ---- 1. Patient information (label / value) ----
     $personal_rows = '';
     $personal_rows .= pcode_pdf_info_row('Patient ID', $patient_id_formatted);
-    $personal_rows .= pcode_pdf_info_row('Full Name', $patient_name);
+    $personal_rows .= pcode_pdf_info_row('First Name', $firstName);
+    $personal_rows .= pcode_pdf_info_row('Middle Name', $middleName);
+    $personal_rows .= pcode_pdf_info_row('Surname', $surname);
     $personal_rows .= pcode_pdf_info_row('Date of Birth', $dob_display);
     $personal_rows .= pcode_pdf_info_row('Age', is_numeric($age) ? $age . ' years' : (string)$age);
     $personal_rows .= pcode_pdf_info_row('Sex / Gender', $gender);
     $personal_rows .= pcode_pdf_info_row('Contact Number', $contact);
-    $personal_rows .= pcode_pdf_info_row('Address', $address);
+    $personal_rows .= pcode_pdf_info_row('Street', $addressStreet);
+    $personal_rows .= pcode_pdf_info_row('Barangay', $addressBarangay);
+    $personal_rows .= pcode_pdf_info_row('Municipality', $addressMunicipality);
+    $personal_rows .= pcode_pdf_info_row('City', $addressCity);
     $personal_rows .= pcode_pdf_info_row('Civil Status', $civil);
     $personal_rows .= pcode_pdf_info_row('Occupation', $occupation);
     $personal_rows .= pcode_pdf_info_row('Religion', $religion);
@@ -411,32 +524,32 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     $bmi_abn = is_numeric($bmi) && ((float)$bmi >= 25);
     $clinical_rows .= pcode_pdf_result_row('Weight', pcode_pdf_pick($patient, ['Weight_kg', 'weight_kg'], 1), 'kg', '');
     $clinical_rows .= pcode_pdf_result_row('Height', pcode_pdf_pick($patient, ['Height_cm', 'height_cm'], 1), 'cm', '');
-    $clinical_rows .= pcode_pdf_result_row('Body Mass Index (BMI)', pcode_pdf_fmt($bmi, 1), 'kg/m²', '18.5 – 24.9 (normal)', $bmi_abn, $bmi_abn ? '▲' : '');
+    $clinical_rows .= pcode_pdf_result_row('Body Mass Index (BMI)', pcode_pdf_fmt($bmi, 1), 'kg/m²', '18.5: 24.9 (normal)', $bmi_abn, $bmi_abn ? '▲' : '');
     $clinical_rows .= pcode_pdf_result_row('Blood Group', pcode_pdf_blood_group($patient['Blood_Group'] ?? $patient['blood_group'] ?? null), '', '');
-    $clinical_rows .= pcode_pdf_result_row('Pulse Rate', pcode_pdf_pick($patient, ['Pulse_rate_bpm', 'Pulse_rate', 'pulse_rate']), 'bpm', '60 – 100');
-    $clinical_rows .= pcode_pdf_result_row('Respiratory Rate', pcode_pdf_pick($patient, ['RR_breath_min', 'RR_breath', 'rr_breath']), 'breaths/min', '12 – 20');
-    $clinical_rows .= pcode_pdf_result_row('Hemoglobin', pcode_pdf_pick($patient, ['Hb_g_dl', 'Hemoglobin', 'hemoglobin'], 1), 'g/dL', '12.0 – 15.5');
+    $clinical_rows .= pcode_pdf_result_row('Pulse Rate', pcode_pdf_pick($patient, ['Pulse_rate_bpm', 'Pulse_rate', 'pulse_rate']), 'bpm', '60: 100');
+    $clinical_rows .= pcode_pdf_result_row('Respiratory Rate', pcode_pdf_pick($patient, ['RR_breath_min', 'RR_breath', 'rr_breath']), 'breaths/min', '12: 20');
+    $clinical_rows .= pcode_pdf_result_row('Hemoglobin', pcode_pdf_pick($patient, ['Hb_g_dl', 'Hemoglobin', 'hemoglobin', 'hb', 'Hb(g/dl)'], 1), 'g/dL', '12.0: 15.5');
     $clinical_rows .= pcode_pdf_result_row('Waist Circumference', pcode_pdf_pick($patient, ['Waist_inch', 'waist_inch'], 1), 'in', '');
     $clinical_rows .= pcode_pdf_result_row('Hip Circumference', pcode_pdf_pick($patient, ['Hip_inch', 'hip_inch'], 1), 'in', '');
-    $clinical_rows .= pcode_pdf_result_row('Waist–Hip Ratio', pcode_pdf_pick($patient, ['Waist_hip_ratio', 'waist_hip_ratio'], 2), '', '');
+    $clinical_rows .= pcode_pdf_result_row('Waist: Hip Ratio', pcode_pdf_pick($patient, ['Waist_hip_ratio', 'waist_hip_ratio'], 2), '', '');
 
     $clinical_rows .= pcode_pdf_group_row('B. Hormone Levels');
-    $clinical_rows .= pcode_pdf_result_row('LH (Luteinizing Hormone)', pcode_pdf_pick($patient, ['LH_mIU_mL', 'LH_level', 'lh_level'], 2), 'mIU/mL', 'Varies by cycle day');
-    $clinical_rows .= pcode_pdf_result_row('FSH (Follicle-Stimulating Hormone)', pcode_pdf_pick($patient, ['FSH_mIU_mL', 'FSH_level', 'fsh_level'], 2), 'mIU/mL', 'Varies by cycle day');
+    $clinical_rows .= pcode_pdf_result_row('LH (Luteinizing Hormone)', pcode_pdf_pick($patient, ['LH_mIU_mL', 'LH_level', 'lh_level', 'lh', 'LH', 'LH(mIU/mL)'], 2), 'mIU/mL', 'Varies by cycle day');
+    $clinical_rows .= pcode_pdf_result_row('FSH (Follicle-Stimulating Hormone)', pcode_pdf_pick($patient, ['FSH_mIU_mL', 'FSH_level', 'fsh_level', 'fsh', 'FSH', 'FSH(mIU/mL)'], 2), 'mIU/mL', 'Varies by cycle day');
     $clinical_rows .= pcode_pdf_result_row('LH/FSH Ratio', pcode_pdf_pick($patient, ['LH_FSH_Ratio', 'lh_fsh_ratio', 'FSH_LH'], 2), '', 'Often elevated in PMOS');
-    $clinical_rows .= pcode_pdf_result_row('AMH (Anti-Müllerian Hormone)', pcode_pdf_pick($patient, ['AMH_ng_mL', 'AMH_level', 'amh_level'], 2), 'ng/mL', 'Age-dependent');
-    $clinical_rows .= pcode_pdf_result_row('Prolactin (PRL)', pcode_pdf_pick($patient, ['PRL_ng_mL', 'PRL_level', 'prl_level'], 2), 'ng/mL', '4.8 – 23.3');
-    $clinical_rows .= pcode_pdf_result_row('TSH (Thyroid-Stimulating Hormone)', pcode_pdf_pick($patient, ['TSH_mIU_L', 'TSH_level', 'tsh_level'], 2), 'mIU/L', '0.4 – 4.0');
-    $clinical_rows .= pcode_pdf_result_row('Vitamin D3', pcode_pdf_pick($patient, ['Vit_D3_ng_mL', 'Vitamin_D3_level', 'vitamin_d3_level'], 2), 'ng/mL', '30 – 100');
+    $clinical_rows .= pcode_pdf_result_row('AMH (Anti-Müllerian Hormone)', pcode_pdf_pick($patient, ['AMH_ng_mL', 'AMH_level', 'amh_level', 'amh', 'AMH', 'AMH(ng/mL)'], 2), 'ng/mL', 'Age-dependent');
+    $clinical_rows .= pcode_pdf_result_row('Prolactin (PRL)', pcode_pdf_pick($patient, ['PRL_ng_mL', 'PRL_level', 'prl_level', 'prl', 'PRL', 'PRL(ng/mL)'], 2), 'ng/mL', '4.8: 23.3');
+    $clinical_rows .= pcode_pdf_result_row('TSH (Thyroid-Stimulating Hormone)', pcode_pdf_pick($patient, ['TSH_mIU_L', 'TSH_level', 'tsh_level', 'tsh', 'TSH', 'TSH (mIU/L)'], 2), 'mIU/L', '0.4: 4.0');
+    $clinical_rows .= pcode_pdf_result_row('Vitamin D3', pcode_pdf_pick($patient, ['Vit_D3_ng_mL', 'Vitamin_D3_level', 'vitamin_d3_level', 'vit_d3', 'Vit D3 (ng/mL)'], 2), 'ng/mL', '30: 100');
     $clinical_rows .= pcode_pdf_result_row('β-hCG (First reading)', pcode_pdf_pick($patient, ['I_beta_HCG_mIU_mL', 'I_Beta_HCG', 'i_beta_hcg'], 2), 'mIU/mL', '');
     $clinical_rows .= pcode_pdf_result_row('β-hCG (Second reading)', pcode_pdf_pick($patient, ['II_beta_HCG_mIU_mL', 'II_Beta_HCG', 'ii_beta_hcg'], 2), 'mIU/mL', '');
-    $clinical_rows .= pcode_pdf_result_row('Blood Draw Date', pcode_pdf_pick($patient, ['blood_draw_date']), '', '');
-    $clinical_rows .= pcode_pdf_result_row('Last Menstrual Period (LMP)', pcode_pdf_pick($patient, ['last_menstrual_period_date', 'LMP']), '', '');
+    $clinical_rows .= pcode_pdf_result_row('Blood Draw Date', pcode_pdf_pick($patient, ['blood_draw_date', 'Blood_draw_date']), '', '');
+    $clinical_rows .= pcode_pdf_result_row('Last Menstrual Period (LMP)', pcode_pdf_pick($patient, ['last_menstrual_period_date', 'LMP', 'lmp_date']), '', '');
 
     $clinical_rows .= pcode_pdf_group_row('C. Reproductive History');
     $cycle_reg = $patient['CycleR_I'] ?? $patient['Cycle_R_I'] ?? $patient['Cycle'] ?? $patient['Cycle_regularity'] ?? $patient['cycle_regularity'] ?? null;
     $cycle_mapped = pcode_pdf_cycle_regularity($cycle_reg);
-    $clinical_rows .= pcode_pdf_result_row('Menstrual Cycle Length', pcode_pdf_pick($patient, ['Cycle_length_days', 'Cycle_length', 'cycle_length']), 'days', '21 – 35');
+    $clinical_rows .= pcode_pdf_result_row('Menstrual Cycle Length', pcode_pdf_pick($patient, ['Cycle_length_days', 'Cycle_length', 'cycle_length']), 'days', '21: 35');
     $clinical_rows .= pcode_pdf_result_row(
         'Cycle Regularity',
         $cycle_mapped['text'],
@@ -451,20 +564,20 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
     $clinical_rows .= pcode_pdf_result_row('Number of Abortions', pcode_pdf_pick($patient, ['No_of_abortions', 'No_abortions', 'no_abortions']), '', '');
 
     $clinical_rows .= pcode_pdf_group_row('D. Metabolic Markers');
-    $clinical_rows .= pcode_pdf_result_row('Random Blood Sugar (RBS)', pcode_pdf_pick($patient, ['RBS_mg_dl', 'RBS', 'rbs'], 1), 'mg/dL', '70 – 140');
+    $clinical_rows .= pcode_pdf_result_row('Random Blood Sugar (RBS)', pcode_pdf_pick($patient, ['RBS_mg_dl', 'RBS', 'rbs', 'RBS(mg/dl)'], 1), 'mg/dL', '70: 140');
     $clinical_rows .= pcode_pdf_result_row('Hours Fasting Before RBS', pcode_pdf_pick($patient, ['fasting_hours']), 'hours', '');
-    $clinical_rows .= pcode_pdf_result_row('Progesterone', pcode_pdf_pick($patient, ['PRG_ng_mL', 'Progesterone_level', 'progesterone_level'], 2), 'ng/mL', 'Varies by cycle day');
-    $clinical_rows .= pcode_pdf_result_row('Blood Pressure — Systolic', pcode_pdf_pick($patient, ['BP_Systolic_mmHg', 'BP_systolic', 'bp_systolic']), 'mmHg', '< 120');
-    $clinical_rows .= pcode_pdf_result_row('Blood Pressure — Diastolic', pcode_pdf_pick($patient, ['BP_Diastolic_mmHg', 'BP_diastolic', 'bp_diastolic']), 'mmHg', '< 80');
+    $clinical_rows .= pcode_pdf_result_row('Progesterone', pcode_pdf_pick($patient, ['PRG_ng_mL', 'Progesterone_level', 'progesterone_level', 'prg', 'PRG', 'PRG(ng/mL)'], 2), 'ng/mL', 'Varies by cycle day');
+    $clinical_rows .= pcode_pdf_result_row('Blood Pressure: Systolic', pcode_pdf_pick($patient, ['BP_Systolic_mmHg', 'BP_systolic', 'bp_systolic']), 'mmHg', '< 120');
+    $clinical_rows .= pcode_pdf_result_row('Blood Pressure: Diastolic', pcode_pdf_pick($patient, ['BP_Diastolic_mmHg', 'BP_diastolic', 'bp_diastolic']), 'mmHg', '< 80');
 
     $clinical_rows .= pcode_pdf_group_row('E. Ultrasound Measurements');
-    $clinical_rows .= pcode_pdf_result_row('Ultrasound Scan Date', pcode_pdf_pick($patient, ['ultrasound_date']), '', '');
+    $clinical_rows .= pcode_pdf_result_row('Ultrasound Scan Date', pcode_pdf_pick($patient, ['ultrasound_date', 'Ultrasound_date', 'USG_date']), '', '');
     $clinical_rows .= pcode_pdf_result_row('Imaging Modality', pcode_pdf_pick($patient, ['ultrasound_modality', 'Ultrasound_modality']), '', 'TVUS preferred');
-    $clinical_rows .= pcode_pdf_result_row('Follicle Count — Left Ovary', pcode_pdf_pick($patient, ['Follicle_no_L', 'follicle_no_L']), '', '≤ 12 typical');
-    $clinical_rows .= pcode_pdf_result_row('Follicle Count — Right Ovary', pcode_pdf_pick($patient, ['Follicle_no_R', 'follicle_no_R']), '', '≤ 12 typical');
-    $clinical_rows .= pcode_pdf_result_row('Average Follicle Size — Left', pcode_pdf_pick($patient, ['Avg_F_size_L_mm', 'Avg_F_size_L', 'avg_f_size_L'], 1), 'mm', '');
-    $clinical_rows .= pcode_pdf_result_row('Average Follicle Size — Right', pcode_pdf_pick($patient, ['Avg_F_size_R_mm', 'Avg_F_size_R', 'avg_f_size_R'], 1), 'mm', '');
-    $clinical_rows .= pcode_pdf_result_row('Endometrial Thickness', pcode_pdf_pick($patient, ['Endometrium_mm', 'endometrium_mm'], 1), 'mm', '');
+    $clinical_rows .= pcode_pdf_result_row('Follicle Count: Left Ovary', pcode_pdf_pick($patient, ['Follicle_no_L', 'follicle_no_L', 'follicle_left', 'Follicle No. (L)']), '', '≤ 12 typical');
+    $clinical_rows .= pcode_pdf_result_row('Follicle Count: Right Ovary', pcode_pdf_pick($patient, ['Follicle_no_R', 'follicle_no_R', 'follicle_right', 'Follicle No. (R)']), '', '≤ 12 typical');
+    $clinical_rows .= pcode_pdf_result_row('Average Follicle Size: Left', pcode_pdf_pick($patient, ['Avg_F_size_L_mm', 'Avg_F_size_L', 'avg_f_size_L', 'follicle_size_left'], 1), 'mm', '');
+    $clinical_rows .= pcode_pdf_result_row('Average Follicle Size: Right', pcode_pdf_pick($patient, ['Avg_F_size_R_mm', 'Avg_F_size_R', 'avg_f_size_R', 'follicle_size_right'], 1), 'mm', '');
+    $clinical_rows .= pcode_pdf_result_row('Endometrial Thickness', pcode_pdf_pick($patient, ['Endometrium_mm', 'endometrium_mm', 'endometrium_thickness'], 1), 'mm', '');
 
     $clinical_rows .= pcode_pdf_group_row('F. Symptoms & Lifestyle');
     $clinical_rows .= pcode_pdf_result_row('Unexplained Weight Gain', pcode_pdf_yn($patient['Weight_gain'] ?? null), '', 'Yes / No');
@@ -490,7 +603,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
             $featRaw = $contrib['feature'] ?? ('Feature ' . ($i + 1));
             $feat = pcode_pdf_feature_label($featRaw);
             $svNum = (float)($contrib['shap_value'] ?? 0);
-            $sv = isset($contrib['shap_value']) ? number_format($svNum, 4) : '—';
+            $sv = isset($contrib['shap_value']) ? number_format($svNum, 4) : ': ';
             $pos = $svNum >= 0;
             $dir = $pos
                 ? 'Increased likelihood of a positive screen'
@@ -525,24 +638,24 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
         if ($us_src !== '') {
             $imaging_html .= '<td style="width:50%;padding:6px;text-align:center;vertical-align:top;">'
                 . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">ULTRASOUND IMAGE</p>'
-                . '<img class="pcode-pdf-img" src="' . pcode_pdf_esc($us_src) . '" alt="Ultrasound" style="max-width:100%;max-height:280px;border:1px solid #ccc;" />'
+                . '<img class="pcode-pdf-img" src="' . pcode_pdf_esc($us_src) . '" alt="Ultrasound" style="max-width:100%;max-height:180px;border:1px solid #ccc;" />'
                 . '<p style="font-size:9px;color:#555;margin-top:4px;">Original scan submitted for review</p>'
                 . '</td>';
         }
         if ($gc_src !== '') {
             $imaging_html .= '<td style="width:50%;padding:6px;text-align:center;vertical-align:top;">'
-                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (EigenCAM)</p>'
-                . '<img class="pcode-pdf-img" src="' . pcode_pdf_esc($gc_src) . '" alt="AI attention heatmap" style="max-width:100%;max-height:280px;border:1px solid #ccc;" />'
+                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (Grad-CAM++)</p>'
+                . '<img class="pcode-pdf-img" src="' . pcode_pdf_esc($gc_src) . '" alt="AI attention heatmap" style="max-width:100%;max-height:180px;border:1px solid #ccc;" />'
                 . '<p style="font-size:9px;color:#555;margin-top:4px;">Warmer colors = areas the imaging model focused on</p>'
                 . '</td>';
         } else if ($us_src !== '') {
             $imaging_html .= '<td style="width:50%;padding:6px;text-align:center;vertical-align:top;color:#666;font-size:10px;">'
-                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (EigenCAM)</p>'
+                . '<p style="font-size:10px;font-weight:bold;margin-bottom:6px;">AI ATTENTION MAP (Grad-CAM++)</p>'
                 . 'Heatmap was not available for this export. Complete imaging analysis in XAI Insights to include it.'
                 . '</td>';
         }
         $imaging_html .= '</tr></table>';
-        $imaging_html .= '<p class="note">For patients: the colored overlay does not mean disease by itself — it shows which parts of the image most influenced the AI. For clinicians: correlate with follicle morphology and clinical findings before counseling.</p>';
+        $imaging_html .= '<p class="note">For patients: the colored overlay does not mean disease by itself: it shows which parts of the image most influenced the AI. For clinicians: correlate with follicle morphology and clinical findings before counseling.</p>';
     } else {
         $imaging_html = '<p class="note">No ultrasound image was attached to this report.</p>';
     }
@@ -584,7 +697,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PMOS Screening Report — {$patient_id_formatted}</title>
+<title>PMOS Screening Report: {$patient_id_formatted}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; font-size: 10px; line-height: 1.35; }
@@ -613,7 +726,7 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
   .important { font-size: 9px; margin-top: 6px; }
   .plain-box { border: none; border-top: 0.6px solid #666; border-bottom: 0.6px solid #666; background: transparent; padding: 6px 2px; margin-top: 6px; font-size: 9px; }
   .sign-table { width: 100%; border-collapse: collapse; margin-top: 8px; border: none; }
-  .sign-table td { width: 100%; vertical-align: top; text-align: left; padding: 4px 2px; font-size: 9px; border: none; line-height: 1.4; }
+  .sign-table td { width: 100%; vertical-align: top; text-align: center; padding: 4px 2px; font-size: 9px; border: none; line-height: 1.4; }
   .sign-line { border-top: 1px solid #000; width: 80%; margin: 28px auto 6px; }
   .flags { font-size: 9px; margin-top: 10px; }
   .computer { font-size: 10px; font-weight: 700; text-align: center; margin-top: 10px; letter-spacing: 0.4px; }
@@ -666,14 +779,14 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
 
 <div class="section" data-section="shap">
   <h2 class="section-title">3. Top 10 Factors Influencing the Clinical Screening</h2>
-  <p class="section-help">These are the clinical parameters that most influenced the AI clinical model for this patient (SHAP explanation). Use them to understand <em>why</em> the clinical score leaned positive or negative — not as isolated diagnoses.</p>
+  <p class="section-help">These are the clinical parameters that most influenced the AI clinical model for this patient (SHAP explanation). Use them to understand <em>why</em> the clinical score leaned positive or negative: not as isolated diagnoses.</p>
   <table class="results">{$shap_rows}</table>
   <p class="note"><strong>How to read this:</strong> A positive contribution (▲) pushed the result toward a positive PMOS screen. A negative contribution (▼) pushed toward a negative / protective screen. Larger absolute values had more influence.</p>
 </div>
 
 <div class="section" data-section="imaging">
   <h2 class="section-title">4. Ultrasound Image and AI Attention Map</h2>
-  <p class="section-help">Side-by-side view of the submitted ultrasound and the EigenCAM heatmap showing where the imaging model focused.</p>
+  <p class="section-help">Side-by-side view of the submitted ultrasound and the Grad-CAM++ heatmap showing where the imaging model focused.</p>
   {$imaging_html}
 </div>
 
@@ -698,17 +811,11 @@ function generateComprehensiveReport($patient, $shap_data = null, $user_name = '
 
 <div class="section" data-section="recommendations">
   <h2 class="section-title">6. Recommendations</h2>
-  <table class="results" style="width:100%;border-collapse:collapse;">
-    <tr>
-      <td style="padding:12px 4px 18px;border:none;border-top:0.6px solid #666;border-bottom:0.6px solid #666;vertical-align:top;">
-        {$recs_body_html}
-      </td>
-    </tr>
-  </table>
-  <p class="flags" style="margin-top:10px;"><strong>Result flags:</strong> &nbsp; Lower / protective ▼ &nbsp; Higher / elevated ▲</p>
+  <p class="flags" style="margin:6px 0 8px 0;"><strong>Result flags:</strong> &nbsp; Lower / protective ▼ &nbsp; Higher / elevated ▲</p>
+  {$recs_body_html}
   <table class="sign-table">
     <tr>
-      <td style="padding:10px 4px;line-height:1.45;text-align:left;vertical-align:top;font-size:12px;">
+      <td style="padding:10px 4px;line-height:1.55;text-align:center;vertical-align:top;font-size:12px;">
         <strong style="font-size:12px;">Validated by (Consulting OB-GYN)</strong><br/>
         Name: ____________________________<br/>
         Signature: _______________________<br/>

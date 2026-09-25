@@ -1,5 +1,5 @@
 /**
- * Shared helpers for Detect/XAI PDF export: SHAP + Grad-CAM capture.
+ * Shared helpers for Detect/XAI PDF export: SHAP + Grad-CAM++ capture.
  */
 (function (global) {
   'use strict';
@@ -124,14 +124,14 @@
         return canvasToDataUrl(canvas);
       })
       .catch(function (err) {
-        console.warn('[PDF export] Canvas Grad-CAM render failed', err);
+        console.warn('[PDF export] Canvas Grad-CAM++ render failed', err);
         return null;
       });
   }
 
   function fetchGradcamFromApi(ultrasoundImage) {
     if (!ultrasoundImage) return Promise.resolve(null);
-    return fetch('https://p-code-nqak.onrender.com/predict-cnn-gradcam', {
+    return fetch('/api/detect-ultrasound', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: ultrasoundImage, generate_gradcam: true }),
@@ -139,49 +139,90 @@
       .then(function (r) { return r.json(); })
       .then(function (result) {
         if (!result) return null;
-        // Prefer re-rendering with the same canvas pipeline as XAI Insights
+        // Prefer server Grad-CAM++ overlay from Cloud Functions
+        var viz = result.gradcam_pp || result.gradcam_visualization || null;
+        if (viz) {
+          if (String(viz).indexOf('data:image') === 0) return viz;
+          return 'data:image/png;base64,' + String(viz).replace(/\s+/g, '');
+        }
+        // Legacy fallback: client canvas if only an activation matrix is present
         if (
           result.gradcam_activation_matrix &&
           global.PcodeGradcamCanvas &&
           typeof global.PcodeGradcamCanvas.renderGradcamCanvasOverlay === 'function'
         ) {
-          return renderCanvasGradcam(result.gradcam_activation_matrix, ultrasoundImage, result).then(
-            function (canvasUrl) {
-              if (canvasUrl) return canvasUrl;
-              var viz = result.gradcam_visualization || null;
-              if (!viz) return null;
-              if (String(viz).indexOf('data:image') === 0) return viz;
-              return 'data:image/png;base64,' + String(viz).replace(/\s+/g, '');
-            }
-          );
+          return renderCanvasGradcam(result.gradcam_activation_matrix, ultrasoundImage, result);
         }
-        var viz = result.gradcam_visualization || null;
-        if (!viz) return null;
-        if (String(viz).indexOf('data:image') === 0) return viz;
-        return 'data:image/png;base64,' + String(viz).replace(/\s+/g, '');
+        return null;
       })
       .catch(function (err) {
-        console.warn('[PDF export] Grad-CAM API failed', err);
+        console.warn('[PDF export] Grad-CAM++ API failed', err);
         return null;
       });
   }
 
   /**
-   * Resolve Grad-CAM for export — same visual as XAI Insights:
-   * DOM canvas → canvas re-render from activation matrix → API (+ canvas) → raw PNG.
+   * Resolve Grad-CAM++ for export: same visual as the lab PDF / XAI Insights.
+   * Prefer the live DOM overlay, then the stored/server PNG, then API, then canvas.
    */
   function resolveGradcamForExport(imagingData, ultrasoundImage) {
     var fromDom = findGradcamFromDom();
     if (fromDom) return Promise.resolve(fromDom);
 
-    var matrix = pickActivationMatrix(imagingData);
-    return renderCanvasGradcam(matrix, ultrasoundImage, imagingData).then(function (canvasUrl) {
-      if (canvasUrl) return canvasUrl;
-      return fetchGradcamFromApi(ultrasoundImage).then(function (apiUrl) {
-        if (apiUrl) return apiUrl;
-        return pickRawGradcamSrc(imagingData);
+    var fromSaved = pickRawGradcamSrc(imagingData);
+    if (fromSaved) return Promise.resolve(fromSaved);
+
+    return fetchGradcamFromApi(ultrasoundImage).then(function (apiUrl) {
+      if (apiUrl) return apiUrl;
+      return renderCanvasGradcam(pickActivationMatrix(imagingData), ultrasoundImage, imagingData);
+    });
+  }
+
+  function pickPersonalDemographics() {
+    var keys = [
+      'first_name', 'middle_name', 'surname', 'last_name', 'patient_name', 'name',
+      'address_street', 'address_barangay', 'address_town', 'address_municipality', 'address_city', 'address',
+      'contact_no', 'civil_status', 'occupation', 'religion', 'referred_by', 'reffered_by',
+      'date_of_birth', 'DOB'
+    ];
+    var out = {};
+    var sources = Array.prototype.slice.call(arguments);
+    sources.forEach(function (src) {
+      if (!src || typeof src !== 'object') return;
+      keys.forEach(function (key) {
+        if (out[key] != null && String(out[key]).trim() !== '') return;
+        var value = src[key];
+        if (value == null || String(value).trim() === '') return;
+        out[key] = value;
       });
     });
+    if ((!out.first_name && !out.middle_name && !out.surname) && (out.name || out.patient_name)) {
+      var legacy = String(out.first_name ? '' : (out.name || out.patient_name || ''))
+        .replace(/^(?:PMOS|PCOS)-\d+\s*[:\-–]\s*/i, '')
+        .trim();
+      var parts = legacy.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) {
+        out.first_name = parts[0];
+      } else if (parts.length === 2) {
+        out.first_name = parts[0];
+        out.surname = parts[1];
+      } else if (parts.length >= 3) {
+        out.first_name = parts[0];
+        out.surname = parts[parts.length - 1];
+        out.middle_name = parts.slice(1, -1).join(' ');
+      }
+    }
+    if (out.first_name || out.middle_name || out.surname) {
+      out.patient_name = [out.first_name, out.middle_name, out.surname].filter(Boolean).join(' ');
+      out.name = out.patient_name;
+    }
+    if (!out.address_barangay && out.address_town) {
+      out.address_barangay = out.address_town;
+    }
+    if (!out.address_town && out.address_barangay) {
+      out.address_town = out.address_barangay;
+    }
+    return out;
   }
 
   global.PcodePdfExportHelpers = {
@@ -189,5 +230,6 @@
     pickShapExplanation: pickShapExplanation,
     pickGradcamSrc: pickRawGradcamSrc,
     resolveGradcamForExport: resolveGradcamForExport,
+    pickPersonalDemographics: pickPersonalDemographics,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

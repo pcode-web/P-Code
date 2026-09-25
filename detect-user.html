@@ -25,7 +25,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer crossorigin="anonymous"></script>
     <style>
         * { box-sizing: border-box; }
-        html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        html { width: 100%; max-width: 100%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body { 
             font-family: 'Inter', sans-serif;
             background: white;
@@ -95,9 +95,9 @@
             visibility: visible;
             pointer-events: auto;
         }
-        .mobile-menu::-webkit-scrollbar { width: 6px; }
-        .mobile-menu::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
-        .mobile-menu::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+        .mobile-menu:-webkit-scrollbar { width: 6px; }
+        .mobile-menu:-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+        .mobile-menu:-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
         #menu-overlay.mobile-menu-overlay {
             inset: 0;
             width: 100%;
@@ -229,7 +229,7 @@
             gap: 8px;
         }
 
-        .loading-dots::after {
+        .loading-dots:after {
             content: '';
             animation: typing 1.4s infinite;
         }
@@ -295,271 +295,7 @@
             vertical-align: middle;
         }
 
-        /* Gauge roots ? fluid sizing from css/pcode-app-bento-dark.css?v=20260801-navcenter (body.pcode-app-bento .gauge-container) */
-        .gauge-container {
-            display: block !important;
-            margin: 0 auto;
-            position: relative;
-            overflow: visible;
-        }
-
-        .gauge-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            text-align: center;
-            gap: 0.75rem;
-            min-height: 0;
-            width: 100%;
-        }
-
-        .final-gauge-card {
-            min-height: 0;
-        }
-
-        .gauge-card__labels {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-            gap: 0.25rem;
-        }
-
-        .gauge-card .gauge-sublabel {
-            margin: 0;
-            line-height: 1.35;
-        }
-
-        .gauge-card .gauge-label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #ffffff;
-            margin: 0;
-            line-height: 1.3;
-            width: 100%;
-        }
-
-        .final-gauge-container {
-            display: block !important;
-            margin: 0 auto;
-            position: relative;
-            overflow: visible;
-        }
-
-        .gauge-value {
-            font-size: 1.85rem;
-            font-weight: 700;
-            margin: 0;
-            display: none; /* remove external percent text */
-        }
-
-        .gauge-value.purple { color: #6B46C1; }
-        .gauge-value.blue { color: #3B82F6; }
-
-        .gauge-label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #374151;
-            margin: 0;
-        }
-
-
-        /* Equal card heights / stable steps: css/pcode-detect-layout.css */
-
-        /* Results empty state ? centered icon well (matches provider; theme via CSS files) */
-        .detection-results-placeholder {
-            text-align: center;
-            padding: 2.5rem 1.5rem;
-            border: 1px dashed rgba(255, 255, 255, 0.12);
-        }
-
-        .detection-results-placeholder__icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            margin: 0 auto 1rem;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(168, 85, 247, 0.12);
-            border: 1px solid rgba(168, 85, 247, 0.28);
-            color: #c4b5fd;
-        }
-
-        .detection-results-placeholder__icon svg {
-            width: 1.75rem;
-            height: 1.75rem;
-            stroke: currentColor;
-            color: inherit;
-            opacity: 1;
-            flex-shrink: 0;
-        }
-
-        /* Upload area styling for ultrasound */
-        .upload-area {
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            background-color: rgba(59, 130, 246, 0.05);
-            border-color: #3b82f6;
-        }
-
-        /* Combined Results Styling */
-        #combined-results {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        #combined-results.hidden {
-            display: none !important;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        .gauge-card.hidden {
-            visibility: hidden !important;
-            pointer-events: none;
-        }
-
-        /* Gauge no-data overlay */
-        .gauge-no-data-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(22, 18, 36, 0.78);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            width: 85%;
-            height: 85%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: #a7a2b6;
-            text-align: center;
-            font-weight: 500;
-            z-index: 100;
-            pointer-events: none;
-            padding: 10px;
-            box-sizing: border-box;
-            line-height: 1.4;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 20px rgba(88, 28, 135, 0.18);
-        }
-
-        /* Analyzing state overlay */
-        .gauge-analyzing-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(22, 18, 36, 0.82);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(168, 85, 247, 0.28);
-            border-radius: 50%;
-            width: 85%;
-            height: 85%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            z-index: 100;
-            pointer-events: none;
-            padding: 10px;
-            box-sizing: border-box;
-            line-height: 1.4;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 28px rgba(168, 85, 247, 0.22);
-        }
-
-        /* Spinner inside analyzing overlay: dual-ring SVG (css/pcode-dual-ring-spinner.css) */
-
-        /* Analyzing text */
-        .gauge-analyzing-overlay .overlay-text {
-            font-size: 14px;
-            color: #e9d5ff;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        /* Final diagnosis overlay: larger spinner ? size in pcode-dual-ring-spinner.css */
-
-        #final-gauge .gauge-analyzing-overlay .overlay-text {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        /* No analysis conducted overlay */
-        .gauge-no-analysis-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(22, 18, 36, 0.82);
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            width: 85%;
-            height: 85%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            z-index: 100;
-            pointer-events: none;
-            padding: 10px;
-            box-sizing: border-box;
-            line-height: 1.4;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 20px rgba(0, 0, 0, 0.35);
-        }
-
-        /* No analysis icon */
-        .gauge-no-analysis-overlay .overlay-icon {
-            font-size: 24px;
-            color: #c4b5fd;
-        }
-
-        /* No analysis text */
-        .gauge-no-analysis-overlay .overlay-text {
-            font-size: 12px;
-            color: #a7a2b6;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-
-        /* Results actions ? layout in pcode-action-buttons.css */
-        .analysis-actions.analyzing {
-            display: none;
-        }
-
-        /* Gauge Results Section */
-        .gauge-results-section {
-            display: block;
-            opacity: 1;
-            transition: opacity 0.3s ease, display 0.3s ease;
-        }
-
-        .gauge-results-section[style*="display: none"] {
+        /* Gauge roots ? fluid sizing from css/pcode-app-bento-dark.css?v=20260816-xaibtn1"display: none"] {
             opacity: 0;
             pointer-events: none;
         }
@@ -644,29 +380,29 @@
             }
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260801-navcenter">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260730-navfrost">
-<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260725-svgs">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260816-xaibtn1">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260814-sfx1">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260816-logout1">
 <link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260725-svgs">
-<link rel="stylesheet" href="css/pcode-design-system.css?v=20260726-nolift">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260805-padfix1">
 <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
 <link rel="stylesheet" href="css/pcode-diagnostic-severity.css?v=20260724-cardlock">
 <link rel="stylesheet" href="css/pcode-metric-stealth.css?v=20260723-purple">
-<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
-  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260723-stepgap2">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260810-hyph1">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260809-mob1">
   <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css">
-  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260730-v4fix">
+  <link rel="stylesheet" href="css/pcode-google-auth.css?v=20260823-pwview1">
   <link rel="stylesheet" href="css/pcode-form-autosave.css?v=20260709b">
   <link rel="stylesheet" href="css/pcode-form-guard.css?v=20260801-saveclick">
-  <link rel="stylesheet" href="css/pcode-detect-user.css?v=20260725-uscompact">
-  <link rel="stylesheet" href="css/pcode-clinical-notes.css?v=20260723-btnfix">
-  <link rel="stylesheet" href="css/pcode-detect-stepper.css?v=20260723-stepgap2">
-  <link rel="stylesheet" href="css/pcode-detect-layout.css?v=20260725-wide">
+  <link rel="stylesheet" href="css/pcode-detect-user.css?v=20260905-missok1">
+  <link rel="stylesheet" href="css/pcode-clinical-notes.css?v=20260905-validx1">
+  <link rel="stylesheet" href="css/pcode-detect-stepper.css?v=20260810-hyph1">
+  <link rel="stylesheet" href="css/pcode-detect-layout.css?v=20260821-spin4">
   <link rel="stylesheet" href="css/pcode-final-diagnosis.css?v=20260724-cardlock">
   <link rel="stylesheet" href="css/pcode-result-meter.css?v=20260724-cardlock">
-  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260803-btneq">
-  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260730-navfrost">
-  <link rel="stylesheet" href="css/pcode-image-crop.css?v=20260731-cropfix">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260816-drophover1">
+  <link rel="stylesheet" href="css/pcode-user-friendly.css?v=20260805-padfix1">
+  <link rel="stylesheet" href="css/pcode-image-crop.css?v=20260819-rot1">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
   <style id="pcode-detect-light-readability">
     html.pcode-app-bento-root:not(.dark) .pcode-hero-title,
@@ -811,8 +547,8 @@
       background: #ffffff !important;
       border: 1px solid #000000 !important;
     }
-    html.pcode-app-bento-root:not(.dark) .detection-card input::placeholder,
-    html.pcode-app-bento-root:not(.dark) #clinical-form input::placeholder {
+    html.pcode-app-bento-root:not(.dark) .detection-card input:placeholder,
+    html.pcode-app-bento-root:not(.dark) #clinical-form input:placeholder {
       color: #000000 !important;
       opacity: 0.55 !important;
     }
@@ -965,19 +701,17 @@
             <div class="flex justify-between items-center h-16">
                 <div class="pcode-topnav__brand flex items-center gap-3">
                     <img src="assets/logo.png" alt="P-Code Logo" class="pcode-nav-logo h-8 w-8 object-contain flex-shrink-0" width="32" height="32" decoding="async">
-                    <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl">P-Code</h1>
+                    <h1 class="pcode-topnav__brand-title text-xl sm:text-2xl font-bold">P-Code</h1>
                 </div>
-
-                <div class="nav-desktop">
-                    <a href="index.html" class="pcode-nav-link">Dashboard</a>
-                    <a href="detect-user.html" class="pcode-nav-link is-active" aria-current="page">Detect</a>
-                    <a href="history-user.html" class="pcode-nav-link">History</a>
-                    <a href="xai-user.html" class="pcode-nav-link">XAI Insights</a>
-                    <a href="about.html" class="pcode-nav-link">About</a>
+                <div class="nav-desktop flex gap-2 sm:gap-8">
+                    <a href="index.html" class="pcode-nav-link text-zinc-400 hover:text-white transition-colors">Dashboard</a>
+                    <a href="detect-user.html" class="pcode-nav-link is-active text-zinc-300 hover:text-white transition-colors" aria-current="page">Detect</a>
+                    <a href="history-user.html" class="pcode-nav-link text-zinc-400 hover:text-white transition-colors">History</a>
+                    <a href="xai-user.html" class="pcode-nav-link text-zinc-400 hover:text-white transition-colors">XAI Insights</a>
+                    <a href="about.html" class="pcode-nav-link text-zinc-400 hover:text-white transition-colors">About</a>
                 </div>
-
                 <div class="flex items-center space-x-2 sm:space-x-4">
-                    <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-xl transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 text-zinc-300 hover:bg-white/10 rounded-lg transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
                         <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -1097,7 +831,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="pcode-hero-title text-3xl sm:text-4xl md:text-5xl">Start your PMOS screening</h1>
-                <p class="text-base sm:text-lg text-purple-100 mt-3 max-w-2xl mx-auto px-1">Enter what you know ? symptoms, measurements, labs, and an ultrasound if you have one. You can save and finish later.</p>
+                <p class="text-base sm:text-lg text-purple-100 mt-3 max-w-2xl mx-auto px-1">Enter what you know: symptoms, measurements, labs, and an ultrasound if you have one. You can save and finish later.</p>
             </div>
         </div>
     </div>
@@ -1109,7 +843,7 @@
             <div class="text-left sm:text-center w-full max-w-none mx-auto">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3">A calmer way to check in early</h2>
                 <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    P-Code combines clinical details and (optional) ultrasound with explainable AI so you get a clear screening summary ? not medical jargon alone. Results are for awareness and conversation with a clinician.
+                    P-Code combines clinical details and (optional) ultrasound with explainable AI so you get a clear screening summary: not medical jargon alone. Results are for awareness and conversation with a clinician.
                 </p>
                 <p class="text-sm sm:text-base text-gray-700 leading-relaxed mt-4">
                     <span class="font-semibold text-gray-900">About PMOS:</span>
@@ -1117,7 +851,7 @@
                 </p>
                 <p class="text-sm text-gray-600 leading-relaxed mt-4">
                     Early awareness can support timely lifestyle steps and clinical follow-up.
-                    <a href="about.html#pmos-research" class="font-semibold underline" style="color:#6d28d9;">Why it is called PMOS now ? research sources</a>
+                    <a href="about.html#pmos-research" class="font-semibold underline" style="color:#6d28d9;">Why it is called PMOS now: research sources</a>
                 </p>
                 <div class="pcode-user-actions pcode-user-actions--calmer justify-center mt-6 sm:mt-7">
                     <a class="pcode-user-cta pcode-user-cta--secondary" href="index.html#pmos-learn">Quick PMOS overview</a>
@@ -1130,9 +864,19 @@
         <div id="patient-selection-card" class="!hidden pcode-card-static pcode-diagnostic-bento mb-8 p-6" hidden aria-hidden="true" style="display:none!important">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Patient Selection</h2>
             <div class="pcode-patient-selection-row flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
-                <select id="patient-select" class="w-full sm:flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="">Loading patients...</option>
-                </select>
+                <div id="patient-select-wrap" class="pcode-patient-select-wrap is-loading w-full sm:flex-1 min-w-0">
+                    <span id="patient-select-spinner" class="pcode-patient-select-spinner" aria-hidden="true">
+                        <span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20" aria-hidden="true">
+                                <circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/>
+                                <circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/>
+                            </svg>
+                        </span>
+                    </span>
+                    <select id="patient-select" class="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" aria-busy="true" disabled>
+                        <option value="">Loading patients...</option>
+                    </select>
+                </div>
                 <div class="pcode-patient-selection-actions">
                 <button type="button" onclick="loadPatientsList()" class="btn-blue-glass min-w-0 text-sm">
                     Refresh
@@ -1157,6 +901,7 @@
             <div class="flex flex-col gap-3 sm:gap-4 md:gap-6 w-full min-w-0">
                 <!-- Clinical Data Panel (XGBoost) with Stepper -->
                 <div class="pcode-card-static pcode-diagnostic-bento flex flex-col detection-card detection-card--tall pcode-detect-clinical-shell w-full min-w-0">
+                <div class="pcode-clinical-chrome">
                 <div class="pcode-bento-card-header pcode-bento-card-header--stepper-split flex-shrink-0">
                     <div class="pcode-bento-card-header__row">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1166,11 +911,17 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <h2 class="text-2xl font-bold text-gray-800">Clinical Analysis</h2>
-                            <p class="text-gray-600">AI Model ? Clinical Biomarkers</p>
+                            <p class="text-gray-600">AI Model · Clinical Biomarkers</p>
                         </div>
                         <div class="pcode-autosave-status-wrap ml-auto self-start">
                             <span id="clinical-form-autosave-status" class="pcode-autosave-status" aria-live="polite" data-state="idle"></span>
                         </div>
+                    </div>
+                    <div class="pcode-missing-ok-note" role="note">
+                        <div class="pcode-missing-ok-note__icon" aria-hidden="true">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <p><strong>Missing values are okay.</strong> Fill in what you know. Leave anything blank if you do not have it. You can still run the analysis.</p>
                     </div>
                 </div>
 
@@ -1203,7 +954,10 @@
                             </div>
                         </div>
                         </div>
+                        <p id="pcode-detect-active-step-label" class="pcode-detect-stepper-active-label" aria-live="polite">Step 1: Vitals</p>
+                        <p id="pcode-detect-step-missing-ok" class="pcode-missing-ok-stepper" aria-live="polite">Vitals: you can leave any field blank. Missing values are okay.</p>
                     </nav>
+                </div>
 
                 <div class="pcode-detect-scroll space-y-4">
                 <div class="pcode-clinical-preflight" role="note">
@@ -1219,21 +973,24 @@
                                 <!-- Form Content - Scrollable -->
                 <form id="clinical-form" class="space-y-4 min-w-0">
                     <div id="clinical-validity-banner" class="clinical-validity-banner is-hidden" hidden aria-live="polite"></div>
+                    <div id="clinical-expiration-form-note" class="clinical-note-badge is-hidden mt-2 mb-3" role="status" aria-live="polite"></div>
                     <div class="pcode-clinical-steps-host">
                     <!-- STEP 1: Vitals & Demographics -->
                     <div id="step-1-content" class="step-content">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">Vitals & Demographics</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="pcode-missing-ok-step" role="note">Vitals: you can leave age, weight, or height blank. Missing values are okay.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Age (years)</label>
-                                <input type="number" id="age" name="age" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
+                                <label class="block text-sm font-medium text-gray-700" for="age">Age (years)</label>
+                                <input type="number" id="age" name="age" min="15" max="49" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2" aria-describedby="clinical-age-range-note">
+                                <div id="clinical-age-range-note" class="clinical-note-badge clinical-note-badge--info mt-2" role="status" aria-live="polite"></div>
                             </div>
                             <div id="pcode-weight-kg-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Weight_kg" name="Weight_kg">
                             <div id="pcode-height-cm-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Height_cm" name="Height_cm">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">BMI (kg/m?)</label>
+                                <label class="block text-sm font-medium text-gray-700">BMI (kg/m²)</label>
                                 <input type="number" id="BMI" name="BMI" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div>
@@ -1264,12 +1021,12 @@
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 mb-4 mt-6">Body Composition</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                             <div id="pcode-waist-inch-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Waist_inch" name="Waist_inch">
                             <div id="pcode-hip-inch-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Hip_inch" name="Hip_inch">
-                            <div class="col-span-2">
+                            <div class="lg:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700">Waist-Hip Ratio</label>
                                 <input type="number" id="Waist_hip_ratio" name="Waist_hip_ratio" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
@@ -1280,7 +1037,8 @@
                     <div id="step-2-content" class="step-content hidden">
                         <div class="pcode-form-cluster">
                         <h3 class="pcode-detect-user-title text-lg font-bold mb-4">Hormone Levels</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="pcode-missing-ok-step" role="note">Hormones: skip any lab value you do not have. Missing values are okay.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">LH (mIU/mL)</label>
                                 <input type="number" id="LH_level" name="LH_level" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
@@ -1289,10 +1047,10 @@
                                 <label class="block text-sm font-medium text-gray-700">FSH (mIU/mL)</label>
                                 <input type="number" id="FSH_level" name="FSH_level" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
-                            <div class="col-span-2">
+                            <div class="lg:col-span-2">
                                 <div id="clinical-note-hormone-cycle" class="clinical-note-badge clinical-note-badge--warn" role="note"></div>
                             </div>
-                            <div class="col-span-2 clinical-timing-fields">
+                            <div class="lg:col-span-2 clinical-timing-fields">
                                 <div>
                                     <label for="blood_draw_date">Blood Draw Date</label>
                                     <input type="date" id="blood_draw_date" name="blood_draw_date">
@@ -1324,7 +1082,7 @@
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 mb-4 mt-6">Beta-HCG Levels (if applicable)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">I Beta-HCG (mIU/mL)</label>
                                 <input type="number" id="I_Beta_HCG" name="I_Beta_HCG" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
@@ -1340,7 +1098,8 @@
                     <!-- STEP 3: Reproductive & Body Composition -->
                     <div id="step-3-content" class="step-content hidden">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">Reproductive Parameters</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="pcode-missing-ok-step" role="note">Reproductive: you can leave cycle or pregnancy fields blank. Missing values are okay.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Cycle Length (days)</label>
                                 <input type="number" id="Cycle_length" name="Cycle_length" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
@@ -1366,7 +1125,7 @@
                                     <option value="No">No</option>
                                 </select>
                             </div>
-                            <div class="col-span-2">
+                            <div class="lg:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700">Number of Abortions</label>
                                 <input type="number" id="No_abortions" name="No_abortions" min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
@@ -1376,7 +1135,8 @@
                     <!-- STEP 4: Metabolic Markers -->
                     <div id="step-4-content" class="step-content hidden">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">Metabolic Markers</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="pcode-missing-ok-step" role="note">Metabolic: skip blood sugar or blood pressure if you do not have them. Missing values are okay.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">RBS (mg/dL)</label>
                                 <input type="number" id="RBS" name="RBS" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
@@ -1392,7 +1152,7 @@
                                     <option value="0">Not fasting / random</option>
                                 </select>
                             </div>
-                            <div class="col-span-2">
+                            <div class="lg:col-span-2">
                                 <div id="clinical-note-rbs-fasting" class="clinical-note-badge is-hidden" role="note"></div>
                             </div>
                             <div>
@@ -1413,6 +1173,7 @@
                     <!-- STEP 5: Ultrasound Parameters -->
                     <div id="step-5-content" class="step-content hidden">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">Ultrasound Parameters</h3>
+                        <p class="pcode-missing-ok-step" role="note">Ultrasound: leave scan fields blank if you have no report. Missing values are okay.</p>
                         <div class="clinical-timing-fields mb-4">
                             <div>
                                 <label for="ultrasound_date">Ultrasound Scan Date</label>
@@ -1421,28 +1182,28 @@
                             <div>
                                 <label for="ultrasound_modality">Imaging Modality</label>
                                 <select id="ultrasound_modality" name="ultrasound_modality" class="clinical-modality-select">
-                                    <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) ? Preferred</option>
-                                    <option value="Transabdominal">Transabdominal / Pelvic ? Fallback</option>
+                                    <option value="TVUS" selected>Transvaginal Ultrasound (TVUS): Preferred</option>
+                                    <option value="Transabdominal">Transabdominal / Pelvic: Fallback</option>
                                     <option value="Other">Other Pelvic Scan</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700" for="Follicle_no_L">Follicles Count Left (TVUS follicle field)</label>
-                                <span class="clinical-follicle-label-hint">Left ovary follicle count ? best captured on TVUS for imaging AI boundary mapping.</span>
+                                <span class="clinical-follicle-label-hint">Left ovary follicle count: best captured on TVUS for imaging AI boundary mapping.</span>
                                 <input type="number" id="Follicle_no_L" name="Follicle_no_L" step="0.1" placeholder="e.g. 12" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700" for="Follicle_no_R">Follicles Count Right (TVUS follicle field)</label>
-                                <span class="clinical-follicle-label-hint">Right ovary follicle count ? paired with scan modality selection above.</span>
+                                <span class="clinical-follicle-label-hint">Right ovary follicle count: paired with scan modality selection above.</span>
                                 <input type="number" id="Follicle_no_R" name="Follicle_no_R" step="0.1" placeholder="e.g. 10" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
                             </div>
                             <div id="pcode-avg-f-l-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Avg_F_size_L" name="Avg_F_size_L">
                             <div id="pcode-avg-f-r-host" class="pcode-metric-host"></div>
                             <input type="hidden" id="Avg_F_size_R" name="Avg_F_size_R">
-                            <div id="pcode-endometrium-host" class="pcode-metric-host col-span-2"></div>
+                            <div id="pcode-endometrium-host" class="pcode-metric-host lg:col-span-2"></div>
                             <input type="hidden" id="Endometrium_mm" name="Endometrium_mm">
                         </div>
                         <div id="clinical-note-ultrasound-follicle" class="clinical-note-badge clinical-note-badge--info mt-3" role="note"></div>
@@ -1452,6 +1213,13 @@
                     <!-- STEP 6: Symptoms -->
                     <div id="step-6-content" class="step-content hidden pcode-clinical-panel">
                         <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-2 sm:mb-4">Clinical Symptoms (Check if present)</h3>
+                        <p class="pcode-missing-ok-step" role="note">Symptoms: only check what applies. Unchecked boxes are okay. Missing values are okay.</p>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700" for="symptom_evaluation_date">Symptom evaluation date</label>
+                            <input type="date" id="symptom_evaluation_date" name="symptom_evaluation_date" class="mt-1 block w-full max-w-xs border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-3 py-2">
+                            <p class="text-xs text-gray-500 mt-1">Used for the 180-day symptom validity window (when to re-check markers).</p>
+                        </div>
+                        <div id="clinical-expiration-live-note" class="clinical-note-badge is-hidden mt-2 mb-3" role="status" aria-live="polite"></div>
                         <div class="pcode-clinical-checklist">
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" id="Weight_gain" name="Weight_gain">
@@ -1516,14 +1284,14 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold text-gray-800">Ultrasound Analysis</h2>
-                            <p class="text-gray-600">AI Model ? Ovarian Morphology</p>
+                            <p class="text-gray-600">AI Model · Ovarian Morphology</p>
                         </div>
                     </div>
                     <div class="ml-0 mb-4">
                         <label for="ultrasound_modality_upload" class="block text-sm font-medium text-gray-700 mb-1">Scan Modality (for image upload)</label>
                         <select id="ultrasound_modality_upload" class="clinical-modality-select max-w-md" aria-label="Ultrasound scan modality">
-                            <option value="TVUS" selected>Transvaginal Ultrasound (TVUS) ? Preferred</option>
-                            <option value="Transabdominal">Transabdominal / Pelvic ? Fallback</option>
+                            <option value="TVUS" selected>Transvaginal Ultrasound (TVUS): Preferred</option>
+                            <option value="Transabdominal">Transabdominal / Pelvic: Fallback</option>
                             <option value="Other">Other Pelvic Scan</option>
                         </select>
                     </div>
@@ -1542,27 +1310,31 @@
                                 </svg>
                                 <p class="text-gray-700 mb-2 font-medium">Upload Transvaginal Ultrasound scan image (or alternate pelvic scan image)</p>
                                 <p class="text-sm text-gray-600">Supports JPG, PNG formats. Maximum file size 10MB.</p>
-                                <input type="file" id="image-upload-ultrasound" accept="image/*" class="hidden">
-                                <div class="pcode-dropzone-actions">
-                                    <button type="button" onclick="document.getElementById('image-upload-ultrasound').click()" class="pcode-btn-density btn-blue-glass">
-                                        Choose File
-                                    </button>
-                                    <button type="button" onclick="openCamera('image-upload-ultrasound')" class="pcode-btn-density btn-ghost-glass">
-                                        Open Camera
-                                    </button>
-                                </div>
                             </div>
                             <!-- Preview replaces empty dropzone content in the same upper box -->
                             <div id="image-preview-ultrasound" class="hidden w-full">
                                 <p class="text-sm font-semibold text-gray-700 mb-3">Ultrasound Image</p>
                                 <div class="relative w-full max-w-full mx-auto">
                                     <button id="remove-ultrasound-btn" type="button" onclick="clearMyUltrasoundImage()" class="hidden bg-red-600 text-white rounded-full shadow hover:bg-red-700 transition-colors flex items-center justify-center" style="position:absolute; top:6px; right:6px; width:22px; height:22px; z-index:2;" title="Remove ultrasound image">
-                                        <span style="font-size: 18px; line-height: 1;">?</span>
+                                        <span style="font-size: 18px; line-height: 1;">×</span>
                                     </button>
                                     <img id="preview-img-ultrasound" src="" alt="Ultrasound Preview" class="w-full max-w-full rounded-lg shadow-lg">
                                 </div>
-                                <button type="button" id="edit-ultrasound-btn" onclick="editUltrasoundImage()" class="pcode-ultrasound-edit-btn pcode-btn-density btn-ghost-glass w-full sm:w-auto">
-                                    Edit / crop image
+                            </div>
+                            <input type="file" id="image-upload-ultrasound" accept="image/*" class="hidden">
+                            <input type="file" id="image-upload-ultrasound-camera" accept="image/*" capture="environment" class="pcode-camera-file-input" aria-hidden="true" tabindex="-1">
+                            <div class="pcode-dropzone-actions">
+                                <button type="button" onclick="chooseUltrasoundFile('image-upload-ultrasound')" class="pcode-btn-density btn-blue-glass">
+                                    Choose File
+                                </button>
+                                <button type="button" onclick="openCamera('image-upload-ultrasound')" class="pcode-btn-density btn-ghost-glass">
+                                    Open Camera
+                                </button>
+                                <button type="button" id="edit-ultrasound-btn" onclick="editUltrasoundImage()" class="pcode-ultrasound-edit-btn pcode-btn-density btn-ghost-glass" hidden>
+                                    Crop image
+                                </button>
+                                <button type="button" id="rotate-ultrasound-btn" onclick="rotateUltrasoundImage()" class="pcode-ultrasound-rotate-btn pcode-btn-density btn-ghost-glass" hidden>
+                                    Rotate image
                                 </button>
                             </div>
                         </div>
@@ -1596,12 +1368,12 @@
             </div>
 
             <div id="analysis-results-panel" class="pcode-diagnostic-results-panel pcode-detect-results-charts hidden">
-                <header class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-xl font-bold tracking-tight text-white">Diagnostic Summary</h2>
                         <p class="text-sm text-[#D1D1D6] mt-1">Clinical, imaging, and combined model outputs.</p>
                     </div>
-                </header>
+                </div>
                 <div class="flex flex-col gap-4 min-w-0">
                 <section id="clinical-results" class="pcode-card-static pcode-obsidian-data-card pcode-card-static pcode-diagnostic-bento hidden">
                 <div class="pcode-section-header">
@@ -1743,18 +1515,48 @@
         };
         let __ultrasoundCameraIntent = false;
 
-        function openCamera(inputId) {
+        function chooseUltrasoundFile(inputId) {
             const input = document.getElementById(inputId);
             if (!input) return;
-            __ultrasoundCameraIntent = true;
+            __ultrasoundCameraIntent = false;
             input.setAttribute('accept', 'image/*');
-            input.setAttribute('capture', 'environment');
-            const clearCapture = () => {
-                try { input.removeAttribute('capture'); } catch (_) {}
-            };
-            input.addEventListener('change', clearCapture, { once: true });
-            setTimeout(clearCapture, 3000);
+            try { input.removeAttribute('capture'); } catch (_) {}
+            input.value = '';
             input.click();
+        }
+
+        function openCamera(inputId) {
+            // Dedicated capture="environment" input: JS-set capture on a shared input is ignored by many mobile browsers
+            __ultrasoundCameraIntent = true;
+            const cameraIds = {
+                'image-upload-ultrasound': 'image-upload-ultrasound-camera',
+                'ultrasound-image-upload': 'ultrasound-camera-upload'
+            };
+            const cameraId = cameraIds[inputId] || (inputId + '-camera');
+            let cam = document.getElementById(cameraId);
+            if (!cam) {
+                cam = document.createElement('input');
+                cam.type = 'file';
+                cam.id = cameraId;
+                cam.accept = 'image/*';
+                cam.setAttribute('capture', 'environment');
+                cam.className = 'pcode-camera-file-input';
+                cam.setAttribute('aria-hidden', 'true');
+                cam.tabIndex = -1;
+                document.body.appendChild(cam);
+                cam.addEventListener('change', function () {
+                    if (cam.files && cam.files.length > 0) {
+                        handleFileUpload(cam.files[0], 'ultrasound');
+                    }
+                    try { cam.value = ''; } catch (_) {}
+                });
+            }
+            try {
+                cam.setAttribute('accept', 'image/*');
+                cam.setAttribute('capture', 'environment');
+                cam.value = '';
+            } catch (_) {}
+            cam.click();
         }
 
         function applyUltrasoundImageResult(file, dataUrl) {
@@ -1764,6 +1566,18 @@
             const previewImg = document.getElementById('preview-img-ultrasound');
             if (previewImg) previewImg.src = dataUrl;
             setUltrasoundDropzonePreview(true);
+            const usDateEl = document.getElementById('ultrasound_date');
+            if (usDateEl) {
+                const today = new Date();
+                const iso =
+                    today.getFullYear() +
+                    '-' +
+                    String(today.getMonth() + 1).padStart(2, '0') +
+                    '-' +
+                    String(today.getDate()).padStart(2, '0');
+                usDateEl.value = iso;
+                try { usDateEl.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+            }
             try {
                 const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
                 const isGuest = !!auth?.currentUser?.isGuest;
@@ -1803,6 +1617,28 @@
             } else if (src) {
                 openUltrasoundCropEditor(src);
             }
+        }
+
+        function currentUltrasoundImageSource() {
+            const current = uploadedImages && uploadedImages.ultrasound;
+            const previewImg = document.getElementById('preview-img-ultrasound');
+            if (current instanceof Blob) return current;
+            if (typeof current === 'string' && current) return current;
+            return previewImg && previewImg.src ? previewImg.src : null;
+        }
+
+        function rotateUltrasoundImage() {
+            const src = currentUltrasoundImageSource();
+            const api = window.PcodeImageCrop;
+            const btn = document.getElementById('rotate-ultrasound-btn');
+            if (!src || !api || typeof api.rotate90 !== 'function') return;
+            if (btn) btn.disabled = true;
+            api.rotate90(src).then(function (result) {
+                applyUltrasoundImageResult(result.file || null, result.dataUrl);
+            }).catch(function () {
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
         }
 
         function handleFileUploadDirect(file, side) {
@@ -1852,6 +1688,9 @@
                 panel.classList.add('is-revealed');
                 panel.classList.remove('hidden');
             }
+            if (window.PcodeSfx && typeof window.PcodeSfx.resultReady === 'function') {
+                try { window.PcodeSfx.resultReady(); } catch (_) {}
+            }
         }
 
         function resetAnalysisResultsUI() {
@@ -1878,10 +1717,20 @@
         }
 
         function hasUnsavedDiagnosisResults() {
+            if (window.__pcodeDiagnosisPersisted) return false;
             return !!(clinicalData || imagingData);
         }
 
+        function markDiagnosisPersisted() {
+            window.__pcodeDiagnosisPersisted = true;
+        }
+
+        function clearDiagnosisPersisted() {
+            window.__pcodeDiagnosisPersisted = false;
+        }
+
         function discardDiagnosisResults() {
+            clearDiagnosisPersisted();
             clinicalData = null;
             imagingData = null;
             clinicalAnalysisInProgress = false;
@@ -1931,6 +1780,15 @@
             loadPatientsListImpl(retryCount);
         }
 
+        function setPatientSelectLoading(loading) {
+            const wrap = document.getElementById('patient-select-wrap');
+            const select = document.getElementById('patient-select');
+            if (wrap) wrap.classList.toggle('is-loading', !!loading);
+            if (!select) return;
+            select.setAttribute('aria-busy', loading ? 'true' : 'false');
+            select.disabled = !!loading;
+        }
+
         function loadPatientsListImpl(retryCount = 0) {
             const select = document.getElementById('patient-select');
             if (!select) {
@@ -1939,6 +1797,7 @@
             }
             
             console.log('Starting patient load... (attempt ' + (retryCount + 1) + ')');
+            setPatientSelectLoading(true);
             select.innerHTML = '<option value="">Loading patients...</option>';
             
             // Check if user is a guest by decoding JWT token
@@ -2052,6 +1911,7 @@
                     select.style.borderColor = '#22c55e';
                     console.log('? Successfully loaded ' + allGuestPatients.length + ' guest patient(s)');
                 }
+                setPatientSelectLoading(false);
                 return; // Exit - don't call API for guests
             }
             
@@ -2061,7 +1921,7 @@
                 ? pcodeApiUrl('api/get_patients_simple.php')
                 : ((typeof auth !== 'undefined' && auth && typeof auth.resolveApiUrl === 'function')
                     ? auth.resolveApiUrl('get_patients_simple.php')
-                    : 'https://p-code-nqak.onrender.com/api/get_patients');
+                    : '/api/get_patients');
             console.log('Fetching from:', apiPath);
             
             fetch(apiPath, {
@@ -2115,9 +1975,11 @@
                         allPatients = data.data;
                         select.style.borderColor = '#22c55e';
                         console.log('? Successfully loaded ' + data.data.length + ' patient(s)');
+                        setPatientSelectLoading(false);
                     } else if (data && data.success && (!data.data || data.data.length === 0)) {
                         select.innerHTML = '<option value="">No patients in database</option>';
                         console.warn('API returned success but no patients found. Data:', data);
+                        setPatientSelectLoading(false);
                     } else {
                         console.error('Invalid response format. Data:', data);
                         throw new Error('Invalid response format: ' + JSON.stringify(data));
@@ -2132,6 +1994,7 @@
                         setTimeout(() => loadPatientsList(retryCount + 1), 1000);
                     } else {
                         select.innerHTML = '<option value="">Error: ' + error.message + '</option>';
+                        setPatientSelectLoading(false);
                     }
                 });
         }
@@ -2366,28 +2229,7 @@
                             }
                             
                             console.log('Patient data auto-loaded:', data);
-                            
-                            // Auto-navigate to Step 6 (Symptoms) to show loaded checkboxes
-                            console.log('Auto-navigating to Step 6 to display symptom checkboxes...');
-                            setTimeout(() => {
-                                goToStep(6);
-                                // Verify again after navigation
-                                const symptoms = ['Weight_gain', 'Hair_growth', 'Skin_darkening', 'Hair_loss', 'Pimples', 'Fast_food', 'Reg_Exercise'];
-                                console.log('=== AFTER goToStep(6) VERIFICATION ===');
-                                const afterNavState = {};
-                                symptoms.forEach(s => {
-                                    const cb = document.getElementById(s);
-                                    if (cb) {
-                                        afterNavState[s] = {
-                                            checked: cb.checked,
-                                            value: cb.value,
-                                            visible: cb.offsetParent !== null
-                                        };
-                                        console.log(`${s}: checked=${cb.checked}, visible=${cb.offsetParent !== null}`);
-                                    }
-                                });
-                                console.log('Final state after navigation:', afterNavState);
-                            }, 50);
+                            jumpClinicalStepperAfterPatientLoad();
                         } else {
                             console.error('Error loading patient data:', result.error);
                         }
@@ -2563,6 +2405,13 @@
             setupFormValidation();
             setupFormInputTracking(); // Set up tracking for user-modified fields
             setupAutoCalculations(); // Set up auto-calculation for BMI and LH/FSH Ratio
+            if (window.PcodeAgeGuard && !window.__pcodeAgeGuardDetect) {
+                window.__pcodeAgeGuardDetect = window.PcodeAgeGuard.bindAgeGuard({
+                    inputIds: ['age'],
+                    noteId: 'clinical-age-range-note'
+                });
+                window.__pcodeAgeGuardDetect.refresh();
+            }
             goToStep(1);
 
             function initClinicalFormAutosave() {
@@ -2662,16 +2511,7 @@
             }
 
             if (isRegularUser) {
-                // Auto-fill detect page from latest saved screening (Regular Users only)
                 setTimeout(loadAndPrefillMyLatestScreening, 250);
-                // Jump to step 6 (Ultrasound) on page load for Regular Users
-                setTimeout(() => {
-                    try {
-                        goToStep(6);
-                        // Ensure the ultrasound panel is in view
-                        document.getElementById('upload-area-ultrasound')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } catch (_) {}
-                }, 350);
             }
             
             // Animations
@@ -2737,9 +2577,21 @@
             el.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
+        function flattenClinicalPrefill(row) {
+            const raw = row && typeof row === 'object' ? row : {};
+            const blob = (raw.clinical_inputs_json && typeof raw.clinical_inputs_json === 'object')
+                ? raw.clinical_inputs_json
+                : raw;
+            const nested = (blob.clinical_inputs && typeof blob.clinical_inputs === 'object')
+                ? blob.clinical_inputs
+                : {};
+            return Object.assign({}, blob, nested);
+        }
+
         function applyLatestScreeningToForm(row) {
+            const runPrefill = function () {
             try {
-                const clinical = row?.clinical_inputs_json || {};
+                const clinical = flattenClinicalPrefill(row);
                 const dbToFormKey = {
                     Age_yrs: 'age',
                     Pulse_rate_bpm: 'Pulse_rate',
@@ -2767,8 +2619,14 @@
                 };
 
                 Object.keys(clinical).forEach((rawKey) => {
+                    if (/^(user_id|diagnosis_id|screening_id|created_at|updated_at|clinical_inputs|clinical_inputs_snapshot|clinical_inputs_json|Ultrasound_|XGBoost_|CNN_|Overall_|shap_|firestore)/i.test(rawKey)) {
+                        return;
+                    }
                     const formKey = dbToFormKey[rawKey] || rawKey;
                     let value = clinical[rawKey];
+                    if (value === null || value === undefined || value === '' || typeof value === 'object') {
+                        return;
+                    }
 
                     if (formKey === 'Cycle_R_I') {
                         if (value === 0 || value === '0' || String(value).toLowerCase() === 'regular') value = 'Regular';
@@ -2823,8 +2681,24 @@
                 } else {
                     console.log('[PREFILL] No saved ultrasound image found for this user yet.');
                 }
+                jumpClinicalStepperAfterPatientLoad();
             } catch (e) {
                 console.warn('Failed to apply latest screening to form:', e);
+            }
+            };
+
+            isLoadingPatientData = true;
+            try {
+                if (window.clinicalFormGuard && typeof window.clinicalFormGuard.suppress === 'function') {
+                    window.clinicalFormGuard.suppress(runPrefill);
+                } else {
+                    runPrefill();
+                }
+                if (window.clinicalFormGuard && typeof window.clinicalFormGuard.markClean === 'function') {
+                    window.clinicalFormGuard.markClean();
+                }
+            } finally {
+                isLoadingPatientData = false;
             }
         }
 
@@ -2838,6 +2712,10 @@
             if (empty) empty.classList.toggle('hidden', !!visible);
             if (preview) preview.classList.toggle('hidden', !visible);
             if (dropzone) dropzone.classList.toggle('is-preview', !!visible);
+            ['edit-ultrasound-btn', 'rotate-ultrasound-btn'].forEach(function (id) {
+                const btn = document.getElementById(id);
+                if (btn) btn.hidden = !visible;
+            });
         }
 
         async function clearMyUltrasoundImage() {
@@ -2878,6 +2756,7 @@
                 // Adapt API response to our existing prefill function shape
                 applyLatestScreeningToForm({
                     clinical_inputs_json: data.data,
+                    clinical_inputs: data.data.clinical_inputs || null,
                     ultrasound_image: data.data.Ultrasound_image || null
                 });
             } catch (e) {
@@ -2892,21 +2771,28 @@
             // Setup ultrasound image upload
             setupDragAndDrop('upload-area-ultrasound', 'image-upload-ultrasound', 'ultrasound');
             
-            // Setup file input change
+            // Setup file input change (gallery + dedicated camera)
             const fileInput = document.getElementById('image-upload-ultrasound');
+            const cameraInput = document.getElementById('image-upload-ultrasound-camera');
             console.log('File input element found:', fileInput);
             
+            const onUltrasoundFile = (e) => {
+                console.log('File input change event triggered');
+                console.log('Files selected:', e.target.files.length);
+                if (e.target.files.length > 0) {
+                    console.log('Processing file:', e.target.files[0].name);
+                    handleFileUpload(e.target.files[0], 'ultrasound');
+                }
+                try { e.target.value = ''; } catch (_) {}
+            };
+
             if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    console.log('File input change event triggered');
-                    console.log('Files selected:', e.target.files.length);
-                    if (e.target.files.length > 0) {
-                        console.log('Processing file:', e.target.files[0].name);
-                        handleFileUpload(e.target.files[0], 'ultrasound');
-                    }
-                });
+                fileInput.addEventListener('change', onUltrasoundFile);
             } else {
                 console.error('File input element not found: image-upload-ultrasound');
+            }
+            if (cameraInput) {
+                cameraInput.addEventListener('change', onUltrasoundFile);
             }
         }
 
@@ -3133,8 +3019,18 @@
                 : '<span class="font-semibold pcode-next-btn__label">Next</span>' + nextIconSvg;
         }
 
+        function jumpClinicalStepperAfterPatientLoad() {
+            const filled = (typeof pcodeCollectClinicalFormEntries === 'function')
+                ? pcodeCollectClinicalFormEntries(document.getElementById('clinical-form')).filledCount
+                : 0;
+            if (filled >= 6 && typeof goToStep === 'function') goToStep(6);
+        }
+
         function goToStep(step) {
             if (step < 1 || step > totalSteps) return;
+            if (typeof currentStep === 'number' && step !== currentStep && window.PcodeSfx) {
+                try { window.PcodeSfx.tick(); } catch (_) {}
+            }
 
             for (let i = 1; i <= totalSteps; i++) {
                 const content = document.getElementById(`step-${i}-content`);
@@ -3151,6 +3047,7 @@
                 currentContent.removeAttribute('inert');
             }
 
+            let activeLabelText = '';
             for (let i = 1; i <= totalSteps; i++) {
                 const indicator = document.getElementById(`step-${i}-indicator`);
                 const item = indicator?.closest('.pcode-detect-step-item');
@@ -3162,7 +3059,29 @@
                 else if (i === step) {
                     indicator.classList.add('is-active');
                     indicator.setAttribute('aria-current', 'step');
+                    const labelEl = item?.querySelector('.pcode-detect-step-label');
+                    activeLabelText = (labelEl?.textContent || '').trim();
                 } else indicator.classList.add('is-pending');
+            }
+
+            const activeStepLabel = document.getElementById('pcode-detect-active-step-label');
+            if (activeStepLabel) {
+                activeStepLabel.textContent = activeLabelText
+                    ? `Step ${step}: ${activeLabelText}`
+                    : `Step ${step}`;
+            }
+
+            const stepMissingOk = document.getElementById('pcode-detect-step-missing-ok');
+            if (stepMissingOk) {
+                const missingOkByStep = {
+                    1: 'Vitals: you can leave any field blank. Missing values are okay.',
+                    2: 'Hormones: skip any lab value you do not have. Missing values are okay.',
+                    3: 'Reproductive: you can leave cycle or pregnancy fields blank. Missing values are okay.',
+                    4: 'Metabolic: skip blood sugar or blood pressure if you do not have them. Missing values are okay.',
+                    5: 'Ultrasound: leave scan fields blank if you have no report. Missing values are okay.',
+                    6: 'Symptoms: only check what applies. Unchecked boxes are okay.'
+                };
+                stepMissingOk.textContent = missingOkByStep[step] || 'Missing values are okay. Skip what you do not have.';
             }
 
             const prevBtn = document.getElementById('prev-btn');
@@ -3440,15 +3359,6 @@
                         
                         // Store the image so it's available for prediction
                         uploadedImages.ultrasound = clinicalData.Ultrasound_image;
-                        
-                        // Jump to step 6 (Ultrasound) to show the image
-                        console.log('?? Attempting to jump to Step 6 (Ultrasound)');
-                        try {
-                            goToStep(6);
-                            console.log('? Successfully called goToStep(6)');
-                        } catch (e) {
-                            console.error('? Error calling goToStep(6):', e.message);
-                        }
                     } else {
                         console.error('? Required image elements not found!');
                     }
@@ -3457,7 +3367,8 @@
                 } else {
                     console.log('?? Detected patient - image handled separately');
                 }
-                
+
+                jumpClinicalStepperAfterPatientLoad();
                 return;
             }
             
@@ -3512,6 +3423,7 @@
                             { formId: 'blood_draw_date', dbField: 'blood_draw_date' },
                             { formId: 'last_menstrual_period_date', dbField: 'last_menstrual_period_date' },
                             { formId: 'ultrasound_date', dbField: 'ultrasound_date' },
+                            { formId: 'symptom_evaluation_date', dbField: 'symptom_evaluation_date' },
                             { formId: 'fasting_hours', dbField: 'fasting_hours' },
                             { formId: 'ultrasound_modality', dbField: 'ultrasound_modality' }
                         ];
@@ -3647,11 +3559,7 @@
                         isLoadingPatientData = true;
                         isSettingCheckboxesFromDB = true;
                         
-                        // Navigate to step 6 to make checkboxes visible
-                        goToStep(6);
-                        
                         console.log('%c=== CHECKBOX LOAD INITIATED ===', 'color: green; font-weight: bold; font-size: 14px;');
-                        console.log('Step 6 navigation triggered');
                         
                         // Then set checkboxes with adequate delay to ensure they're rendered
                         setTimeout(() => {
@@ -3744,6 +3652,8 @@
                                 
                                 isLoadingPatientData = false;
                                 isSettingCheckboxesFromDB = false;
+                                if (window.__pcodeAgeGuardDetect) window.__pcodeAgeGuardDetect.refresh();
+                                jumpClinicalStepperAfterPatientLoad();
                             }, 200);
                         }, 200);
 
@@ -3759,82 +3669,24 @@
                 });
         }
 
+        function collectClinicalFormEntries(form) {
+            if (typeof pcodeCollectClinicalFormEntries === 'function') {
+                return pcodeCollectClinicalFormEntries(form);
+            }
+            return { values: {}, filledCount: 0 };
+        }
+
         function checkDataCompleteness() {
-            /**
-             * Check if form has enough data before submitting prediction.
-             * Returns: { isComplete: boolean, message: string, fieldsCount: number }
-             * 
-             * COUNT ALL CHECKBOXES: checked or unchecked = valid data (1 or 0)
-             */
             const form = document.getElementById('clinical-form');
             if (!form) {
-                console.error('? clinical-form not found!');
-                return { isComplete: false, message: '? Form not initialized', fieldsCount: 0 };
+                return { isComplete: false, message: 'Form not initialized', fieldsCount: 0 };
             }
-            
-            // Get all checkboxes in the form
-            const allCheckboxes = form.querySelectorAll('input[type="checkbox"]');
-            console.log(`?? Total checkboxes found: ${allCheckboxes.length}`);
-            
-            let clinicalCheckboxCount = 0;
-            const checkboxElements = [];
-            
-            // Count clinical checkboxes (skip non-clinical ones by name)
-            for (const checkbox of allCheckboxes) {
-                const name = checkbox.name;
-                // Skip non-clinical checkboxes
-                if (name === 'remember-me' || name === 'agree-terms') {
-                    console.log(`??  Skipping non-clinical checkbox: ${name}`);
-                    continue;
-                }
-                // Count any other checkbox as clinical data
-                clinicalCheckboxCount++;
-                checkboxElements.push(checkbox);
-                console.log(`? Counting clinical checkbox: ${name || checkbox.id}`);
-            }
-            
-            console.log(`?? Clinical checkboxes counted: ${clinicalCheckboxCount}`);
-            
-            // Count all clinical checkbox elements as meaningful data
-            let meaningfulFieldCount = clinicalCheckboxCount;
-            
-            // Create a set of checkbox names for easy checking
-            const checkboxNames = new Set(checkboxElements.map(cb => cb.name));
-            
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            
-            console.log(`?? Form fields with values: ${Object.keys(data).length}`);
-            
-            // Count non-checkbox fields with actual values
-            for (const [key, value] of Object.entries(data)) {
-                // Skip non-clinical fields
-                if (key.startsWith('patient_') || key === 'id' || key === 'name' || 
-                    key === 'remember-me' || key === 'agree-terms') {
-                    continue;
-                }
-                
-                // Skip checkboxes (already counted above)
-                if (checkboxNames.has(key)) {
-                    continue;
-                }
-                
-                // For other fields: count only if they have a non-empty value
-                if (value !== undefined && value !== '' && value !== null && value !== 'null') {
-                    meaningfulFieldCount++;
-                    console.log(`? Counting field: ${key} = ${value}`);
-                }
-            }
-            
-            console.log(`?? Total meaningful fields: ${meaningfulFieldCount}`);
-            
+            const collected = collectClinicalFormEntries(form);
+            const meaningfulFieldCount = collected.filledCount;
             const isComplete = meaningfulFieldCount >= 6;
-            const message = isComplete 
-                ? `? Form has sufficient data (${meaningfulFieldCount} fields filled)`
-                : `? Insufficient data. Please fill in at least 6 fields. Currently: ${meaningfulFieldCount} fields`;
-            
-            console.log(`?? Completeness check result: ${JSON.stringify({isComplete, message, fieldsCount: meaningfulFieldCount})}`);
-            
+            const message = isComplete
+                ? `Form has sufficient data (${meaningfulFieldCount} fields filled)`
+                : `Insufficient data. Please fill in at least 6 fields. Currently: ${meaningfulFieldCount} fields`;
             return {
                 isComplete,
                 message,
@@ -3847,32 +3699,53 @@
             const completenessCheck = checkDataCompleteness();
             if (!completenessCheck.isComplete) {
                 // PREVENT prediction - show error and return
-                alert('? Insufficient Data\n\n' + completenessCheck.message + '\n\nPlease fill in at least 6 fields with patient data before analyzing.');
+                alert('Insufficient Data\n\n' + completenessCheck.message + '\n\nPlease fill in at least 6 fields with patient data before analyzing.');
                 return;  // Stop execution - do not proceed with prediction
             }
-            
-            // Collect all form data
-            const form = document.getElementById('clinical-form');
-            const formData = new FormData(form);
-            
-            // Manually handle checkboxes that aren't checked (FormData skips them)
-            // KEY: Unchecked checkboxes = explicit user action (No/0), not missing data
-            const allCheckboxes = form.querySelectorAll('input[type="checkbox"]');
-            for (const checkbox of allCheckboxes) {
-                // Skip remember-me and agree-terms checkboxes (non-clinical)
-                if (checkbox.id === 'remember-me' || checkbox.id === 'agree-terms') {
-                    continue;
-                }
-                
-                if (!formData.has(checkbox.name)) {
-                    // Unchecked checkboxes are always treated as 0 (No)
-                    // This applies to: clinical symptoms, lifestyle factors, etc.
-                    // An unchecked checkbox = explicit "patient does NOT have this"
-                    formData.set(checkbox.name, 0);
+
+            if (window.PcodeAgeGuard) {
+                const ageEl = document.getElementById('age');
+                const ageVal = ageEl ? ageEl.value : null;
+                if (ageVal !== null && ageVal !== '' && !window.PcodeAgeGuard.assertAgeAllowed(ageVal, { focusId: 'age' })) {
+                    return;
                 }
             }
+
+            // Show analyzing UI immediately so cold-start / validity checks don't look like a dead click
+            const nextBtn = document.getElementById('next-btn');
+            const analyzingLabelHtml = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing...</span></span>';
+            function restoreAnalyzeButton() {
+                clinicalAnalysisInProgress = false;
+                clinicalResultsPending = false;
+                try { updateGaugeCardVisibility(); } catch (_) {}
+                try { refreshAnalysisLoadingStates(); } catch (_) {}
+                if (!nextBtn) return;
+                nextBtn.disabled = false;
+                nextBtn.style.display = '';
+                nextBtn.style.alignItems = '';
+                nextBtn.style.justifyContent = '';
+                nextBtn.style.gap = '';
+                updateClinicalStepFooter(currentStep);
+            }
+            if (nextBtn) {
+                nextBtn.innerHTML = analyzingLabelHtml;
+                nextBtn.disabled = true;
+                nextBtn.style.display = 'inline-flex';
+                nextBtn.style.alignItems = 'center';
+                nextBtn.style.justifyContent = 'center';
+                nextBtn.style.gap = '8px';
+            }
+            clinicalAnalysisInProgress = true;
+            clinicalResultsPending = true;
+            const clinicalAnalyzeStartedAt = Date.now();
+            if (window.PcodeSfx && typeof window.PcodeSfx.processingStart === 'function') {
+                try { window.PcodeSfx.processingStart(); } catch (_) {}
+            }
+            try { updateGaugeCardVisibility(); } catch (_) {}
+            try { refreshAnalysisLoadingStates(); } catch (_) {}
             
-            const data = Object.fromEntries(formData.entries());
+            const form = document.getElementById('clinical-form');
+            const data = collectClinicalFormEntries(form).values;
             
             // Convert numeric strings to numbers or null for missing values
             // Send all available data to the model, whether from database or user input
@@ -3906,7 +3779,7 @@
                 }
             }
             
-            console.log('?? Data sent to model:');
+            console.log('[CLINICAL] Data sent to model:');
             console.log('   User-modified fields:', Array.from(userModifiedFields));
             console.log('   Database-loaded fields (cleared if not modified):', Array.from(databaseLoadedFields));
             console.log('   Final data for prediction:', clinicalDataForModel);
@@ -3919,32 +3792,8 @@
             }
 
             if (window.PcodeClinicalValidity && window.PcodeClinicalValidity.validateBeforeInference) {
-                const validityCheck = await window.PcodeClinicalValidity.validateBeforeInference();
-                if (!validityCheck.allowed) {
-                    const stale = validityCheck.evaluation && validityCheck.evaluation.stale_response;
-                    alert(
-                        (stale && stale.error ? stale.error : 'Inference locked due to expired parameters.') +
-                        '\n\n' +
-                        (stale && stale.action_required ? stale.action_required : 'Please update clinical data and try again.')
-                    );
-                    return;
-                }
+                await window.PcodeClinicalValidity.validateBeforeInference();
             }
-
-            // Show loading state
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerHTML = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing?</span></span>';
-            nextBtn.disabled = true;
-            nextBtn.style.display = 'inline-flex';
-            nextBtn.style.alignItems = 'center';
-            nextBtn.style.justifyContent = 'center';
-            nextBtn.style.gap = '8px';
-
-            // Mark clinical analysis as in progress
-            clinicalAnalysisInProgress = true;
-            clinicalResultsPending = true;
-            updateGaugeCardVisibility();
-            refreshAnalysisLoadingStates();
 
             // Track which predictions have completed
             let xgboostComplete = false;
@@ -3954,11 +3803,13 @@
                 if (xgboostComplete) {
                     clinicalAnalysisInProgress = false;
                     updateGaugeCardVisibility();
-                    nextBtn.disabled = false;
-                    nextBtn.style.display = '';
-                    nextBtn.style.alignItems = '';
-                    nextBtn.style.justifyContent = '';
-                    nextBtn.style.gap = '';
+                    if (nextBtn) {
+                        nextBtn.disabled = false;
+                        nextBtn.style.display = '';
+                        nextBtn.style.alignItems = '';
+                        nextBtn.style.justifyContent = '';
+                        nextBtn.style.gap = '';
+                    }
                     updateClinicalStepFooter(currentStep);
                 }
             }
@@ -3972,18 +3823,19 @@
                 : 1.0;
             const xgbUrl = (typeof pcodeMlUrl === 'function')
                 ? pcodeMlUrl('xgboost')
-                : 'https://p-code-nqak.onrender.com/predict-xgboost';
+                : '/api/detect-clinical';
             fetch(xgbUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: (typeof pcodeAuthHeaders === 'function') ? pcodeAuthHeaders(true) : { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...clinicalDataForModel,
                     smoothing_factor: xgbSmoothingFactor
                 })
             })
             .then(response => response.json())
+            .then(result => (typeof pcodeHoldClinicalLoading === 'function')
+                ? pcodeHoldClinicalLoading(clinicalAnalyzeStartedAt, result)
+                : result)
             .then(result => {
                 xgboostComplete = true;
                 checkAllPredictionsComplete();
@@ -4062,6 +3914,7 @@
                     }
                     
                     // Store clinical data
+                    clearDiagnosisPersisted();
                     clinicalData = {
                         probability: result.probability_percentage,
                         classification: result.classification,
@@ -4139,7 +3992,7 @@
                     const errorBox = document.createElement('div');
                     errorBox.className = 'mt-6 p-4 bg-red-50 border border-red-300 rounded-lg';
                     errorBox.innerHTML = `
-                        <h4 class="text-lg font-semibold text-red-800 mb-2">?? Unable to Generate Prediction</h4>
+                        <h4 class="text-lg font-semibold text-red-800 mb-2">Unable to Generate Prediction</h4>
                         <p class="text-red-700 mb-3">${result.error || 'Unknown error occurred'}</p>
                     `;
                     
@@ -4174,6 +4027,9 @@
                 xgboostComplete = true;
                 checkAllPredictionsComplete();
                 refreshAnalysisLoadingStates();
+                if (window.PcodeSfx && typeof window.PcodeSfx.processingStop === 'function') {
+                    try { window.PcodeSfx.processingStop(); } catch (_) {}
+                }
                 
                 alert('Error analyzing clinical data: ' + error.message);
                 console.error('Error:', error);
@@ -4313,27 +4169,24 @@
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
-            // Match local Keras cnn_predict default smoothing (0.90)
-            const smoothingFactor = (typeof pcodeCnnSmoothingFactor === 'function')
-                ? pcodeCnnSmoothingFactor()
-                : 0.90;
+            // CNN: logit temperature scaling (not linear shrink — that pinned every scan at 90% or 98%)
+            const cnnTemperature = (typeof pcodeCnnTemperature === 'function')
+                ? pcodeCnnTemperature()
+                : 2.0;
             const userMode = isRegularUser ? 'regular_user' : 'provider';
             const cnnPayload = {
                 image: imageBase64,
                 user_mode: userMode,
                 generate_gradcam: false,
-                apply_smoothing: true,
-                smoothing_factor: smoothingFactor
+                temperature: cnnTemperature
             };
             const cnnUrl = (typeof pcodeMlUrl === 'function')
                 ? pcodeMlUrl('cnn')
-                : 'https://p-code-nqak.onrender.com/predict-cnn';
+                : '/api/detect-ultrasound';
             beginImagingAnalyzeTiming();
             fetch(cnnUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: (typeof pcodeAuthHeaders === 'function') ? pcodeAuthHeaders(true) : { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cnnPayload)
             })
             .then(response => {
@@ -4365,6 +4218,7 @@
                 }
 
                 if (result.success) {
+                    clearDiagnosisPersisted();
                     imagingData = snapshotImagingData(result);
 
                     // Display results
@@ -4431,7 +4285,7 @@
             // Show loading state
             const analysisButton = document.getElementById('analyze-ultrasound-btn');
             const originalHTML = analysisButton.innerHTML;
-            analysisButton.innerHTML = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing?</span></span>';
+            analysisButton.innerHTML = '<span class="pcode-analyzing-label"><span class="spinner-circle" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="20" height="20"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg></span><span class="font-semibold">Analyzing...</span></span>';
             analysisButton.disabled = true;
             analysisButton.style.display = 'inline-flex';
             analysisButton.style.alignItems = 'center';
@@ -4441,6 +4295,9 @@
             // Mark imaging analysis as in progress
             imagingAnalysisInProgress = true;
             imagingResultsPending = true;
+            if (window.PcodeSfx && typeof window.PcodeSfx.processingStart === 'function') {
+                try { window.PcodeSfx.processingStart(); } catch (_) {}
+            }
             beginImagingAnalyzeTiming();
             updateGaugeCardVisibility();
             refreshAnalysisLoadingStates();
@@ -4475,25 +4332,22 @@
             const role = String(auth?.currentUser?.role || '').trim().toLowerCase();
             const isGuest = !!auth?.currentUser?.isGuest;
             const isRegularUser = role === 'regular user' && !isGuest;
-            const smoothingFactor = (typeof pcodeCnnSmoothingFactor === 'function')
-                ? pcodeCnnSmoothingFactor()
-                : 0.90;
+            const cnnTemperature = (typeof pcodeCnnTemperature === 'function')
+                ? pcodeCnnTemperature()
+                : 2.0;
             const userMode = isRegularUser ? 'regular_user' : 'provider';
             const cnnPayload = {
                 image: imageBase64,
                 user_mode: userMode,
                 generate_gradcam: false,
-                apply_smoothing: true,
-                smoothing_factor: smoothingFactor
+                temperature: cnnTemperature
             };
             const cnnUrl = (typeof pcodeMlUrl === 'function')
                 ? pcodeMlUrl('cnn')
-                : 'https://p-code-nqak.onrender.com/predict-cnn';
+                : '/api/detect-ultrasound';
             fetch(cnnUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: (typeof pcodeAuthHeaders === 'function') ? pcodeAuthHeaders(true) : { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cnnPayload)
             })
             .then(response => {
@@ -4575,7 +4429,7 @@
                     if (guestDetectedPatients.length > 0) {
                         const lastPatient = guestDetectedPatients[guestDetectedPatients.length - 1];
                         lastPatient.imaging_result = snapshotImagingData(result);
-                        // Also store the full API response for EigenCAM use
+                        // Also store the full API response for Grad-CAM++ use
                         if (!lastPatient.cnn_api_response) {
                             lastPatient.cnn_api_response = result;
                         }
@@ -4633,7 +4487,8 @@
                 classification: result.classification,
                 reliable: result.reliable,
                 description: result.description,
-                is_ultrasound: true,
+                is_ultrasound: false,
+                anomaly_passed: false,
                 gradcam_visualization: result.gradcam_visualization || null
             };
         }
@@ -4666,6 +4521,16 @@
             // Mahalanobis anomaly detection status
             if (window.PcodeClinicalValidity && window.PcodeClinicalValidity.renderMahalanobisStatus) {
                 window.PcodeClinicalValidity.renderMahalanobisStatus(result);
+            }
+
+            if (!isReliable) {
+                try {
+                    window.alert(
+                        'Ultrasound image not confirmed\n\n' +
+                        'This upload failed the ultrasound quality / Mahalanobis gate (e.g. photo of fabric, paper, or other non-scan content).\n\n' +
+                        'Imaging AI results are withheld (Pending). Upload a dark-field ultrasound frame and re-analyze before saving imaging findings.'
+                    );
+                } catch (_) {}
             }
             
             const imageProbabilityEl = document.getElementById('image-probability');
@@ -5291,7 +5156,7 @@
         function setSaveRecordLoading(isLoading, options = {}) {
             const quiet = !!options.quiet;
             const btn = document.getElementById('save-record-btn');
-            const label = options.label || 'Saving results?';
+            const label = options.label || 'Saving results...';
             if (btn) {
                 if (isLoading) {
                     if (!btn.dataset.saveLabelHtml) {
@@ -5379,7 +5244,7 @@
             if (!actor.isRegularUser) {
                 // This is the Regular User page; providers should use the provider page.
                 if (!quiet) {
-                    alert('This Detect page is for community accounts. Opening the provider Detect page?');
+                    alert('This Detect page is for community accounts. Opening the provider Detect page.');
                 }
                 window.location.replace('detect-provider.html');
                 return Promise.resolve(false);
@@ -5398,7 +5263,7 @@
                             allowClinicalOnly: false
                         });
                     } else if (notifyErrors) {
-                        alert('Cannot save imaging-only results — unreliable ultrasound. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.');
+                        alert('Cannot save imaging-only results: unreliable ultrasound. Complete clinical analysis to save clinical metrics only, or re-upload a valid scan.');
                     }
                     return Promise.resolve(false);
                 }
@@ -5422,9 +5287,10 @@
                     const form = document.getElementById('clinical-form');
                     if (!form) return {};
                     try {
-                        const fd = new FormData(form);
+                        const collected = collectClinicalFormEntries(form);
+                        const fdEntries = Object.entries(collected.values || {});
                         const obj = {};
-                        for (const [k, v] of fd.entries()) {
+                        for (const [k, v] of fdEntries) {
                             if (v === null || v === undefined) continue;
                             const s = String(v).trim();
                             if (s === '') {
@@ -5555,7 +5421,7 @@
                 };
 
                 window.__pcodeSaveInFlight = true;
-                setSaveRecordLoading(true, { quiet: quiet, label: 'Saving results?' });
+                setSaveRecordLoading(true, { quiet: quiet, label: 'Saving results...' });
 
                 let resolveSave;
                 const savePromise = new Promise(function (resolve) { resolveSave = resolve; });
@@ -5597,7 +5463,7 @@
 
                     const saveUrl = (typeof pcodeApiUrl === 'function')
                         ? pcodeApiUrl('./api/save_user_diagnosis.php')
-                        : 'https://p-code-nqak.onrender.com/api/save_user_diagnosis';
+                        : '/api/save_user_diagnosis';
                     const authHeader = String(token).match(/^Bearer\s+/i) ? String(token) : ('Bearer ' + token);
 
                     fetch(saveUrl, {
@@ -5627,6 +5493,7 @@
                     })
                     .then((data) => {
                         if (data && data.success) {
+                            markDiagnosisPersisted();
                             if (window.clinicalFormAutosave) window.clinicalFormAutosave.clearDraft();
                             if (window.clinicalFormGuard) window.clinicalFormGuard.notifySaved('Clinical record saved');
                             window.__pendingClearUltrasound = false;
@@ -5641,6 +5508,9 @@
                             window.__pcodeSaveInFlight = false;
                             setSaveRecordLoading(false, { quiet: quiet });
                             if (!quiet) {
+                                if (window.PcodeSfx && typeof window.PcodeSfx.success === 'function') {
+                                    try { window.PcodeSfx.success(); } catch (_) {}
+                                }
                                 if (typeof window.pcodeShowCenterAlert === 'function') {
                                     window.pcodeShowCenterAlert(
                                         imagingExcluded || (!imagingForSave && clinicalData)
@@ -5693,10 +5563,16 @@
             }
         }
         function viewXAIInsights() {
+            if (window.clinicalFormGuard && typeof window.clinicalFormGuard.allowNavigation === 'function') {
+                window.clinicalFormGuard.allowNavigation();
+            } else if (window.clinicalFormGuard && typeof window.clinicalFormGuard.markClean === 'function') {
+                window.clinicalFormGuard.markClean();
+            }
             window.location.href = 'xai-user.html';
         }
 
         function startNewAnalysis() {
+            clearDiagnosisPersisted();
             // Reset all data and UI
             clinicalData = null;
             imagingData = null;
@@ -5716,6 +5592,8 @@
             
             // Reset file input
             document.getElementById('image-upload-ultrasound').value = '';
+            const camClear = document.getElementById('image-upload-ultrasound-camera');
+            if (camClear) camClear.value = '';
             
             // Reset stepper to step 1
             goToStep(1);
@@ -5737,10 +5615,13 @@
             const originalText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating...</span>';
+            if (window.PcodeSfx && typeof window.PcodeSfx.success === 'function') {
+                try { window.PcodeSfx.success(); } catch (_) {}
+            }
             if (typeof window.pcodeShowExportLoading === 'function') {
-                window.pcodeShowExportLoading('Generating PDF report?');
+                window.pcodeShowExportLoading('Generating PDF report...');
             } else if (typeof window.pcodeShowCenterAlert === 'function') {
-                window.pcodeShowCenterAlert('Generating PDF report?', 'loading', { persist: true });
+                window.pcodeShowCenterAlert('Generating PDF report...', 'loading', { persist: true });
             }
 
             try {
@@ -5794,9 +5675,31 @@
                     imagingData.gradcam_visualization = gradcamSrc;
                 }
 
+                const selectedRecord = (typeof allPatients !== 'undefined' && Array.isArray(allPatients))
+                    ? allPatients.find(function (p) {
+                        return p && (
+                            String(p.id) === String(selectedPatientId) ||
+                            String(p.patient_id) === String(selectedPatientId) ||
+                            String(p.patient_id) === String(selectedPatientId).replace(/^(?:PCOS|PMOS)-/i, '')
+                        );
+                    })
+                    : null;
+                const personal = (helpers.pickPersonalDemographics)
+                    ? helpers.pickPersonalDemographics(selectedRecord, formClinical, clinicalData)
+                    : {};
+
                 const exportData = {
                     patient_id: selectedPatientId || ('detected_' + Date.now()),
-                    patient_name: patientName,
+                    patient_name: personal.patient_name || personal.name || patientName,
+                    first_name: personal.first_name || '',
+                    middle_name: personal.middle_name || '',
+                    surname: personal.surname || '',
+                    address_street: personal.address_street || '',
+                    address_barangay: personal.address_barangay || personal.address_town || '',
+                    address_town: personal.address_barangay || personal.address_town || '',
+                    address_municipality: personal.address_municipality || '',
+                    address_city: personal.address_city || '',
+                    address: personal.address || '',
                     clinical_score_percentage: clinicalScore,
                     imaging_score_percentage: imagingScore,
                     overall_diagnosis_percentage: combinedScore,
@@ -5813,7 +5716,7 @@
 
                 btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:0.35rem;vertical-align:middle"><span class="pcode-dual-ring-spinner pcode-dual-ring-spinner--xs" aria-hidden="true"><img src="resources/pcode-dual-ring-spinner.svg" alt="" width="20" height="20" decoding="async" /></span>Generating PDF...</span>';
                 if (typeof window.pcodeShowExportLoading === 'function') {
-                    window.pcodeShowExportLoading('Generating PDF report?');
+                    window.pcodeShowExportLoading('Generating PDF report...');
                 }
 
                 const response = await fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
@@ -5889,20 +5792,22 @@
     </script>
     <!-- Auth Module -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="js/pcode-api.js?v=20260731-apifix2"></script>
-  <script src="js/auth.js?v=20260803-btneq"></script>
+    <script src="js/pcode-api.js?v=20260823-inertform1"></script>
+  <script src="js/auth.js?v=20260905-logoutstay1"></script>
     <script src="js/pcode-google-auth.js?v=20260730-nodisclaimer"></script>
     <script src="js/pcode-form-autosave.js?v=20260723-savehold"></script>
-    <script src="js/pcode-image-crop.js?v=20260731-capture-tip"></script>
-    <script src="js/pcode-user-care.js?v=20260730-nodraftbar"></script>
-    <script src="js/pcode-form-guard.js?v=20260801-saveclick"></script>
+    <script src="js/pcode-image-crop.js?v=20260819-rot1"></script>
+    <script src="js/pcode-user-care.js?v=20260814-nodash1"></script>
+    <script src="js/pcode-form-guard.js?v=20260823-saveleave1"></script>
     <script src="js/pcode-diagnosis-guard.js?v=20260801-saveclick"></script>
     <script src="js/pcode-diagnostic-severity.js"></script>
-    <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
-    <script src="js/pcode-clinical-validity.js?v=20260801-uslabel"></script>
-    <script src="js/pcode-gradcam-canvas.js?v=20260716a"></script>
-    <script src="js/pcode-pdf-export-helpers.js?v=20260730-nqak"></script>
-    <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+    <script src="js/pcode-sfx.js?v=20260814-sfx1"></script>
+  <script src="js/pcode-theme.js?v=20260814-sfx1"></script>
+    <script src="js/pcode-clinical-validity.js?v=20260905-validx1"></script>
+    <script src="js/pcode-age-guard.js?v=20260808-age1"></script>
+    <script src="js/pcode-gradcam-canvas.js?v=20260819-camcover1"></script>
+    <script src="js/pcode-pdf-export-helpers.js?v=20260902-pdfname1"></script>
+    <script src="js/pcode-responsive.js?v=20260809-navfrost1" defer></script>
     <script>
         // Immediately check authentication and redirect if not logged in
         document.addEventListener('DOMContentLoaded', function() {
@@ -6002,3 +5907,6 @@
     </script>
 </body>
 </html>
+
+
+

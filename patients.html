@@ -15,7 +15,7 @@
   <link rel="shortcut icon" href="assets/logo.png" type="image/png">
 
     <!-- Local CSS Files (No CDN) -->
-    <link rel="stylesheet" href="css/tailwind.css?v=20260730-checkfix">
+    <link rel="stylesheet" href="css/tailwind.css?v=20260810-autofill1">
     <!-- Local Fonts (No CDN) -->
     <link rel="stylesheet" href="fonts/fonts.css">
     <!-- Local JavaScript Libraries -->
@@ -33,7 +33,7 @@
             scrollbar-width: none;
         }
 
-        body::-webkit-scrollbar {
+        body:-webkit-scrollbar {
             display: none;
         }
         /* Hide auth UI initially to prevent flashing */
@@ -55,7 +55,7 @@
             flex-shrink: 0;
             height: auto;
         }
-        /* Mobile drawer — fixed; must not consume layout height in the page flow */
+        /* Mobile drawer: fixed; must not consume layout height in the page flow */
         #mobile-menu.mobile-menu,
         #menu-overlay.mobile-menu-overlay {
             position: fixed !important;
@@ -87,13 +87,13 @@
             visibility: visible;
             pointer-events: auto;
         }
-        .mobile-menu::-webkit-scrollbar {
+        .mobile-menu:-webkit-scrollbar {
             width: 6px;
         }
-        .mobile-menu::-webkit-scrollbar-track {
+        .mobile-menu:-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.1);
         }
-        .mobile-menu::-webkit-scrollbar-thumb {
+        .mobile-menu:-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 3px;
         }
@@ -168,174 +168,7 @@
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.65); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); align-items: center; justify-content: center; }
         .modal.show { display: flex; }
-        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260805-menublur1 (#patient-modal) */
-        .tab-button.active { background-color: #6B46C1; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Enhanced Modal shell — glass styles from pcode-app-bento-dark.css */
-        .modal-content {
-            max-width: 900px;
-            width: 90%;
-            max-height: 85vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Step content transitions */
-        @media (max-width: 1024px) {
-          .gradient-bg { padding: 1.5rem 0; }
-          .max-w-7xl { padding: 1.5rem; }
-        }
-
-        @media (max-width: 768px) {
-          .gradient-bg { padding: 1rem 0; }
-          .max-w-7xl { padding: 1rem; }
-          nav .flex.justify-between {
-            height: 4rem;
-            min-height: 4rem;
-            max-height: 4rem;
-          }
-          h1, h2 { font-size: 1.5rem !important; }
-          p { font-size: 0.95rem !important; }
-          button { min-height: 44px !important; }
-          input, select { min-height: 44px !important; font-size: 1rem; }
-          .modal-content { max-width: 95vw !important; }
-        }
-
-        @media (max-width: 640px) {
-          body { padding: 0; }
-          .gradient-bg { padding: 0.75rem 0; }
-          .max-w-7xl { padding: 0.75rem; }
-          h1 { font-size: 1.25rem !important; }
-          h2 { font-size: 1.125rem !important; }
-          button { padding: 0.5rem 1rem !important; font-size: 0.875rem !important; }
-          input, select, textarea { padding: 0.625rem !important; font-size: 1rem; }
-        }
-        
-
-        .step-content.hidden {
-            display: none !important;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Modal footer button styling */
-        .modal-content button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .modal-content button:not(:disabled) {
-            cursor: pointer;
-        }
-
-        /* Unified footer height — page footer only (patient modal has its own rules) */
-        footer:not(#modal-footer-section) {
-            min-height: 64px;
-            padding: 0 !important;
-            display: flex;
-            align-items: center;
-            margin: 0 !important;
-            width: 100%;
-            flex-shrink: 0;
-        }
-        footer > div { width: 100%; margin: 0 !important; padding: 0 !important; }
-        footer p { margin: 0; padding: 0; }
-        footer.py-4 { padding-top: 0 !important; padding-bottom: 0 !important; }
-
-        /* Ensure all footer divs with navigation/action buttons have consistent height */
-        .border-t.border-gray-200.p-3.bg-gradient-to-r {
-            min-height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Main page footer consistent height */
-        body > footer {
-            min-height: 64px;
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        body > footer > div {
-            width: 100%;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .max-w-7xl { max-width: 100% !important; width: 100% !important; }
-
-        /* Ensure main content expands properly */
-        #patients-main-content {
-            margin: 0 !important;
-        }
-
-        #patients-pagination {
-            margin-top: 1.5rem;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-
-        #patients-pagination #page-numbers {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-        }
-
-        #patients-pagination .pcode-pagination-btn {
-            min-height: 44px;
-            min-width: 88px;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            background: rgba(255, 255, 255, 0.06);
-            color: #f5f3ff;
-            transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        #patients-pagination .pcode-pagination-btn:hover:not(:disabled) {
-            background: rgba(168, 85, 247, 0.18);
-            border-color: rgba(168, 85, 247, 0.45);
-        }
-
-        #patients-pagination .pcode-pagination-btn:disabled {
-            opacity: 0.38;
-            cursor: not-allowed;
-        }
-
-        #patients-pagination .pcode-pagination-status {
-            font-size: 0.875rem;
-            color: rgba(200, 196, 210, 0.92);
-        }
-
-        /* Checkbox size — checkmark drawing is in pcode-app-bento-dark.css */
-        #patient-modal input[type="checkbox"] {
+        /* .modal-content: themed in css/pcode-app-bento-dark.css?v=20260816-xaibtn1"checkbox"] {
             width: 18px;
             height: 18px;
             cursor: pointer;
@@ -370,9 +203,9 @@
             --tw-gradient-to: rgb(255 251 235 / var(--tw-bg-opacity));
         }
 
-        /* Patient modal stepper — see pcode-app-bento-dark.css (.pcode-step-glass) */
+        /* Patient modal stepper: see pcode-app-bento-dark.css (.pcode-step-glass) */
 
-        /* Add Patient modal — scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
+        /* Add Patient modal: scroll on #patient-modal-body (see pcode-app-bento-dark.css) */
         #patient-modal .modal-content {
             max-height: 90vh;
             max-height: 90dvh;
@@ -386,20 +219,20 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        #patient-modal-body::-webkit-scrollbar {
+        #patient-modal-body:-webkit-scrollbar {
             width: 6px;
         }
 
-        #patient-modal-body::-webkit-scrollbar-track {
+        #patient-modal-body:-webkit-scrollbar-track {
             background: transparent;
         }
 
-        #patient-modal-body::-webkit-scrollbar-thumb {
+        #patient-modal-body:-webkit-scrollbar-thumb {
             background: rgba(168, 85, 247, 0.3);
             border-radius: 9999px;
         }
 
-        #patient-modal-body::-webkit-scrollbar-thumb:hover {
+        #patient-modal-body:-webkit-scrollbar-thumb:hover {
             background: rgba(168, 85, 247, 0.45);
         }
 
@@ -413,15 +246,17 @@
             -ms-overflow-style: none;
         }
 
-        #filter-diagnosis::-webkit-scrollbar {
+        #filter-diagnosis:-webkit-scrollbar {
             display: none;
         }
 
-        /* Patient table — fixed layout, centered cells (desktop/tablet) */
+        /* Patient table: fit container width on desktop (no horizontal scroll) */
         table.patients-data-table {
             table-layout: fixed;
             width: 100%;
-            border-collapse: collapse;
+            min-width: 0;
+            max-width: 100%;
+            border-collapse: separate;
             border-spacing: 0;
         }
 
@@ -431,22 +266,33 @@
             margin: 0;
             text-align: center;
             vertical-align: middle;
+            min-width: 0;
         }
 
         table.patients-data-table th {
-            padding: 0.75rem 0.4rem !important;
+            padding: 0.5rem 0.25rem !important;
             word-break: normal;
+            overflow-wrap: break-word;
+            hyphens: none;
             white-space: normal;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
+            letter-spacing: 0.03em;
             line-height: 1.2;
-            height: 60px;
+            height: auto;
+            min-height: 2.75rem;
         }
 
         table.patients-data-table td {
-            padding: 0.6rem 0.4rem !important;
-            word-break: normal;
-            white-space: nowrap;
-            font-size: 0.75rem;
+            padding: 0.5rem 0.25rem !important;
+            word-break: break-word;
+            white-space: normal;
+            font-size: 0.74rem;
+        }
+
+        table.patients-data-table th.pcode-ultrasound-result-col,
+        table.patients-data-table td.pcode-ultrasound-result-cell {
+            min-width: 0;
+            white-space: normal;
         }
 
         table.patients-data-table td.pcode-score-cell {
@@ -455,49 +301,95 @@
 
         table.patients-data-table td.pcode-score-cell .pcode-score-meter {
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.35rem;
-            width: 5.5rem;
-            max-width: 100%;
+            gap: 0.22rem;
+            width: 100%;
+            max-width: 4.5rem;
             margin: 0 auto;
             vertical-align: middle;
         }
 
-        table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar {
-            display: flex;
-            flex-wrap: wrap;
+        /* Actions: Edit|History, Detect|Export, Delete alone below */
+        table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar,
+        table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar--grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 2rem);
+            grid-auto-rows: 2rem;
+            column-gap: 0.7rem;
+            row-gap: 0.7rem;
+            gap: 0.7rem;
             justify-content: center;
-            gap: 0.35rem;
-            width: 6.1rem;
+            justify-items: center;
+            align-items: center;
+            width: max-content;
+            max-width: 100%;
             margin: 0 auto;
+            padding: 0.4rem;
+            box-sizing: border-box;
         }
 
         table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar .pcode-action-btn {
-            width: 1.75rem;
-            height: 1.75rem;
+            width: 2rem;
+            height: 2rem;
             padding: 0 !important;
+            flex-shrink: 0;
+        }
+
+        table.patients-data-table td.pcode-actions-cell .pcode-action-btn--delete {
+            grid-column: 1 / -1;
+            justify-self: center;
+            margin-top: 0.15rem;
         }
 
         table.patients-data-table td.pcode-score-cell .pcode-score-meter .pcode-patient-score-track {
-            width: 2.75rem;
-            min-width: 2.75rem;
-            max-width: 2.75rem;
-            flex: 0 0 2.75rem;
+            width: 100%;
+            min-width: 0;
+            max-width: 4rem;
+            flex: 0 0 auto;
         }
 
         table.patients-data-table td.pcode-score-cell .pcode-score-meter .pcode-score-value {
             white-space: nowrap;
-            flex: 0 0 2.35rem;
-            min-width: 2.35rem;
+            flex: 0 0 auto;
+            min-width: 0;
             font-variant-numeric: tabular-nums;
-            text-align: left;
+            font-size: 0.7rem;
+            text-align: center;
         }
 
         @media (min-width: 1024px) {
             .pcode-patients-table-wrap .overflow-x-auto,
             .pcode-patients-table-wrap .pcb-scroll-x {
                 overflow-x: hidden !important;
+                padding-right: 0.85rem !important;
+            }
+
+            table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar,
+            table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar--grid {
+                grid-template-columns: repeat(2, 2.25rem);
+                grid-auto-rows: 2.25rem;
+                column-gap: 0.85rem;
+                row-gap: 0.85rem;
+                gap: 0.85rem;
+                padding: 0.5rem;
+            }
+
+            table.patients-data-table td.pcode-actions-cell .pcode-actions-toolbar .pcode-action-btn {
+                width: 2.25rem;
+                height: 2.25rem;
+            }
+
+            table.patients-data-table td.pcode-actions-cell .pcode-action-btn--delete {
+                margin-top: 0.2rem;
+            }
+
+            table.patients-data-table th.pcode-actions-col,
+            table.patients-data-table td.pcode-actions-cell,
+            #patient-table-body td.pcode-actions-cell {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
             }
         }
 
@@ -547,19 +439,22 @@
             color: white;
         }
     </style>
-  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260805-menublur1">
-<link rel="stylesheet" href="css/pcode-theme.css?v=20260805-navfix2">
-<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260724-logoutred">
-<link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260730-modalbtns">
-<link rel="stylesheet" href="css/pcode-design-system.css?v=20260805-padfix1">
+  <link rel="stylesheet" href="css/pcode-app-bento-dark.css?v=20260819-saveload1">
+<link rel="stylesheet" href="css/pcode-theme.css?v=20260814-sfx1">
+<link rel="stylesheet" href="css/pcode-image-crop.css?v=20260819-rot1">
+<link rel="stylesheet" href="css/pcode-glass-buttons.css?v=20260816-logout1">
+<link rel="stylesheet" href="css/pcode-action-buttons.css?v=20260819-rot1">
+<link rel="stylesheet" href="css/pcode-design-system.css?v=20260809-ptcards1">
 <link rel="stylesheet" href="css/pcode-card-hover-reset.css?v=20260726-nolift">
 <link rel="stylesheet" href="css/pcode-metric-stealth.css">
-<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260723-ipadnav">
-  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260805-padfix1">
+<link rel="stylesheet" href="css/pcode-responsive-global.css?v=20260805-gutter1">
+  <link rel="stylesheet" href="css/pcode-mobile-compact.css?v=20260808-cam1">
   <link rel="stylesheet" href="css/pcode-form-guard.css?v=20260724-guardlight">
-  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260801-btnspace">
+  <link rel="stylesheet" href="css/pcode-light-clinical.css?v=20260819-saveload1">
+  <link rel="stylesheet" href="css/pcode-dual-ring-spinner.css?v=20260819-saveload1">
   <link rel="stylesheet" href="css/pcode-light-no-card-glow.css?v=20260726-nolift">
-  <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260726-lightmetrics">
+  <link rel="stylesheet" href="css/pcode-diagnosis-history.css?v=20260814-expire1">
+  <link rel="stylesheet" href="css/pcode-clinical-notes.css?v=20260905-validx1">
   <!-- Patients light-mode: gray text/borders -> black (dark mode untouched) -->
   <style id="pcode-patients-light-readability">
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .gradient-bg .hero-title,
@@ -669,8 +564,8 @@
       box-shadow: none !important;
     }
 
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input::placeholder,
-    html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input::placeholder {
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-patients-toolbar #search-input:placeholder,
+    html[data-pcode-theme="light"] body.pcode-app-bento .pcode-patients-toolbar #search-input:placeholder {
       color: #000000 !important;
       opacity: 0.55 !important;
     }
@@ -685,7 +580,7 @@
       max-width: none !important;
     }
 
-    /* Keep semantic Positive / Borderline colors — deeper opaque in light */
+    /* Keep semantic Positive / Borderline colors: deeper opaque in light */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-table-body span.bg-amber-100,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento .pcode-history-status--borderline,
     html[data-pcode-theme="light"] body.pcode-app-bento #patient-table-body span.bg-amber-100 {
@@ -809,7 +704,7 @@
       background: #991b1b !important;
     }
 
-    /* Sidebar / mobile drawer — black text in light mode */
+    /* Sidebar / mobile drawer: black text in light mode */
     html.pcode-app-bento-root:not(.dark) #mobile-menu,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root:not(.dark) #mobile-menu #mobile-profile-role,
@@ -850,7 +745,7 @@
       border-radius: 0.5rem !important;
     }
 
-    /* Sidebar — dark mode: white (not gray) profile + theme labels */
+    /* Sidebar: dark mode: white (not gray) profile + theme labels */
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-name,
     html.pcode-app-bento-root.dark #mobile-menu #mobile-profile-role,
     html.pcode-app-bento-root.dark #mobile-menu .mobile-nav-links a,
@@ -866,7 +761,7 @@
       opacity: 1 !important;
     }
 
-    /* ---- Add Patient modal — light chrome (beats unscoped dark bento rules) ---- */
+    /* ---- Add Patient modal: light chrome (beats unscoped dark bento rules) ---- */
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__top,
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-patient-modal-header__stepper-band,
@@ -898,38 +793,66 @@
       -webkit-text-fill-color: #000000 !important;
     }
 
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-item:not(:last-child)::after {
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-item:not(:last-child):after {
       background: #cbd5e1 !important;
       box-shadow: none !important;
     }
 
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-item.is-segment-complete:not(:last-child)::after {
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-item.is-segment-complete:not(:last-child):after {
       background: #7c3aed !important;
       box-shadow: none !important;
+    }
+
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-dot,
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass,
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-dot {
+      border-radius: 9999px !important;
+      overflow: hidden !important;
     }
 
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.active-step,
     html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass.active-step {
       background: linear-gradient(135deg, #a855f7 0%, #6d28d9 100%) !important;
       border: 2px solid #7c3aed !important;
+      border-radius: 9999px !important;
       box-shadow: 0 0 0 3px #ffffff, 0 1px 4px rgba(109, 40, 217, 0.25) !important;
       color: #ffffff !important;
     }
 
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step,
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step * {
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step {
       background: #6d28d9 !important;
+      border: none !important;
+      border-radius: 9999px !important;
+      box-shadow: 0 0 0 3px #ffffff !important;
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
-      box-shadow: 0 0 0 3px #ffffff !important;
+    }
+
+    /* Do NOT paint backgrounds onto SVG children: that creates the square "boxes" */
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step *,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.active-step *,
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass.completed-step *,
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass.active-step * {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      fill: none !important;
+      stroke: currentColor !important;
     }
 
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-glass.inactive-step,
     html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal .pcode-step-glass.inactive-step {
       background: #ffffff !important;
-      border: 1.5px solid #000000 !important;
+      border: 1.5px solid #94a3b8 !important;
+      border-radius: 9999px !important;
       box-shadow: 0 0 0 3px #ffffff !important;
-      color: #000000 !important;
+      color: #334155 !important;
     }
 
     html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal .pcode-step-label,
@@ -993,9 +916,9 @@
       opacity: 1 !important;
     }
 
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal input::placeholder,
-    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal textarea::placeholder,
-    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal input::placeholder {
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal input:placeholder,
+    html.pcode-app-bento-root:not(.dark) body.pcode-app-bento #patient-modal textarea:placeholder,
+    html[data-pcode-theme="light"] body.pcode-app-bento #patient-modal input:placeholder {
       color: #475569 !important;
       -webkit-text-fill-color: #475569 !important;
       opacity: 1 !important;
@@ -1374,40 +1297,40 @@
                     </colgroup>
                     <thead class="patients-table-thead pcode-table-compact">
                         <tr>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('id')">
-                                Patient ID
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('id')" title="Patient ID">
+                                Patient<br>ID
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('name')">
-                                Full Name
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('name')" title="Full Name">
+                                Full<br>Name
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('age')">
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('age')" title="Age">
                                 Age
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('date')">
-                                Date Added
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider cursor-pointer" onclick="sortTable('date')" title="Date Added">
+                                Date<br>Added
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Clinical Score
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider" title="Clinical Score">
+                                Clinical<br>Score
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Clinical Result
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider" title="Clinical Result">
+                                Clinical<br>Result
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Imaging Score
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider" title="Imaging Score">
+                                Imaging<br>Score
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Ultrasound Result
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider pcode-ultrasound-result-col" title="Ultrasound Result">
+                                Ultrasound<br>Result
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Final Diagnosis Score
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider" title="Final Diagnosis Score">
+                                Final<br>Diagnosis<br>Score
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                                Final Diagnosis
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider" title="Final Diagnosis">
+                                Final<br>Diagnosis
                             </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider pcode-latest-screening-col">
-                                Latest Screening
+                            <th class="px-2 py-2 text-center text-xs font-medium text-white uppercase tracking-wider pcode-latest-screening-col" title="Latest Screening">
+                                Latest<br>Screening
                             </th>
-                            <th class="px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider pcode-actions-col">
+                            <th class="py-2 text-center text-xs font-medium text-white uppercase tracking-wider pcode-actions-col" title="Actions">
                                 Actions
                             </th>
                         </tr>
@@ -1425,7 +1348,7 @@
         <!-- Pagination (desktop table + mobile cards share state) -->
         <nav id="patients-pagination" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6" aria-label="Patient list pagination">
             <p class="pcode-pagination-status m-0 text-sm text-gray-700">
-                Showing <span id="showing-start">1</span>–<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
+                Showing <span id="showing-start">1</span>-<span id="showing-end">5</span> of <span id="total-patients">0</span> patients
             </p>
             <div class="flex gap-2 shrink-0" id="page-numbers">
                 <button type="button" id="prev-page" class="pcode-pagination-btn" aria-label="Previous page" disabled>Previous</button>
@@ -1517,7 +1440,7 @@
                 </div>
             </div>
 
-            <!-- Form body — independent scroll (header + footer pinned) -->
+            <!-- Form body: independent scroll (header + footer pinned) -->
             <div id="patient-modal-body" class="pcode-patient-modal-body flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 py-4 md:px-6 md:py-5 scrollbar-thin">
             <form id="add-patient-form" class="min-h-0 w-full">
                 <!-- STEP 1: Personal Info -->
@@ -1529,18 +1452,32 @@
                         </div>
                     </div>
 
-                    <!-- Full Name Field -->
+                    <!-- Name -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                        <input type="text" id="patient-name" required placeholder="Enter patient full name" class="input-medical">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Name</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-first-name">First Name *</label>
+                                <input type="text" id="patient-first-name" name="first_name" required placeholder="First name" class="input-medical" autocomplete="given-name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-middle-name">Middle Name</label>
+                                <input type="text" id="patient-middle-name" name="middle_name" placeholder="Middle name (optional)" class="input-medical" autocomplete="additional-name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-surname">Surname *</label>
+                                <input type="text" id="patient-surname" name="surname" required placeholder="Surname" class="input-medical" autocomplete="family-name">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Age and Date of Birth -->
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-age">Age (years) *</label>
-                            <input type="number" id="patient-age" required min="10" max="60" placeholder="Auto-calculated from DOB" class="input-medical" readonly aria-readonly="true" aria-describedby="patient-age-hint">
+                            <input type="number" id="patient-age" required min="15" max="49" placeholder="Auto-calculated from DOB" class="input-medical" readonly aria-readonly="true" aria-describedby="patient-age-hint patient-age-range-note">
                             <p id="patient-age-hint" class="text-xs text-gray-500 mt-1">Filled automatically when you enter date of birth.</p>
+                            <div id="patient-age-range-note" class="clinical-note-badge clinical-note-badge--info mt-2" role="status" aria-live="polite"></div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-dob">Date of Birth</label>
@@ -1548,15 +1485,38 @@
                         </div>
                     </div>
 
-                    <!-- Contact Number and Address -->
+                    <!-- Contact Number -->
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Contact No.</label>
                             <input type="tel" id="patient-contact-no" required placeholder="Enter contact number" class="input-medical">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" id="patient-address" placeholder="Enter patient address" class="input-medical">
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Address</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-address-street">Street</label>
+                                <input type="text" id="patient-address-street" name="address_street" placeholder="House no., street" class="input-medical">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-address-barangay">Barangay</label>
+                                    <input type="text" id="patient-address-barangay" name="address_barangay" placeholder="Barangay" class="input-medical">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-address-municipality">Municipality</label>
+                                    <input type="text" id="patient-address-municipality" name="address_municipality" placeholder="Municipality" class="input-medical">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1" for="patient-address-city">City</label>
+                                    <input type="text" id="patient-address-city" name="address_city" placeholder="City" class="input-medical">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1844,13 +1804,13 @@
 
                     <div>
                         <h4 class="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">Upload Image</h4>
-                        <div class="pcode-ultrasound-dropzone pcode-dropzone mb-3 sm:mb-4" onclick="document.getElementById('ultrasound-image-upload').click()">
+                        <div class="pcode-ultrasound-dropzone pcode-dropzone mb-3 sm:mb-4" id="ultrasound-dropzone" role="button" tabindex="0" aria-label="Upload ultrasound image from gallery" onclick="onUltrasoundDropzoneClick(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onUltrasoundDropzoneClick(event);}">
                             <div id="image-upload-placeholder">
                                 <svg class="pcode-dropzone__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 <p class="text-sm font-semibold text-gray-800 mb-0.5">Drop image or click to upload</p>
-                                <p class="text-xs text-gray-500 mb-3">JPG, PNG — Max 10MB</p>
+                                <p class="text-xs text-gray-500 mb-3">JPG, PNG: Max 10MB</p>
                             </div>
                             <div id="image-preview-section" class="hidden">
                                 <p class="text-sm font-semibold text-gray-800 mb-3">Image Preview</p>
@@ -1865,14 +1825,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <input type="file" id="ultrasound-image-upload" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(this)">
                         </div>
+                        <!-- Native label activation: more reliable than JS .click() on mobile Safari/Chrome -->
+                        <input type="file" id="ultrasound-image-upload" accept="image/*" class="pcode-sr-file-input" onchange="handleImageUpload(this)">
+                        <input type="file" id="ultrasound-camera-upload" accept="image/*" capture="environment" class="pcode-sr-file-input" onchange="handleImageUpload(this)">
                         <div class="pcode-dropzone-actions">
-                            <button type="button" onclick="document.getElementById('ultrasound-image-upload').click()" class="btn-purple-glass pcode-btn-density">
+                            <label for="ultrasound-image-upload" class="btn-purple-glass pcode-btn-density pcode-file-picker-label">
                                 Choose File
-                            </button>
-                            <button type="button" onclick="openCamera('ultrasound-image-upload')" class="btn-ghost-glass pcode-btn-density">
+                            </label>
+                            <label for="ultrasound-camera-upload" class="btn-ghost-glass pcode-btn-density pcode-file-picker-label">
                                 Open Camera
+                            </label>
+                            <button type="button" id="edit-patient-ultrasound-btn" onclick="editPatientUltrasoundImage(event)" class="pcode-ultrasound-edit-btn pcode-btn-density btn-ghost-glass" hidden>
+                                Crop image
+                            </button>
+                            <button type="button" id="rotate-patient-ultrasound-btn" onclick="rotatePatientUltrasoundImage(event)" class="pcode-ultrasound-rotate-btn pcode-btn-density btn-ghost-glass" hidden>
+                                Rotate image
                             </button>
                         </div>
                     </div>
@@ -1884,7 +1852,7 @@
                         <div class="pcode-history-panel__header">
                             <div>
                                 <h3 id="patient-diagnosis-history-title" class="pcode-history-panel__title">Diagnosis History</h3>
-                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0–54% Negative · 55–74% Borderline · ≥75% Positive).</p>
+                                <p class="pcode-history-panel__subtitle">Chronological audit log of clinician uploads and linked user self-screening runs (0-54% Negative · 55-74% Borderline · ≥75% Positive).</p>
                             </div>
                             <span id="patient-diagnosis-history-count" class="pcode-history-panel__count" aria-live="polite"></span>
                         </div>
@@ -1944,11 +1912,11 @@
                 <dl class="pcode-delete-modal__meta">
                     <div>
                         <dt>Patient name</dt>
-                        <dd id="delete-patient-name">—</dd>
+                        <dd id="delete-patient-name">: </dd>
                     </div>
                     <div>
                         <dt>Patient ID</dt>
-                        <dd id="delete-patient-id">—</dd>
+                        <dd id="delete-patient-id">: </dd>
                     </div>
                 </dl>
             </div>
@@ -2004,12 +1972,17 @@
     </footer>
 
     <!-- Auth Module -->
-    <script src="js/pcode-api.js?v=20260731-apifix2"></script>
-  <script src="js/auth.js?v=20260803-eqbtns5"></script>
+    <script src="js/pcode-api.js?v=20260821-qa1"></script>
+  <script src="js/auth.js?v=20260905-logoutstay1"></script>
+    <script src="js/pcode-age-guard.js?v=20260808-age1"></script>
     <script src="js/pcode-form-guard.js?v=20260708a"></script>
-  <script src="js/pcode-diagnosis-history.js?v=20260730-apiscan"></script>
-    <script src="js/pcode-theme.js?v=20260724-lightgrain"></script>
-    <script src="js/pcode-responsive.js?v=20260726-swipe" defer></script>
+  <script src="js/pcode-clinical-validity.js?v=20260905-validx1"></script>
+  <script src="js/pcode-diagnosis-history.js?v=20260821-qa1"></script>
+    <script src="js/pcode-sfx.js?v=20260814-sfx1"></script>
+    <script src="js/pcode-image-crop.js?v=20260819-rot1"></script>
+  <script src="js/pcode-theme.js?v=20260814-sfx1"></script>
+    <script src="js/pcode-pdf-export-helpers.js?v=20260902-pdfname1"></script>
+    <script src="js/pcode-responsive.js?v=20260809-navfrost1" defer></script>
 
     <script>
         // Immediately check authentication and redirect if not logged in
@@ -2049,7 +2022,11 @@
 
         // Check on DOMContentLoaded with a slight delay to ensure session is restored
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(checkAuthAndRedirect, 100);
+            if (auth && typeof auth.whenAuthReady === 'function') {
+                auth.whenAuthReady(checkAuthAndRedirect);
+            } else {
+                setTimeout(checkAuthAndRedirect, 100);
+            }
         });
 
         // Toggle mobile menu
@@ -2095,14 +2072,372 @@
         let currentPage = 1;
         const itemsPerPage = 5;
         let currentPatient = null;
-        let pendingDeletePatientId = null;
 
-        function openCamera(inputId) {
-            const input = document.getElementById(inputId);
+        function splitLegacyPatientName(full) {
+            const parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return { first_name: '', middle_name: '', surname: '' };
+            if (parts.length === 1) return { first_name: parts[0], middle_name: '', surname: '' };
+            if (parts.length === 2) return { first_name: parts[0], middle_name: '', surname: parts[1] };
+            return {
+                first_name: parts[0],
+                middle_name: parts.slice(1, -1).join(' '),
+                surname: parts[parts.length - 1]
+            };
+        }
+
+        function collectPatientNameFields() {
+            const first = (document.getElementById('patient-first-name')?.value || '').trim();
+            const middle = (document.getElementById('patient-middle-name')?.value || '').trim();
+            const surname = (document.getElementById('patient-surname')?.value || '').trim();
+            const parts = [first, middle, surname].filter(Boolean);
+            const composed = parts.join(' ');
+            return {
+                first_name: first,
+                middle_name: middle,
+                surname: surname,
+                patient_name: composed,
+                name: composed
+            };
+        }
+
+        function setPatientNameFields(patient) {
+            const firstEl = document.getElementById('patient-first-name');
+            const middleEl = document.getElementById('patient-middle-name');
+            const surnameEl = document.getElementById('patient-surname');
+            if (!firstEl || !middleEl || !surnameEl) return;
+            let first = patient?.first_name || '';
+            let middle = patient?.middle_name || '';
+            let surname = patient?.surname || patient?.last_name || '';
+            const legacy = patient?.name || patient?.patient_name || '';
+            if (!first && !middle && !surname && legacy) {
+                const parsed = splitLegacyPatientName(legacy);
+                first = parsed.first_name;
+                middle = parsed.middle_name;
+                surname = parsed.surname;
+            }
+            firstEl.value = first;
+            middleEl.value = middle;
+            surnameEl.value = surname;
+        }
+
+        function collectPatientAddressFields() {
+            const street = (document.getElementById('patient-address-street')?.value || '').trim();
+            const barangay = (document.getElementById('patient-address-barangay')?.value || '').trim();
+            const municipality = (document.getElementById('patient-address-municipality')?.value || '').trim();
+            const city = (document.getElementById('patient-address-city')?.value || '').trim();
+            const parts = [street, barangay, municipality, city].filter(Boolean);
+            return {
+                address_street: street,
+                address_barangay: barangay,
+                address_town: barangay,
+                address_municipality: municipality,
+                address_city: city,
+                address: parts.join(', ')
+            };
+        }
+
+        function setPatientAddressFields(patient) {
+            const streetEl = document.getElementById('patient-address-street');
+            const barangayEl = document.getElementById('patient-address-barangay');
+            const municipalityEl = document.getElementById('patient-address-municipality');
+            const cityEl = document.getElementById('patient-address-city');
+            if (!streetEl || !barangayEl || !municipalityEl || !cityEl) return;
+            const street = patient?.address_street || '';
+            const barangay = patient?.address_barangay || patient?.address_town || '';
+            const municipality = patient?.address_municipality || '';
+            const city = patient?.address_city || '';
+            const legacy = patient?.address || '';
+            streetEl.value = street || ((!barangay && !municipality && !city && legacy) ? legacy : '');
+            barangayEl.value = barangay;
+            municipalityEl.value = municipality;
+            cityEl.value = city;
+        }
+        let pendingDeletePatientId = null;
+        let patientSaveInFlight = false;
+
+        function patientHasPersistedId(patient) {
+            if (!patient) return false;
+            const raw = patient.patient_id || patient.id;
+            if (raw === null || raw === undefined || String(raw).trim() === '') return false;
+            const n = parseInt(String(raw).replace(/^(?:PMOS|PCOS)-/i, ''), 10);
+            return Number.isFinite(n) && n > 0;
+        }
+
+        function applyPatientSaveBusy(busy) {
+            const buttons = document.querySelectorAll('#save-patient-btn');
+            buttons.forEach(function (btn) {
+                if (!btn) return;
+                btn.disabled = !!busy;
+                btn.setAttribute('aria-busy', busy ? 'true' : 'false');
+                if (busy) {
+                    if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
+                    btn.innerHTML = 'Saving\u2026';
+                } else if (btn.dataset.originalHtml) {
+                    btn.innerHTML = btn.dataset.originalHtml;
+                    delete btn.dataset.originalHtml;
+                }
+            });
+        }
+
+        function showPatientSaveLoadingModal() {
+            const id = 'pcode-patient-save-loading';
+            let overlay = document.getElementById(id);
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = id;
+                overlay.className = 'pcode-center-alert-overlay fixed inset-0 flex items-center justify-center p-4';
+                overlay.setAttribute('role', 'alertdialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.setAttribute('aria-busy', 'true');
+                overlay.setAttribute('aria-labelledby', 'pcode-patient-save-loading-title');
+                document.body.appendChild(overlay);
+            }
+            const spinnerHtml = typeof window.pcodeDualRingSpinnerMarkup === 'function'
+                ? window.pcodeDualRingSpinnerMarkup(48)
+                : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="48" height="48" aria-hidden="true"><circle class="pcode-drs-outer" cx="32" cy="32" r="23" fill="none" stroke="#7c3aed" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="44 100"/><circle class="pcode-drs-inner" cx="32" cy="32" r="14.5" fill="none" stroke="#ce93d8" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="30 62"/></svg>';
+            overlay.innerHTML =
+                '<div class="pcode-center-alert-card rounded-lg p-8 flex flex-col items-center gap-4 w-full max-w-md">' +
+                    '<div class="pcode-dual-ring-spinner pcode-dual-ring-spinner--lg" aria-hidden="true">' + spinnerHtml + '</div>' +
+                    '<p id="pcode-patient-save-loading-title" class="pcode-center-alert-title text-center text-sm sm:text-base leading-relaxed">Saving patient record\u2026</p>' +
+                    '<p class="pcode-center-alert-sub text-sm text-center">Please wait. Do not close this window.</p>' +
+                '</div>';
+            document.body.style.overflow = 'hidden';
+            const patientModal = document.getElementById('patient-modal');
+            if (patientModal) patientModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function hidePatientSaveLoadingModal() {
+            const overlay = document.getElementById('pcode-patient-save-loading');
+            if (overlay) overlay.remove();
+            const patientModal = document.getElementById('patient-modal');
+            if (patientModal && patientModal.classList.contains('show')) {
+                patientModal.removeAttribute('aria-hidden');
+            }
+            if (!document.getElementById('pcode-center-alert-overlay') &&
+                !document.getElementById('pcode-export-loading-overlay')) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function setPatientSaveBusy(busy) {
+            patientSaveInFlight = !!busy;
+            applyPatientSaveBusy(busy);
+            if (busy) showPatientSaveLoadingModal();
+            else hidePatientSaveLoadingModal();
+        }
+
+        function triggerMobileFileInput(input) {
+            if (!input) return false;
+            try { input.value = ''; } catch (_) {}
+            // Temporarily un-hide / re-size so WebKit & Android allow activation
+            var prev = {
+                pe: input.style.pointerEvents,
+                op: input.style.opacity,
+                w: input.style.width,
+                h: input.style.height,
+                pos: input.style.position,
+                left: input.style.left,
+                top: input.style.top,
+                z: input.style.zIndex
+            };
+            input.style.pointerEvents = 'auto';
+            input.style.opacity = '0.01';
+            input.style.width = '48px';
+            input.style.height = '48px';
+            input.style.position = 'fixed';
+            input.style.left = '0';
+            input.style.top = '0';
+            input.style.zIndex = '2147483646';
+            function restore() {
+                setTimeout(function () {
+                    input.style.pointerEvents = prev.pe;
+                    input.style.opacity = prev.op;
+                    input.style.width = prev.w;
+                    input.style.height = prev.h;
+                    input.style.position = prev.pos;
+                    input.style.left = prev.left;
+                    input.style.top = prev.top;
+                    input.style.zIndex = prev.z;
+                }, 800);
+            }
+            try {
+                if (typeof input.showPicker === 'function') {
+                    var p = input.showPicker();
+                    if (p && typeof p.catch === 'function') p.catch(function () { try { input.click(); } catch (_) {} });
+                    restore();
+                    return true;
+                }
+            } catch (_) {}
+            try { input.click(); } catch (_) {}
+            restore();
+            return true;
+        }
+
+        function chooseUltrasoundFile(inputId) {
+            const input = document.getElementById(inputId || 'ultrasound-image-upload');
             if (!input) return;
             input.setAttribute('accept', 'image/*');
-            input.setAttribute('capture', 'environment');
-            input.click();
+            // Must clear capture so mobile opens Photos/Files, not the camera
+            try { input.removeAttribute('capture'); } catch (_) {}
+            triggerMobileFileInput(input);
+        }
+
+        function setPatientUltrasoundCropButtonVisible(visible) {
+            ['edit-patient-ultrasound-btn', 'rotate-patient-ultrasound-btn'].forEach(function (id) {
+                const btn = document.getElementById(id);
+                if (btn) btn.hidden = !visible;
+            });
+        }
+
+        function applyPatientUltrasoundImage(file, dataUrl) {
+            const previewImg = document.getElementById('ultrasound-preview-img');
+            const previewSection = document.getElementById('image-preview-section');
+            const uploadPlaceholder = document.getElementById('image-upload-placeholder');
+            if (previewImg && dataUrl) previewImg.src = dataUrl;
+            if (previewSection) previewSection.classList.remove('hidden');
+            if (uploadPlaceholder) uploadPlaceholder.classList.add('hidden');
+            uploadedImages = { ultrasound: file || dataUrl || null };
+            existingUltrasoundMarkedForRemoval = false;
+            setPatientUltrasoundCropButtonVisible(true);
+            const fileInput = document.getElementById('ultrasound-image-upload');
+            const camInput = document.getElementById('ultrasound-camera-upload');
+            if (fileInput) fileInput.value = '';
+            if (camInput) camInput.value = '';
+            if (window.patientFormGuard) window.patientFormGuard.markDirty();
+        }
+
+        function openPatientUltrasoundCropEditor(fileOrSrc) {
+            const api = window.PcodeImageCrop;
+            const fileInput = document.getElementById('ultrasound-image-upload');
+            const camInput = document.getElementById('ultrasound-camera-upload');
+            if (!api) {
+                if (fileOrSrc instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        applyPatientUltrasoundImage(fileOrSrc, e.target.result);
+                    };
+                    reader.readAsDataURL(fileOrSrc);
+                } else if (typeof fileOrSrc === 'string' && fileOrSrc) {
+                    applyPatientUltrasoundImage(null, fileOrSrc);
+                }
+                return Promise.resolve();
+            }
+            const openP = fileOrSrc instanceof Blob
+                ? api.openFromFile(fileOrSrc)
+                : api.open({ imageSrc: fileOrSrc });
+            return openP.then(function (result) {
+                applyPatientUltrasoundImage(result.file || null, result.dataUrl);
+            }).catch(function () {
+                if (fileInput) fileInput.value = '';
+                if (camInput) camInput.value = '';
+            });
+        }
+
+        function editPatientUltrasoundImage(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const current = uploadedImages && uploadedImages.ultrasound;
+            const previewImg = document.getElementById('ultrasound-preview-img');
+            const src = previewImg && previewImg.src;
+            if (current instanceof Blob) {
+                openPatientUltrasoundCropEditor(current);
+            } else if (typeof current === 'string' && current) {
+                openPatientUltrasoundCropEditor(current);
+            } else if (src) {
+                openPatientUltrasoundCropEditor(src);
+            }
+        }
+
+        function currentPatientUltrasoundSource() {
+            const current = uploadedImages && uploadedImages.ultrasound;
+            const previewImg = document.getElementById('ultrasound-preview-img');
+            if (current instanceof Blob) return current;
+            if (typeof current === 'string' && current) return current;
+            return previewImg && previewImg.src ? previewImg.src : null;
+        }
+
+        function rotatePatientUltrasoundImage(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const src = currentPatientUltrasoundSource();
+            const api = window.PcodeImageCrop;
+            const btn = document.getElementById('rotate-patient-ultrasound-btn');
+            if (!src || !api || typeof api.rotate90 !== 'function') return;
+            if (btn) btn.disabled = true;
+            api.rotate90(src).then(function (result) {
+                applyPatientUltrasoundImage(result.file || null, result.dataUrl);
+            }).catch(function () {
+            }).then(function () {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        function onUltrasoundDropzoneClick(event) {
+            if (event) {
+                const t = event.target;
+                if (t && t.closest && t.closest('button, label, a, input')) return;
+            }
+            const preview = document.getElementById('image-preview-section');
+            if (preview && !preview.classList.contains('hidden')) {
+                editPatientUltrasoundImage(event);
+                return;
+            }
+            chooseUltrasoundFile('ultrasound-image-upload');
+        }
+
+        function setupPatientUltrasoundDrop() {
+            const dropzone = document.getElementById('ultrasound-dropzone');
+            if (!dropzone || dropzone.dataset.cropDropBound === '1') return;
+            dropzone.dataset.cropDropBound = '1';
+            dropzone.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+            dropzone.addEventListener('dragleave', function () {
+                dropzone.classList.remove('dragover');
+            });
+            dropzone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('dragover');
+                const files = e.dataTransfer && e.dataTransfer.files;
+                if (!files || !files.length) return;
+                handlePatientUltrasoundFile(files[0], null);
+            });
+        }
+
+        function openCamera(inputId) {
+            // Dedicated capture input: mobile browsers ignore capture set only via JS
+            const cameraIds = {
+                'ultrasound-image-upload': 'ultrasound-camera-upload',
+                'image-upload-ultrasound': 'image-upload-ultrasound-camera'
+            };
+            const cameraId = cameraIds[inputId] || (inputId + '-camera');
+            let cam = document.getElementById(cameraId);
+            if (!cam) {
+                cam = document.createElement('input');
+                cam.type = 'file';
+                cam.id = cameraId;
+                cam.accept = 'image/*';
+                cam.setAttribute('capture', 'environment');
+                cam.className = 'pcode-sr-file-input';
+                cam.setAttribute('aria-hidden', 'true');
+                cam.tabIndex = -1;
+                cam.addEventListener('change', function () {
+                    if (typeof handleImageUpload === 'function') handleImageUpload(cam);
+                });
+                const shell = document.querySelector('#patient-modal .pcode-patient-modal-shell') || document.body;
+                shell.appendChild(cam);
+            }
+            try {
+                cam.setAttribute('accept', 'image/*');
+                cam.setAttribute('capture', 'environment');
+            } catch (_) {}
+            triggerMobileFileInput(cam);
         }
 
         // Blood group mapping - standardized across all pages (11-18 for numeric storage)
@@ -2265,19 +2600,73 @@
         async function pcodePatientsApiUrl(relPath) {
             const clean = String(relPath || '').replace(/^\.?\/?api\//, '');
             if (window.auth && typeof auth.resolveApiUrl === 'function') {
-                if (!/onrender\.com/i.test(String(auth.apiBaseUrl || ''))) {
+                // Avoid blocking saves on a fresh config.json fetch when already
+                // pointed at same-origin /api/ (mobile networks make this flaky).
+                const base = String(auth.apiBaseUrl || '');
+                const alreadyCloud =
+                    AuthManager && typeof AuthManager.isFirebaseHost === 'function'
+                        ? AuthManager.isFirebaseHost()
+                        : /\.web\.app$|\.firebaseapp\.com$/i.test(location.hostname || '');
+                if (!alreadyCloud && !/\/api\/?$/i.test(base) && !/onrender\.com/i.test(base)) {
                     try { await auth.loadConfig(); } catch (_) {}
                 }
                 return auth.resolveApiUrl(clean);
             }
-            return 'https://p-code-nqak.onrender.com/api/' + clean.replace(/\.php$/i, '');
+            if (typeof window.pcodeApiUrl === 'function') {
+                return window.pcodeApiUrl(clean);
+            }
+            return '/api/' + clean.replace(/\.php$/i, '');
+        }
+
+        /** Prefer in-memory auth token; never fall back to legacy localStorage `token`. */
+        function getPatientsAuthToken() {
+            try {
+                if (window.auth && auth.token) return String(auth.token);
+            } catch (_) {}
+            try {
+                return (
+                    sessionStorage.getItem('PMOS_auth_token') ||
+                    localStorage.getItem('PMOS_auth_token') ||
+                    ''
+                );
+            } catch (_) {
+                return '';
+            }
+        }
+
+        function handlePatientsAuthFailure(message) {
+            const msg = String(message || '');
+            const isAuthFail = /invalid token|token signature|token expired|unauthorized|not authenticated/i.test(msg);
+            if (!isAuthFail) return false;
+            try {
+                if (window.auth) {
+                    auth.token = null;
+                    auth.currentUser = null;
+                }
+            } catch (_) {}
+            try {
+                sessionStorage.removeItem('PMOS_auth_token');
+                sessionStorage.removeItem('PMOS_user');
+                sessionStorage.removeItem('PMOS_token_expiry');
+                localStorage.removeItem('PMOS_auth_token');
+                localStorage.removeItem('PMOS_user');
+                localStorage.removeItem('PMOS_token_expiry');
+                localStorage.removeItem('token');
+            } catch (_) {}
+            alert(
+                'Your session is no longer valid (token signature).\n\n' +
+                'Please sign in again, then retry saving the patient.\n\n' +
+                'This usually happens after a security key rotation.'
+            );
+            window.location.href = 'provider-login.html';
+            return true;
         }
 
         async function fetchPatients() {
             showPatientListSkeleton();
             try {
                 // **GUEST MODE**: Check if user is a guest
-                const token = sessionStorage.getItem('PMOS_auth_token') || '';
+                const token = getPatientsAuthToken();
                 let isGuest = false;
                 try {
                     if (token) {
@@ -2290,7 +2679,7 @@
                 
                 // **GUEST MODE**: Load from sessionStorage
                 if (isGuest) {
-                    console.log('?? GUEST MODE - Loading added patients from sessionStorage');
+                    console.log('[GUEST] Loading added patients from sessionStorage');
                     const guestAddedPatients = JSON.parse(sessionStorage.getItem('guest_added_patients') || '[]');
                     const guestDetectedPatients = JSON.parse(sessionStorage.getItem('guest_detected_patients') || '[]');
                     
@@ -2326,7 +2715,7 @@
                 
                 if (result.success && result.data) {
                     // Use API data directly - API filters by authenticated user so only their patients are returned
-                    console.log('? Loaded', result.data.length, 'patient(s) for current user');
+                    console.log('[OK] Loaded', result.data.length, 'patient(s) for current user');
                     patients = result.data;
                     
                     filteredPatients = [...patients];
@@ -2423,8 +2812,29 @@
                     String(today.getMonth() + 1).padStart(2, '0'),
                     String(today.getDate()).padStart(2, '0')
                 ].join('-');
+                // DOB bounds for screening ages 15-49 (approx.)
+                try {
+                    const minDob = new Date(today.getFullYear() - 49, today.getMonth(), today.getDate());
+                    const maxDob = new Date(today.getFullYear() - 15, today.getMonth(), today.getDate());
+                    const fmt = function (d) {
+                        return [
+                            d.getFullYear(),
+                            String(d.getMonth() + 1).padStart(2, '0'),
+                            String(d.getDate()).padStart(2, '0')
+                        ].join('-');
+                    };
+                    dobInput.min = fmt(minDob);
+                    dobInput.max = fmt(maxDob < today ? maxDob : today);
+                } catch (_) {}
                 dobInput.addEventListener('change', calculateAgeFromDOB);
                 dobInput.addEventListener('input', calculateAgeFromDOB);
+            }
+            if (!window.__pcodeAgeGuardPatients && window.PcodeAgeGuard) {
+                window.__pcodeAgeGuardPatients = window.PcodeAgeGuard.bindAgeGuard({
+                    inputIds: ['patient-age'],
+                    noteId: 'patient-age-range-note'
+                });
+                window.__pcodeAgeGuardPatients.refresh();
             }
         }
 
@@ -2445,9 +2855,15 @@
             if (!patient.latest_screening_at && !patient.latest_screening_display) {
                 return '<span class="pcode-latest-screening__empty">No runs yet</span>';
             }
-            const dateLabel = patient.latest_screening_display
-                ? String(patient.latest_screening_display).replace(/\s*[·•—–]\s*/g, ' · ')
+            let dateLabel = patient.latest_screening_display
+                ? String(patient.latest_screening_display)
                 : (patient.latest_screening_at || '-');
+            // Compact: "Jul 31, 2026 · 7:40 PM" → "Jul 31 · 7:40 PM"
+            dateLabel = dateLabel
+                .replace(/\s*,\s*\d{4}\b/, '')
+                .replace(/\s*[·•: -]\s*/g, ' · ')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
             const origin = patient.latest_screening_origin || '';
             const originShort =
                 origin === 'Clinician Upload' ? 'Clinician' :
@@ -2462,18 +2878,14 @@
                 : (patient.latest_screening_status_code === 'borderline'
                     ? 'pcode-history-status--borderline'
                     : (patient.latest_screening_status_code === 'negative' ? 'pcode-history-status--clear' : 'pcode-history-status--detected'));
-            const runs = patient.history_run_count
-                ? `<span class="pcode-latest-screening__runs">${patient.history_run_count} run${patient.history_run_count === 1 ? '' : 's'}</span>`
-                : '';
 
             return `
                 <div class="pcode-latest-screening pcode-latest-screening--compact">
-                    <span class="pcode-latest-screening__date">${dateLabel}</span>
+                    <span class="pcode-latest-screening__date" title="${String(patient.latest_screening_display || patient.latest_screening_at || '').replace(/"/g, '&quot;')}">${dateLabel}</span>
                     <div class="pcode-latest-screening__meta">
                         ${status ? `<span class="pcode-history-badge pcode-history-badge--compact ${statusClass}">${status}</span>` : ''}
                         ${originShort ? `<span class="pcode-history-badge pcode-history-badge--compact ${originClass}">${originShort}</span>` : ''}
                     </div>
-                    ${runs}
                 </div>
             `;
         }
@@ -2603,12 +3015,7 @@
                         ${patient.id && patient.id.startsWith('added_') ? '<span class="text-blue-600 font-semibold">TEMP_ID' + (index + 1) + '</span>' : patient.id}
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
-                        <div class="pcode-patient-name-cell">
-                            <span class="pcode-patient-name-cell__name">${patient.name}</span>
-                            ${patient.last_tested_display
-                                ? `<span class="pcode-patient-name-cell__tested" title="Last diagnostic run">Last tested ${patient.last_tested_display}</span>`
-                                : '<span class="pcode-patient-name-cell__tested pcode-patient-name-cell__tested--none">No screenings yet</span>'}
-                        </div>
+                        <span class="pcode-patient-name-cell__name">${patient.name}</span>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">${patient.age}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">${patient.date_added || 'N/A'}</td>
@@ -2631,7 +3038,7 @@
                             <span class="pcode-score-value text-sm text-gray-900">${patient.imaging_score_percentage !== null && patient.imaging_score_percentage !== undefined ? patient.imaging_score_percentage + '%' : 'N/A'}</span>
                         </div>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                    <td class="px-4 py-3 whitespace-nowrap text-center pcode-ultrasound-result-cell">
                         ${formatDiagnosisBadge(patient.cnn_diagnosis)}
                     </td>
                     <td class="px-2 py-3 whitespace-nowrap text-center pcode-score-cell">
@@ -2652,7 +3059,7 @@
                     <td class="px-3 py-3 text-center pcode-latest-screening-cell">
                         ${formatLatestScreeningCell(patient)}
                     </td>
-                    <td class="px-2 py-3 text-sm font-medium text-center pcode-actions-cell" onclick="event.stopPropagation()">
+                    <td class="py-3 text-sm font-medium text-center pcode-actions-cell" onclick="event.stopPropagation()">
                         <div class="pcode-actions-toolbar pcode-actions-toolbar--grid">
                             <button type="button" onclick="editPatient('${patient.id}')" class="pcode-action-btn pcode-action-btn--edit" aria-label="Edit patient" title="Edit patient">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -2832,7 +3239,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '')
+                    'Authorization': 'Bearer ' + (getPatientsAuthToken())
                 },
                 body: JSON.stringify({ patient_id: numericId })
             });
@@ -2876,7 +3283,7 @@
                 return;
             }
 
-            // Dedicated export loader — other toasts cannot dismiss it
+            // Dedicated export loader: other toasts cannot dismiss it
             if (typeof window.pcodeShowExportLoading === 'function') {
                 window.pcodeShowExportLoading('Generating PDF report…');
             } else {
@@ -2886,28 +3293,42 @@
             // Get current user info
             const userStr = sessionStorage.getItem('PMOS_user');
             const user = userStr ? JSON.parse(userStr) : null;
+            const numericId = String(patientId).replace(/^(?:PCOS|PMOS)-/i, '');
+            const getPatientUrl = (typeof pcodeApiUrl === 'function')
+                ? pcodeApiUrl('api/get_patient.php') + '?id=' + encodeURIComponent(numericId)
+                : './api/get_patient.php?id=' + encodeURIComponent(numericId);
 
-            // Prepare export data with patient diagnosis results
-            const exportData = {
-                patient_id: patientId,
-                patient_name: patient.name || 'Unknown',
-                age: patient.age || null,
-                // Include diagnosis scores from database
-                clinical_score_percentage: patient.clinical_score_percentage || 0,
-                imaging_score_percentage: patient.imaging_score_percentage || 0,
-                overall_diagnosis_percentage: patient.overall_diagnosis_percentage || 0,
-                overall_diagnosis: patient.overall_diagnosis || 'pending',
-                // Include additional patient data
-                clinical_diagnosis: patient.xgboost_diagnosis || 'pending',
-                imaging_diagnosis: patient.cnn_diagnosis || 'pending',
-                date_added: patient.date_added || 'N/A',
-                last_screened_at: patient.last_screened_at || patient.latest_screening_at || null,
-                screening_created_at: patient.last_screened_at || patient.latest_screening_at || null,
-                // Include user ID for signatory
-                user_id: user ? user.id : null
+            const buildExportData = function (clinicalPayload) {
+                const personal = (window.PcodePdfExportHelpers && window.PcodePdfExportHelpers.pickPersonalDemographics)
+                    ? window.PcodePdfExportHelpers.pickPersonalDemographics(clinicalPayload, patient)
+                    : {};
+                return {
+                    patient_id: patientId,
+                    patient_name: personal.patient_name || personal.name || patient.name || (clinicalPayload && clinicalPayload.name) || 'Unknown',
+                    first_name: personal.first_name || patient.first_name || (clinicalPayload && clinicalPayload.first_name) || '',
+                    middle_name: personal.middle_name || patient.middle_name || (clinicalPayload && clinicalPayload.middle_name) || '',
+                    surname: personal.surname || patient.surname || (clinicalPayload && clinicalPayload.surname) || '',
+                    address_street: personal.address_street || patient.address_street || (clinicalPayload && clinicalPayload.address_street) || '',
+                    address_barangay: personal.address_barangay || patient.address_barangay || personal.address_town || patient.address_town || (clinicalPayload && (clinicalPayload.address_barangay || clinicalPayload.address_town)) || '',
+                    address_town: personal.address_barangay || patient.address_barangay || personal.address_town || patient.address_town || (clinicalPayload && (clinicalPayload.address_barangay || clinicalPayload.address_town)) || '',
+                    address_municipality: personal.address_municipality || patient.address_municipality || (clinicalPayload && clinicalPayload.address_municipality) || '',
+                    address_city: personal.address_city || patient.address_city || (clinicalPayload && clinicalPayload.address_city) || '',
+                    address: personal.address || patient.address || (clinicalPayload && clinicalPayload.address) || '',
+                    age: patient.age || (clinicalPayload && clinicalPayload.age) || null,
+                    clinical_score_percentage: patient.clinical_score_percentage || 0,
+                    imaging_score_percentage: patient.imaging_score_percentage || 0,
+                    overall_diagnosis_percentage: patient.overall_diagnosis_percentage || 0,
+                    overall_diagnosis: patient.overall_diagnosis || 'pending',
+                    clinical_diagnosis: patient.xgboost_diagnosis || 'pending',
+                    imaging_diagnosis: patient.cnn_diagnosis || 'pending',
+                    date_added: patient.date_added || 'N/A',
+                    last_screened_at: patient.last_screened_at || patient.latest_screening_at || null,
+                    screening_created_at: patient.last_screened_at || patient.latest_screening_at || null,
+                    user_id: user ? user.id : null,
+                    clinical_data: clinicalPayload || {},
+                    full_patient_data: Object.assign({}, clinicalPayload || {}, personal)
+                };
             };
-
-            console.log('?? Exporting patient data:', exportData);
 
             const finishExportUi = function (ok, message) {
                 if (typeof window.pcodeHideExportLoading === 'function') {
@@ -2919,80 +3340,91 @@
                 showPatientsToast(message, ok ? 'success' : 'error');
             };
 
-            // Call API to generate PDF
-            fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '')
-                },
-                body: JSON.stringify(exportData)
-            })
-            .then(async (response) => {
-                const text = await response.text();
-                let data = null;
-                try {
-                    data = text ? JSON.parse(text) : null;
-                } catch (e) {
-                    // Keep loader up only until we surface the failure
-                    throw new Error(response.ok
-                        ? 'Invalid response from export server'
-                        : ('Export server error (HTTP ' + response.status + ')'));
-                }
-                if (!response.ok) {
-                    throw new Error((data && data.message) || ('Export failed (HTTP ' + response.status + ')'));
-                }
-                return data;
-            })
-            .then(data => {
-                console.log('?? API Response:', data);
-                if (data && data.success && data.file_url) {
-                    const rawUrl = String(data.file_url || '');
-                    // Prefer absolute / data URLs from Render; never fetch relative exports
-                    // paths against Firebase Hosting (that yields a garbled HTML-as-PDF).
-                    let fileUrl = rawUrl;
-                    if (!/^(https?:|data:)/i.test(rawUrl)) {
-                        const apiBase = (typeof pcodeApiUrl === 'function')
-                            ? String(pcodeApiUrl('api/export_xai_pdf.php')).replace(/\/api\/export_xai_pdf(?:\.php)?\/?$/i, '/')
-                            : 'https://p-code-nqak.onrender.com/';
-                        fileUrl = apiBase.replace(/\/?$/, '/') + rawUrl.replace(/^\//, '');
+            const runExport = function (exportData) {
+                console.log('[EXPORT] Patient data:', exportData);
+                fetch((typeof pcodeApiUrl==='function'?pcodeApiUrl('api/export_xai_pdf.php'):'api/export_xai_pdf.php'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (getPatientsAuthToken())
+                    },
+                    body: JSON.stringify(exportData)
+                })
+                .then(async (response) => {
+                    const text = await response.text();
+                    let data = null;
+                    try {
+                        data = text ? JSON.parse(text) : null;
+                    } catch (e) {
+                        throw new Error(response.ok
+                            ? 'Invalid response from export server'
+                            : ('Export server error (HTTP ' + response.status + ')'));
                     }
-                    console.log('Downloading PDF from:', fileUrl.slice(0, 80));
-
-                    const triggerDownload = (href) => {
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = href;
-                        downloadLink.download = data.filename || `PMOS_Report_${patientId}.pdf`;
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-                        if (href.indexOf('blob:') === 0) {
-                            URL.revokeObjectURL(href);
+                    if (!response.ok) {
+                        throw new Error((data && data.message) || ('Export failed (HTTP ' + response.status + ')'));
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log('[EXPORT] API response:', data);
+                    if (data && data.success && data.file_url) {
+                        const rawUrl = String(data.file_url || '');
+                        let fileUrl = rawUrl;
+                        if (!/^(https?:|data:)/i.test(rawUrl)) {
+                            const apiBase = (typeof pcodeApiUrl === 'function')
+                                ? String(pcodeApiUrl('api/export_xai_pdf.php')).replace(/\/api\/export_xai_pdf(?:\.php)?\/?$/i, '/')
+                                : '/';
+                            fileUrl = apiBase.replace(/\/?$/, '/') + rawUrl.replace(/^\//, '');
                         }
-                        finishExportUi(true, 'Report exported successfully!');
-                    };
+                        console.log('Downloading PDF from:', fileUrl.slice(0, 80));
 
-                    if (/^data:/i.test(fileUrl)) {
-                        triggerDownload(fileUrl);
-                        return;
+                        const triggerDownload = (href) => {
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = href;
+                            downloadLink.download = data.filename || `PMOS_Report_${patientId}.pdf`;
+                            document.body.appendChild(downloadLink);
+                            downloadLink.click();
+                            document.body.removeChild(downloadLink);
+                            if (href.indexOf('blob:') === 0) {
+                                URL.revokeObjectURL(href);
+                            }
+                            finishExportUi(true, 'Report exported successfully!');
+                        };
+
+                        if (/^data:/i.test(fileUrl)) {
+                            triggerDownload(fileUrl);
+                            return;
+                        }
+
+                        return fetch(fileUrl)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Failed to download PDF');
+                                return response.blob();
+                            })
+                            .then(blob => {
+                                triggerDownload(URL.createObjectURL(blob));
+                            });
+                    } else {
+                        console.error('? API Error:', data && data.message);
+                        finishExportUi(false, 'Error: ' + ((data && data.message) || 'Failed to generate report'));
                     }
+                })
+                .catch(error => {
+                    console.error('? Export error:', error);
+                    finishExportUi(false, 'Export failed: ' + (error && error.message ? error.message : String(error)));
+                });
+            };
 
-                    return fetch(fileUrl)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Failed to download PDF');
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            triggerDownload(URL.createObjectURL(blob));
-                        });
-                } else {
-                    console.error('? API Error:', data && data.message);
-                    finishExportUi(false, 'Error: ' + ((data && data.message) || 'Failed to generate report'));
-                }
+            fetch(getPatientUrl, {
+                headers: { 'Authorization': 'Bearer ' + (getPatientsAuthToken()) }
             })
-            .catch(error => {
-                console.error('? Export error:', error);
-                finishExportUi(false, 'Export failed: ' + (error && error.message ? error.message : String(error)));
+            .then(function (resp) { return resp.json().catch(function () { return null; }); })
+            .then(function (json) {
+                const clinicalPayload = (json && json.success && json.data) ? json.data : {};
+                runExport(buildExportData(clinicalPayload));
+            })
+            .catch(function () {
+                runExport(buildExportData({}));
             });
         }
 
@@ -3003,6 +3435,7 @@
         }
 
         function addNewPatient() {
+            setPatientSaveBusy(false);
             currentPatient = {
                 id: '',
                 name: '', 
@@ -3063,14 +3496,14 @@
             document.getElementById('modal-title').textContent = patient.id ? `${patient.name || 'Patient'} (ID: ${patient.id})` : 'Add New Patient';
             
             // Personal Information Fields
-            document.getElementById('patient-name').value = patient.name || '';
+            setPatientNameFields(patient);
             document.getElementById('patient-dob').value = patient.DOB || patient.date_of_birth || '';
             if (document.getElementById('patient-dob').value) {
                 calculateAgeFromDOB();
             } else {
                 document.getElementById('patient-age').value = patient.age || '';
             }
-            document.getElementById('patient-address').value = patient.address || '';
+            setPatientAddressFields(patient);
             document.getElementById('patient-contact-no').value = patient.contact_no || '';
             document.getElementById('patient-civil-status').value = patient.civil_status || '';
             document.getElementById('patient-occupation').value = patient.occupation || '';
@@ -3243,6 +3676,7 @@
                 previewImg.src = patient.Ultrasound_image;
                 previewSection.classList.remove('hidden');
                 uploadPlaceholder.classList.add('hidden');
+                setPatientUltrasoundCropButtonVisible(true);
                 
                 // Clear uploadedImages so it doesn't require re-uploading
                 uploadedImages = {
@@ -3259,6 +3693,9 @@
                 previewSection.classList.add('hidden');
                 uploadPlaceholder.classList.remove('hidden');
                 document.getElementById('ultrasound-image-upload').value = '';
+                const camClr = document.getElementById('ultrasound-camera-upload');
+                if (camClr) camClr.value = '';
+                setPatientUltrasoundCropButtonVisible(false);
                 
                 // Reset uploadedImages
                 uploadedImages = {
@@ -3277,6 +3714,7 @@
         }
 
         function closeModal() {
+            if (patientSaveInFlight) return;
             // Gate the exit behind the unsaved-changes guard when the form is dirty.
             if (window.patientFormGuard) {
                 window.patientFormGuard.attemptClose();
@@ -3431,11 +3869,22 @@
             }
 
             ageInput.value = age >= 0 ? String(age) : '';
+            if (window.__pcodeAgeGuardPatients && typeof window.__pcodeAgeGuardPatients.refresh === 'function') {
+                window.__pcodeAgeGuardPatients.refresh();
+            } else if (window.PcodeAgeGuard) {
+                const note = document.getElementById('patient-age-range-note');
+                const evaluation = window.PcodeAgeGuard.evaluateAge(ageInput.value);
+                window.PcodeAgeGuard.renderAgeNote(note, evaluation);
+            }
         }
 
         function savePatient() {
+            if (patientSaveInFlight) {
+                return Promise.resolve(false);
+            }
+
             // **GUEST MODE**: Check if user is a guest
-            const token = sessionStorage.getItem('PMOS_auth_token') || '';
+            const token = getPatientsAuthToken();
             let isGuest = false;
             try {
                 if (token) {
@@ -3447,13 +3896,14 @@
             }
             
             // Validate required fields
-            const name = document.getElementById('patient-name').value.trim();
+            const nameFields = collectPatientNameFields();
+            const name = nameFields.patient_name || '';
             const age = document.getElementById('patient-age').value.trim();
             const dob = document.getElementById('patient-dob').value.trim();
             const contactNo = document.getElementById('patient-contact-no').value.trim();
             
             // Check if editing existing patient
-            const isEditingExistingPatient = currentPatient && currentPatient.id && currentPatient.patient_id;
+            const isEditingExistingPatient = patientHasPersistedId(currentPatient);
             
             console.log('[DEBUG SAVE] isGuest:', isGuest);
             console.log('[DEBUG SAVE] isEditing:', isEditingExistingPatient);
@@ -3465,9 +3915,14 @@
             
             // For existing patients, at least some basic info should be there
             // For new patients, only name and age are required
-            if (!isEditingExistingPatient && (!name || !age)) {
-                alert('Please fill in required fields: Full Name and Age');
+            if (!isEditingExistingPatient && (!nameFields.first_name || !nameFields.surname || !age)) {
+                alert('Please fill in required fields: First Name, Surname, and Age');
                 return Promise.resolve(false);
+            }
+
+            if (window.PcodeAgeGuard && age) {
+                const ageOk = window.PcodeAgeGuard.assertAgeAllowed(age, { focusId: 'patient-dob' });
+                if (!ageOk) return Promise.resolve(false);
             }
             
             // IMPORTANT: In edit mode, preserve what the user actually typed (including cleared fields)
@@ -3479,53 +3934,73 @@
             
             // Final validation - we need at least name
             if (!finalName && !isEditingExistingPatient) {
-                alert('Patient name is required');
+                alert('First name and surname are required');
                 return Promise.resolve(false);
             }
+
+            setPatientSaveBusy(true);
+
+            const finishSave = function (ok) {
+                setPatientSaveBusy(false);
+                return ok;
+            };
 
             // **ULTRASOUND IMAGE HANDLING**: Optional for all users (guests and registered)
             // Returns a Promise<boolean> so the navigation guard can await the real
             // persistence transaction before closing/navigating.
             if (uploadedImages.ultrasound) {
-                // User uploaded an image - convert to base64 and include it
+                const persistCroppedImage = function (base64Image) {
+                    console.log('[SAVE] Patient with ultrasound image');
+                    return savePatientData(finalName, finalAge, finalDOB, finalContact, base64Image, isGuest).then(finishSave, function () {
+                        return finishSave(false);
+                    });
+                };
+                if (typeof uploadedImages.ultrasound === 'string') {
+                    return persistCroppedImage(uploadedImages.ultrasound);
+                }
                 return new Promise(function (resolve) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        const base64Image = e.target.result;
-                        console.log('?? Patient with ultrasound image');
-                        resolve(savePatientData(finalName, finalAge, finalDOB, finalContact, base64Image, isGuest));
+                        resolve(persistCroppedImage(e.target.result));
                     };
                     reader.onerror = function() {
                         alert('Failed to read the ultrasound image. Please try again.');
-                        resolve(false);
+                        resolve(finishSave(false));
                     };
                     reader.readAsDataURL(uploadedImages.ultrasound);
                 });
             } else if (isEditingExistingPatient) {
                 if (existingUltrasoundMarkedForRemoval) {
                     // User explicitly removed the existing image while editing
-                    console.log('??? Editing patient - removing existing ultrasound image');
-                    return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest);
+                    console.log('[SAVE] Editing patient - removing existing ultrasound image');
+                    return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest).then(finishSave, function () {
+                        return finishSave(false);
+                    });
                 } else {
                     // Editing existing patient without re-uploading image - keep existing
-                    console.log('?? Editing patient - keeping existing ultrasound image');
-                    return savePatientData(finalName, finalAge, finalDOB, finalContact, 'KEEP_EXISTING', isGuest);
+                    console.log('[SAVE] Editing patient - keeping existing ultrasound image');
+                    return savePatientData(finalName, finalAge, finalDOB, finalContact, 'KEEP_EXISTING', isGuest).then(finishSave, function () {
+                        return finishSave(false);
+                    });
                 }
             } else {
                 // New patient without ultrasound image - save without it
-                console.log('?? New patient without ultrasound image');
-                return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest);
+                console.log('[SAVE] New patient without ultrasound image');
+                return savePatientData(finalName, finalAge, finalDOB, finalContact, null, isGuest).then(finishSave, function () {
+                    return finishSave(false);
+                });
             }
         }
 
         function savePatientData(finalName, finalAge, finalDOB, finalContact, base64Image, isGuest) {
             // Prepare patient data for saving
             const patientData = {
-                id: currentPatient.id || '',
-                patient_name: finalName || document.getElementById('patient-name').value,
+                id: (currentPatient && (currentPatient.id || currentPatient.patient_id)) || '',
+                patient_id: (currentPatient && (currentPatient.patient_id || currentPatient.id)) || '',
+                ...collectPatientNameFields(),
                 age: finalAge || document.getElementById('patient-age').value,
                 date_of_birth: finalDOB || document.getElementById('patient-dob').value,
-                address: document.getElementById('patient-address').value,
+                ...collectPatientAddressFields(),
                 contact_no: finalContact || document.getElementById('patient-contact-no').value,
                 civil_status: document.getElementById('patient-civil-status').value,
                 occupation: document.getElementById('patient-occupation').value,
@@ -3598,20 +4073,22 @@
 
             // **GUEST MODE**: Save to sessionStorage instead of database
             if (isGuest) {
-                console.log('?? GUEST MODE - Saving patient to sessionStorage (temporarily)');
+                console.log('[GUEST] Saving patient to sessionStorage (temporarily)');
                 
                 // Store patient in guest_added_patients list in sessionStorage
                 let guestAddedPatients = JSON.parse(sessionStorage.getItem('guest_added_patients') || '[]');
                 
                 // Create clean guest patient object - use ONLY the fields we need
                 // Don't include the old 'id' or 'patient_name' to avoid conflicts
+                const guestNames = collectPatientNameFields();
                 const guestPatient = {
                     id: 'added_' + Date.now(), // Unique temp ID - MUST be first to not be overwritten
-                    name: finalName || document.getElementById('patient-name').value || 'Patient',
+                    ...guestNames,
+                    name: guestNames.name || 'Patient',
                     age: finalAge || document.getElementById('patient-age').value,
                     date_of_birth: finalDOB || document.getElementById('patient-dob').value,
                     contact_no: finalContact || document.getElementById('patient-contact-no').value,
-                    address: document.getElementById('patient-address').value,
+                    ...collectPatientAddressFields(),
                     civil_status: document.getElementById('patient-civil-status').value,
                     occupation: document.getElementById('patient-occupation').value,
                     religion: document.getElementById('patient-religion').value,
@@ -3672,14 +4149,14 @@
                 // Only include Ultrasound_image if we have one and it's not the "keep existing" marker
                 if (base64Image && base64Image !== 'KEEP_EXISTING') {
                     guestPatient.Ultrasound_image = base64Image;
-                    console.log('? Ultrasound image INCLUDED - size:', base64Image.length, 'bytes');
+                    console.log('[GUEST] Ultrasound image INCLUDED - size:', base64Image.length, 'bytes');
                 } else {
-                    console.log('?? Ultrasound image NOT included - base64Image:', base64Image);
+                    console.log('[GUEST] Ultrasound image NOT included - base64Image:', base64Image);
                 }
                 
-                console.log('? Guest patient to save:', guestPatient);
-                console.log('?? Patient keys:', Object.keys(guestPatient).sort());
-                console.log('?? Field values:', {
+                console.log('[GUEST] Patient to save:', guestPatient);
+                console.log('[GUEST] Patient keys:', Object.keys(guestPatient).sort());
+                console.log('[GUEST] Field values:', {
                     age: guestPatient.age,
                     name: guestPatient.name,
                     weight: guestPatient.weight,
@@ -3692,35 +4169,53 @@
                 guestAddedPatients.push(guestPatient);
                 sessionStorage.setItem('guest_added_patients', JSON.stringify(guestAddedPatients));
                 
-                console.log('? Guest patient saved to sessionStorage:', guestPatient);
-                console.log('?? Total guest added patients:', guestAddedPatients.length);
-                alert('? Patient data saved temporarily for your guest session!\n\nNote: This data will be cleared when you sign out.');
+                console.log('[GUEST] Patient saved to sessionStorage:', guestPatient);
+                console.log('[GUEST] Total guest added patients:', guestAddedPatients.length);
+                hidePatientSaveLoadingModal();
+                alert('Patient data saved temporarily for your guest session!\n\nNote: This data will be cleared when you sign out.');
                 if (window.patientFormGuard) window.patientFormGuard.notifySaved('Saved to guest session');
                 closeModalImmediate();
                 
                 // **CRITICAL**: Refresh the patient table to show the newly added guest patient
-                console.log('?? Refreshing patient list to show newly added guest patient');
+                console.log('[GUEST] Refreshing patient list to show newly added guest patient');
                 fetchPatients();
                 
                 // Don't refresh patients from database (guests don't have database patients)
                 return Promise.resolve(true);
             }
 
-            // **NORMAL FLOW**: Call API to save patient to database
+            // **NORMAL FLOW**: Call API to save patient to database.
+            // Never retry this POST: a timeout after insert would create duplicate charts.
             return pcodePatientsApiUrl('save_patient.php').then(function (saveUrl) {
-            return fetch(saveUrl, {
-                method: 'POST',
-                headers: {
+                const headers = {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + (sessionStorage.getItem('PMOS_auth_token') || localStorage.getItem('token') || '')
-                },
-                body: JSON.stringify(patientData)
-            });
+                    'Authorization': 'Bearer ' + getPatientsAuthToken()
+                };
+                const init = {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(patientData),
+                    credentials: 'same-origin'
+                };
+                const fetchFn =
+                    typeof window.pcodeFetchRetry === 'function' ? window.pcodeFetchRetry : fetch;
+                return fetchFn(saveUrl, init, { attempts: 1, delayMs: 700 });
             })
-            .then(response => response.json())
+            .then(function (response) {
+                if (typeof window.pcodeParseJsonResponse === 'function') {
+                    return window.pcodeParseJsonResponse(response);
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('[SAVE RESPONSE]', data);
                 if (data.success) {
+                    const returnedId = data.patient_id || (data.data && data.data.patient_id);
+                    if (returnedId) {
+                        currentPatient = currentPatient || {};
+                        currentPatient.id = returnedId;
+                        currentPatient.patient_id = returnedId;
+                    }
                     if (window.patientFormGuard) window.patientFormGuard.notifySaved('Patient saved to database');
                     // CRITICAL: Wait for fetchPatients() to complete before closing modal
                     // This ensures fresh data is loaded into memory before the user edits again
@@ -3733,13 +4228,15 @@
                             return true;
                         })
                         .catch(() => {
-                            // Data saved, but table refresh failed — still close cleanly.
+                            // Data saved, but table refresh failed: still close cleanly.
                             closeModalImmediate();
                             return true;
                         });
                 } else {
                     const msg = data.error || data.message || 'Unknown error';
+                    if (handlePatientsAuthFailure(msg)) return false;
                     const detail = data.detail ? ('\n\nDetails: ' + data.detail) : '';
+                    hidePatientSaveLoadingModal();
                     alert('Error saving patient: ' + msg + detail);
                     // Keep the modal open so the clinician can correct and retry.
                     return false;
@@ -3747,7 +4244,13 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error saving patient: ' + error.message);
+                if (handlePatientsAuthFailure(error && error.message)) return false;
+                const nice =
+                    typeof window.pcodeNetworkErrorMessage === 'function'
+                        ? window.pcodeNetworkErrorMessage(error)
+                        : (error && error.message) || 'Unknown error';
+                hidePatientSaveLoadingModal();
+                alert('Error saving patient: ' + nice);
                 // Keep the modal open on transport errors so no data is silently dropped.
                 return false;
             });
@@ -3774,6 +4277,7 @@
 
         // Navigate to a specific step in the add patient modal
         function goToAddPatientStep(step) {
+            if (patientSaveInFlight) return;
             if (step < 1 || step > PATIENT_MODAL_TOTAL_STEPS) return;
 
             document.querySelectorAll('#add-patient-form .step-content').forEach(content => {
@@ -3810,25 +4314,25 @@
             }
 
             const footerActionButtons = document.getElementById('footer-action-buttons');
+            const footerNav = document.querySelector('#patient-modal .pcode-patient-modal-footer__nav');
+            if (footerNav) {
+                footerNav.classList.toggle('pcode-patient-modal-footer__nav--step3', step === 3);
+            }
             if (step === 3) {
                 footerActionButtons.innerHTML = `
-                    <button type="button" id="cancel-add-btn" onclick="closeModal()" class="pcode-btn-secondary btn-ghost-glass clinical-stepper-btn">Cancel</button>
                     <button type="button" id="save-patient-btn" onclick="savePatient()" class="pcode-btn-primary btn-purple-glass clinical-stepper-btn">
                         Save Patient
                         <svg class="pcode-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </button>
-                    <button type="button" id="next-add-btn" onclick="goToAddPatientStep(4)" class="pcode-btn-secondary btn-ghost-glass clinical-stepper-btn">
+                    <button type="button" id="next-add-btn" onclick="goToAddPatientStep(4)" class="pcode-btn-secondary btn-ghost-glass clinical-stepper-btn pcode-footer-btn--history">
                         History
                         <svg class="pcode-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                     </button>
                 `;
             } else if (step === PATIENT_MODAL_HISTORY_STEP) {
                 footerActionButtons.innerHTML = `
-                    <button type="button" id="refresh-history-btn" onclick="loadHistoryForCurrentPatient()" class="pcode-btn-secondary btn-ghost-glass clinical-stepper-btn">
-                        Refresh Log
-                    </button>
                     <button type="button" id="next-add-btn" onclick="goToAddPatientStep(5)" class="pcode-btn-primary btn-purple-glass clinical-stepper-btn">
-                        Recommendations
+                        Next
                         <svg class="pcode-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                     </button>
                 `;
@@ -3855,9 +4359,12 @@
             if (scrollEl) {
                 scrollEl.scrollTop = 0;
             }
+            if (patientSaveInFlight) {
+                applyPatientSaveBusy(true);
+            }
         }
 
-        // Obsidian glass stepper — class-driven states + per-step segment connectors
+        // Obsidian glass stepper: class-driven states + per-step segment connectors
         function updateStepIndicators(currentStep) {
             for (let i = 1; i <= PATIENT_MODAL_TOTAL_STEPS; i++) {
                 const indicator = document.getElementById(`step-${i}-indicator`);
@@ -3917,36 +4424,24 @@
         }
 
         // Handle ultrasound image upload and preview
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                
-                // Validate file size (10MB max)
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('File size exceeds 10MB limit');
-                    return;
-                }
-
-                // Read and display image
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewImg = document.getElementById('ultrasound-preview-img');
-                    const previewSection = document.getElementById('image-preview-section');
-                    const uploadPlaceholder = document.getElementById('image-upload-placeholder');
-                    
-                    previewImg.src = e.target.result;
-                    previewSection.classList.remove('hidden');
-                    uploadPlaceholder.classList.add('hidden');
-
-                    // Store the uploaded image data
-                    uploadedImages = {
-                        ultrasound: file
-                    };
-                    existingUltrasoundMarkedForRemoval = false;
-                    if (window.patientFormGuard) window.patientFormGuard.markDirty();
-                };
-                reader.readAsDataURL(file);
+        function handlePatientUltrasoundFile(file, input) {
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size exceeds 10MB limit');
+                if (input) input.value = '';
+                return;
             }
+            if (file.type && file.type.indexOf('image/') !== 0) {
+                alert('Please upload a valid image file.');
+                if (input) input.value = '';
+                return;
+            }
+            openPatientUltrasoundCropEditor(file);
+        }
+
+        function handleImageUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            handlePatientUltrasoundFile(input.files[0], input);
         }
 
         function removeImagePreview(event) {
@@ -3966,6 +4461,9 @@
             previewSection.classList.add('hidden');
             uploadPlaceholder.classList.remove('hidden');
             fileInput.value = '';
+            const camClrRm = document.getElementById('ultrasound-camera-upload');
+            if (camClrRm) camClrRm.value = '';
+            setPatientUltrasoundCropButtonVisible(false);
             
             // Clear uploaded images
             uploadedImages = {
@@ -3982,6 +4480,7 @@
         // Override addNewPatient to initialize step navigation
         const originalAddNewPatient = window.addNewPatient;
         window.addNewPatient = function() {
+            setPatientSaveBusy(false);
             currentPatient = {
                 id: '',
                 name: '', 
@@ -4005,9 +4504,13 @@
             // Clear image preview
             document.getElementById('image-preview-section').classList.add('hidden');
             document.getElementById('ultrasound-image-upload').value = '';
+            const camClr2 = document.getElementById('ultrasound-camera-upload');
+            if (camClr2) camClr2.value = '';
+            setPatientUltrasoundCropButtonVisible(false);
             
             // Setup event listeners
             setTimeout(setupModalEventListeners, 100);
+            setupPatientUltrasoundDrop();
             // Establish the pristine baseline for a blank/new patient form.
             setTimeout(function () {
                 if (window.patientFormGuard) window.patientFormGuard.markClean();
@@ -4018,7 +4521,9 @@
         const originalSetupModalEventListeners = setupModalEventListeners;
         window.setupModalEventListeners = function() {
             originalSetupModalEventListeners();
+            setupPatientUltrasoundDrop();
         };
+        setupPatientUltrasoundDrop();
     </script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
