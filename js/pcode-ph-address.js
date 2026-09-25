@@ -13,6 +13,7 @@
   var provinceNameByCode = {};
   var barangayCache = {};
   var catalogPromise = null;
+  var lastCatalog = { cities: [], municipalities: [] };
   var applying = false;
   var bound = false;
   var combos = {};
@@ -272,12 +273,37 @@
     input.addEventListener("focus", function () {
       hideAllLists(input);
       if (input.disabled) return;
+      if (input.id === "patient-address-municipality" && hasOfficialCity()) {
+        hideList(input);
+        return;
+      }
+      if (input.id === "patient-address-city" && hasOfficialMunicipality()) {
+        hideList(input);
+        return;
+      }
+      if (input.id === "patient-address-barangay" && !(combo.items && combo.items.length)) {
+        var list = ensureList(input);
+        list.innerHTML =
+          '<div class="pcode-ph-combo-empty">Choose a city or municipality first. Barangays are limited to that place.</div>';
+        list.hidden = false;
+        placeList(input, list);
+        input.setAttribute("aria-expanded", "true");
+        return;
+      }
       renderList(combo, input.value);
     });
     input.addEventListener("input", function () {
       input.dataset.phCode = "";
       input.dataset.phName = String(input.value || "").trim();
       if (input.disabled) return;
+      if (input.id === "patient-address-municipality" && hasOfficialCity()) {
+        hideList(input);
+        return;
+      }
+      if (input.id === "patient-address-city" && hasOfficialMunicipality()) {
+        hideList(input);
+        return;
+      }
       renderList(combo, input.value);
     });
     input.addEventListener("keydown", function (event) {
@@ -377,6 +403,7 @@
             var cached = JSON.parse(raw);
             if (cached && cached.cities && cached.municipalities && cached.provinces) {
               rememberMaps(cached);
+              lastCatalog = cached;
               return cached;
             }
           }
@@ -396,6 +423,7 @@
             municipalities: (parts[2] || []).slice().sort(sortByName),
           };
           rememberMaps(payload);
+          lastCatalog = payload;
           try {
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(payload));
           } catch (_) {}
@@ -420,7 +448,14 @@
         : "/municipalities/" + encodeURIComponent(code) + "/barangays.json";
     return fetchJson(PSGC_BASE + path)
       .then(function (rows) {
-        var list = (rows || []).slice().sort(sortByName);
+        var list = (rows || []).filter(function (row) {
+          if (!row || !row.name) return false;
+          var cityCode = row.cityCode != null ? String(row.cityCode) : "";
+          var munCode = row.municipalityCode != null ? String(row.municipalityCode) : "";
+          if (kind === "city" && cityCode) return cityCode === String(code);
+          if (kind === "municipality" && munCode) return munCode === String(code);
+          return true;
+        }).slice().sort(sortByName);
         barangayCache[key] = list;
         return list;
       })
@@ -428,6 +463,58 @@
         console.warn("[P-Code] Could not load barangays", err);
         return [];
       });
+  }
+
+  function hasOfficialCity() {
+    var code = fieldCode(cityEl());
+    return !!(code && code !== "custom");
+  }
+
+  function hasOfficialMunicipality() {
+    var code = fieldCode(munEl());
+    return !!(code && code !== "custom");
+  }
+
+  function disableAndClear(input, placeholder) {
+    if (!input) return;
+    hideList(input);
+    input.disabled = true;
+    input.placeholder = placeholder || "";
+    setFieldValue(input, "", "");
+    if (combos[input.id]) combos[input.id].items = [];
+  }
+
+  function enableWithItems(input, items, placeholder, withProvince) {
+    if (!input) return;
+    input.disabled = false;
+    input.placeholder = placeholder || "";
+    if (combos[input.id]) {
+      combos[input.id].items = items || [];
+      combos[input.id].withProvince = withProvince !== false;
+    }
+  }
+
+  function syncExclusiveLgu() {
+    if (hasOfficialCity()) {
+      disableAndClear(munEl(), "Not used when a city is selected");
+    } else {
+      enableWithItems(
+        munEl(),
+        lastCatalog.municipalities || [],
+        "Type to search municipality",
+        true
+      );
+    }
+    if (hasOfficialMunicipality()) {
+      disableAndClear(cityEl(), "Not used when a municipality is selected");
+    } else {
+      enableWithItems(
+        cityEl(),
+        lastCatalog.cities || [],
+        "Type to search city",
+        true
+      );
+    }
   }
 
   function parentKind() {
@@ -443,34 +530,38 @@
     if (!brgy) return Promise.resolve();
     var parent = parentKind();
     if (!parent.kind) {
-      var customParent = fieldName(cityEl()) || fieldName(munEl());
       setComboItems(
         brgy,
         [],
-        preferredName || "",
-        customParent
-          ? "Type barangay name"
-          : "Select a city or municipality first",
-        !!customParent || !!preferredName,
+        "",
+        "Select a city or municipality first",
+        false,
         false
       );
       return Promise.resolve();
     }
     setComboItems(brgy, [], preferredName || "", "Loading barangays…", false, false);
     return loadBarangays(parent.kind, parent.code).then(function (list) {
-      setComboItems(brgy, list, preferredName || "", "Type to search barangay", true, false);
+      setComboItems(
+        brgy,
+        list,
+        preferredName || "",
+        "Type to search barangay in this " + (parent.kind === "city" ? "city" : "municipality"),
+        true,
+        false
+      );
     });
   }
 
   function onCityChange() {
     if (applying) return;
-    if (fieldName(cityEl()) && munEl()) setFieldValue(munEl(), "", "");
+    syncExclusiveLgu();
     refreshBarangays("");
   }
 
   function onMunChange() {
     if (applying) return;
-    if (fieldName(munEl()) && cityEl()) setFieldValue(cityEl(), "", "");
+    syncExclusiveLgu();
     refreshBarangays("");
   }
 
@@ -496,6 +587,7 @@
       });
     }
     return loadCatalog().then(function (payload) {
+      lastCatalog = payload;
       setComboItems(cityEl(), payload.cities || [], fieldName(cityEl()), "Type to search city", true, true);
       setComboItems(
         munEl(),
@@ -505,7 +597,8 @@
         true,
         true
       );
-      if (!fieldName(brgyEl()) && !parentKind().kind) {
+      syncExclusiveLgu();
+      if (!parentKind().kind) {
         setComboItems(brgyEl(), [], "", "Select a city or municipality first", false, false);
       }
       return payload;
@@ -537,9 +630,7 @@
           true,
           true
         );
-        if (fieldCode(cityEl()) && fieldCode(cityEl()) !== "custom") {
-          setFieldValue(munEl(), "", "");
-        }
+        syncExclusiveLgu();
         return refreshBarangays(barangay);
       })
       .finally(function () {
