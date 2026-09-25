@@ -35,6 +35,8 @@ try {
     // (Some databases predate the clinical-tracking migration.)
     pcode_clinical_validity_ensure_columns_mysqli($conn);
     pcode_ensure_clinical_recommendations_column($conn);
+    pcode_ensure_patient_address_columns($conn);
+    pcode_ensure_patient_name_columns($conn);
     pcode_ensure_owner_provider_id_column($conn);
     
     $patient_id = isset($_GET['id']) ? $_GET['id'] : null;
@@ -61,10 +63,18 @@ try {
         SELECT 
             p.patient_id as id,
             p.patient_name as name,
+            p.first_name as first_name,
+            p.middle_name as middle_name,
+            p.surname as surname,
             p.age as Age_yrs,
             p.date_of_birth as DOB,
             p.contact_no as contact_no,
             p.address as address,
+            p.address_street as address_street,
+            p.address_barangay as address_barangay,
+            p.address_municipality as address_municipality,
+            p.address_city as address_city,
+            p.address_province as address_province,
             p.civil_status as civil_status,
             p.occupation as occupation,
             p.religion as religion,
@@ -175,17 +185,19 @@ try {
     }
     
     $patient['id'] = 'PMOS-' . str_pad($patient['id'], 3, '0', STR_PAD_LEFT);
+    $patient = array_merge($patient, pcode_patient_name_response($patient));
+    $patient = array_merge($patient, pcode_patient_address_response($patient));
     
     // Include ultrasound image if available.
     // The column stores a raw binary BLOB, which is NOT valid UTF-8 and would make
     // json_encode() return false (empty body). Normalize to a base64 data URI so the
-    // payload is always valid JSON — matching get_patients.php behavior.
+    // payload is always valid JSON: matching get_patients.php behavior.
     if (empty($patient['Ultrasound_image'])) {
         $patient['Ultrasound_image'] = null;
     } else {
         $img = $patient['Ultrasound_image'];
         if (strpos($img, 'data:image') === 0) {
-            // Already a data URI — return as-is
+            // Already a data URI: return as-is
             $patient['Ultrasound_image'] = $img;
         } else {
             $patient['Ultrasound_image'] = 'data:image/jpeg;base64,' . base64_encode($img);

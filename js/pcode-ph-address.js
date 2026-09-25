@@ -6,20 +6,25 @@
   "use strict";
 
   var PSGC_BASE = "https://psgc.gitlab.io/api";
-  var CACHE_KEY = "PCODE_psgc_lgus_v1";
+  var CACHE_KEY = "PCODE_psgc_lgus_v2";
   var MAX_RESULTS = 80;
+  var NCR_CODE = "NCR";
   var cityByCode = {};
   var munByCode = {};
   var provinceNameByCode = {};
   var barangayCache = {};
   var catalogPromise = null;
-  var lastCatalog = { cities: [], municipalities: [] };
+  var lastCatalog = { cities: [], municipalities: [], provincesList: [] };
   var applying = false;
   var bound = false;
   var combos = {};
 
   function byId(id) {
     return document.getElementById(id);
+  }
+
+  function provinceEl() {
+    return byId("patient-address-province");
   }
 
   function cityEl() {
@@ -273,6 +278,18 @@
     input.addEventListener("focus", function () {
       hideAllLists(input);
       if (input.disabled) return;
+      if (
+        (input.id === "patient-address-city" || input.id === "patient-address-municipality") &&
+        !hasOfficialProvince()
+      ) {
+        var needProv = ensureList(input);
+        needProv.innerHTML =
+          '<div class="pcode-ph-combo-empty">Select a province first to list cities and municipalities.</div>';
+        needProv.hidden = false;
+        placeList(input, needProv);
+        input.setAttribute("aria-expanded", "true");
+        return;
+      }
       if (input.id === "patient-address-municipality" && hasOfficialCity()) {
         hideList(input);
         return;
@@ -422,6 +439,12 @@
             cities: (parts[1] || []).slice().sort(sortByName),
             municipalities: (parts[2] || []).slice().sort(sortByName),
           };
+          payload.provincesList = Object.keys(provinces)
+            .map(function (code) {
+              return { code: code, name: provinces[code] };
+            })
+            .sort(sortByName);
+          payload.provincesList.unshift({ code: NCR_CODE, name: "NCR / Metro Manila" });
           rememberMaps(payload);
           lastCatalog = payload;
           try {
@@ -465,6 +488,11 @@
       });
   }
 
+  function hasOfficialProvince() {
+    var code = fieldCode(provinceEl());
+    return !!(code && code !== "custom");
+  }
+
   function hasOfficialCity() {
     var code = fieldCode(cityEl());
     return !!(code && code !== "custom");
@@ -494,27 +522,76 @@
     }
   }
 
-  function syncExclusiveLgu() {
+  function matchesProvince(item, provCode) {
+    if (!provCode || provCode === "custom") return true;
+    if (provCode === NCR_CODE) return !item.provinceCode;
+    return String(item.provinceCode || "") === String(provCode);
+  }
+
+  function citiesForProvince() {
+    return (lastCatalog.cities || []).filter(function (item) {
+      return matchesProvince(item, fieldCode(provinceEl()));
+    });
+  }
+
+  function munsForProvince() {
+    return (lastCatalog.municipalities || []).filter(function (item) {
+      return matchesProvince(item, fieldCode(provinceEl()));
+    });
+  }
+
+  function provinceList() {
+    if (lastCatalog.provincesList && lastCatalog.provincesList.length) {
+      return lastCatalog.provincesList;
+    }
+    var list = Object.keys(provinceNameByCode).map(function (code) {
+      return { code: code, name: provinceNameByCode[code] };
+    });
+    list.sort(sortByName);
+    list.unshift({ code: NCR_CODE, name: "NCR / Metro Manila" });
+    return list;
+  }
+
+  function inferProvinceFromPlace(cityName, munName) {
+    var city = findExact(lastCatalog.cities || [], cityName, false);
+    if (city) {
+      if (city.provinceCode && provinceNameByCode[city.provinceCode]) {
+        return { code: String(city.provinceCode), name: provinceNameByCode[city.provinceCode] };
+      }
+      return { code: NCR_CODE, name: "NCR / Metro Manila" };
+    }
+    var mun = findExact(lastCatalog.municipalities || [], munName, false);
+    if (mun) {
+      if (mun.provinceCode && provinceNameByCode[mun.provinceCode]) {
+        return { code: String(mun.provinceCode), name: provinceNameByCode[mun.provinceCode] };
+      }
+      return { code: NCR_CODE, name: "NCR / Metro Manila" };
+    }
+    return null;
+  }
+
+  function applyProvinceScope() {
+    var keepCity = fieldName(cityEl());
+    var keepMun = fieldName(munEl());
+    if (!hasOfficialProvince()) {
+      setComboItems(cityEl(), [], keepCity, "Select a province first", false, false);
+      setComboItems(munEl(), [], keepMun, "Select a province first", false, false);
+      return;
+    }
+    var cities = citiesForProvince();
+    var muns = munsForProvince();
     if (hasOfficialCity()) {
-      disableAndClear(munEl(), "Not used when a city is selected");
-    } else {
-      enableWithItems(
-        munEl(),
-        lastCatalog.municipalities || [],
-        "Type to search municipality",
-        true
-      );
+      setComboItems(cityEl(), cities, keepCity, "Type to search city", true, false);
+      setComboItems(munEl(), [], "", "Not used when a city is selected", false, false);
+      return;
     }
     if (hasOfficialMunicipality()) {
-      disableAndClear(cityEl(), "Not used when a municipality is selected");
-    } else {
-      enableWithItems(
-        cityEl(),
-        lastCatalog.cities || [],
-        "Type to search city",
-        true
-      );
+      setComboItems(cityEl(), [], "", "Not used when a municipality is selected", false, false);
+      setComboItems(munEl(), muns, keepMun, "Type to search municipality", true, false);
+      return;
     }
+    setComboItems(cityEl(), cities, keepCity, "Type to search city", true, false);
+    setComboItems(munEl(), muns, keepMun, "Type to search municipality", true, false);
   }
 
   function parentKind() {
@@ -553,15 +630,23 @@
     });
   }
 
+  function onProvinceChange() {
+    if (applying) return;
+    setFieldValue(cityEl(), "", "");
+    setFieldValue(munEl(), "", "");
+    applyProvinceScope();
+    refreshBarangays("");
+  }
+
   function onCityChange() {
     if (applying) return;
-    syncExclusiveLgu();
+    applyProvinceScope();
     refreshBarangays("");
   }
 
   function onMunChange() {
     if (applying) return;
-    syncExclusiveLgu();
+    applyProvinceScope();
     refreshBarangays("");
   }
 
@@ -569,12 +654,14 @@
     injectStyles();
     if (!bound) {
       bound = true;
-      attachCombo(cityEl(), { withProvince: true, onChange: onCityChange });
-      attachCombo(munEl(), { withProvince: true, onChange: onMunChange });
+      attachCombo(provinceEl(), { withProvince: false, onChange: onProvinceChange });
+      attachCombo(cityEl(), { withProvince: false, onChange: onCityChange });
+      attachCombo(munEl(), { withProvince: false, onChange: onMunChange });
       attachCombo(brgyEl(), { withProvince: false });
       document.addEventListener("click", function (event) {
         var target = event.target;
         var keep = target && target.closest && (
+          target.closest("#patient-address-province") ||
           target.closest("#patient-address-city") ||
           target.closest("#patient-address-municipality") ||
           target.closest("#patient-address-barangay") ||
@@ -588,16 +675,15 @@
     }
     return loadCatalog().then(function (payload) {
       lastCatalog = payload;
-      setComboItems(cityEl(), payload.cities || [], fieldName(cityEl()), "Type to search city", true, true);
       setComboItems(
-        munEl(),
-        payload.municipalities || [],
-        fieldName(munEl()),
-        "Type to search municipality",
+        provinceEl(),
+        provinceList(),
+        fieldName(provinceEl()),
+        "Type to search province",
         true,
-        true
+        false
       );
-      syncExclusiveLgu();
+      applyProvinceScope();
       if (!parentKind().kind) {
         setComboItems(brgyEl(), [], "", "Select a city or municipality first", false, false);
       }
@@ -612,6 +698,7 @@
     ).trim();
     var municipality = String((patient && patient.address_municipality) || "").trim();
     var city = String((patient && patient.address_city) || "").trim();
+    var province = String((patient && patient.address_province) || "").trim();
     var legacy = String((patient && patient.address) || "").trim();
     if (streetEl) {
       var street = String((patient && patient.address_street) || "").trim();
@@ -620,17 +707,26 @@
     }
     applying = true;
     return bind()
-      .then(function (payload) {
-        setComboItems(cityEl(), payload.cities || [], city, "Type to search city", true, true);
-        setComboItems(
-          munEl(),
-          payload.municipalities || [],
-          municipality,
-          "Type to search municipality",
-          true,
-          true
-        );
-        syncExclusiveLgu();
+      .then(function () {
+        var inferred = inferProvinceFromPlace(city, municipality);
+        if (!province && inferred) province = inferred.name;
+        setComboItems(provinceEl(), provinceList(), province, "Type to search province", true, false);
+        if (inferred && inferred.code && (!fieldCode(provinceEl()) || fieldCode(provinceEl()) === "custom")) {
+          setFieldValue(provinceEl(), inferred.name, inferred.code);
+        }
+        applyProvinceScope();
+        if (city) setComboItems(cityEl(), citiesForProvince(), city, "Type to search city", hasOfficialProvince(), false);
+        if (municipality && !hasOfficialCity()) {
+          setComboItems(
+            munEl(),
+            munsForProvince(),
+            municipality,
+            "Type to search municipality",
+            hasOfficialProvince(),
+            false
+          );
+        }
+        applyProvinceScope();
         return refreshBarangays(barangay);
       })
       .finally(function () {
@@ -640,6 +736,7 @@
 
   function collect() {
     return {
+      address_province: fieldName(provinceEl()),
       address_city: fieldName(cityEl()),
       address_municipality: fieldName(munEl()),
       address_barangay: fieldName(brgyEl()),

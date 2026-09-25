@@ -181,7 +181,7 @@
   function pickPersonalDemographics() {
     var keys = [
       'first_name', 'middle_name', 'surname', 'last_name', 'patient_name', 'name',
-      'address_street', 'address_barangay', 'address_town', 'address_municipality', 'address_city', 'address',
+      'address_street', 'address_barangay', 'address_town', 'address_municipality', 'address_city', 'address_province', 'address',
       'contact_no', 'civil_status', 'occupation', 'religion', 'referred_by', 'reffered_by',
       'date_of_birth', 'DOB'
     ];
